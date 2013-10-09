@@ -124,7 +124,7 @@ public interface ProtocolHandler {
 	 * "delete": verwijder deze locatie<br>
 	 * type ["preferred"|"non-preferred"]
 	 */
-	public static final String UPDATE_LOCATION = "update_location";
+	public static final String UPDATE_PREFFERED_LOCATION = "update_location";
 	
 	
 	public State handleMessage(State state, String name, Map<String, Object> params);
