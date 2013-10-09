@@ -4,8 +4,7 @@ import java.util.Map;
 
 import com.eyecall.connection.State;
 
-public class VIPProtocolHandler implements
-		com.eyecall.connection.ProtocolHandler {
+public class VIPProtocolHandler implements com.eyecall.connection.ProtocolHandler {
 
 	@Override
 	public State handleMessage(State state, String string,
