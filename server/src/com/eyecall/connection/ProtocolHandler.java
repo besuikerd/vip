@@ -119,10 +119,10 @@ public interface ProtocolHandler {
 	 * De lijst met locaties van een vrijwilliger wordt bijgewerkt<br>
 	 * latitude [double]: hoogtegraad van de locatie<br>
 	 * longitude [double]: breedtegraad van de locatie<br>
-	 * action [�add�|�delete�]:<br>
-	 * �add�: voeg deze locatie toe<br>
-	 * �delete�: verwijder deze locatie<br>
-	 * type [�preferred�|�non-preferred�]
+	 * action ["add"|"delete"]:<br>
+	 * "add": voeg deze locatie toe<br>
+	 * "delete": verwijder deze locatie<br>
+	 * type ["preferred"|"non-preferred"]
 	 */
 	public static final String UPDATE_LOCATION = "update_location";
 	
