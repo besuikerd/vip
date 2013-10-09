@@ -15,8 +15,8 @@ public interface ProtocolHandler {
 	/**
 	 * Een VBP heeft een nieuw hulpverzoek ingediend en deze vrijwilliger wordt opgeroepen om te helpen.<br>
 	 * request_id [integer]: de identifier van deze request<br>
-	 * longitude [double] De breedtegraad van de VBP’s locatie<br>
-	 * latitude [double] De hoogtegraad van de VBP’s locatie
+	 * longitude [double] De breedtegraad van de VBPï¿½s locatie<br>
+	 * latitude [double] De hoogtegraad van de VBPï¿½s locatie
 	 */
 	public static final String NEW_REQUEST = "new_request";
 	/**
@@ -26,8 +26,8 @@ public interface ProtocolHandler {
 	public static final String ACKNOWLEDGE_HELP = "acknowledge_help";
 	/**
 	 * De locatie van de VBP wordt naar de vrijwilliger verstuurd en periodiek geupdatet<br>
-	 * longitude [double] De breedtegraad van de VBP’s locatie<br>
-	 * latitude [double] De hoogtegraad van de VBP’s locatie
+	 * longitude [double] De breedtegraad van de VBPï¿½s locatie<br>
+	 * latitude [double] De hoogtegraad van de VBPï¿½s locatie
 	 */
 	public static final String UPDATE_LOCATION = "update_location";
 	/**
@@ -119,10 +119,10 @@ public interface ProtocolHandler {
 	 * De lijst met locaties van een vrijwilliger wordt bijgewerkt<br>
 	 * latitude [double]: hoogtegraad van de locatie<br>
 	 * longitude [double]: breedtegraad van de locatie<br>
-	 * action [“add”|”delete”]:<br>
-	 * “add”: voeg deze locatie toe<br>
-	 * “delete”: verwijder deze locatie<br>
-	 * type [“preferred”|”non-preferred”]
+	 * action [ï¿½addï¿½|ï¿½deleteï¿½]:<br>
+	 * ï¿½addï¿½: voeg deze locatie toe<br>
+	 * ï¿½deleteï¿½: verwijder deze locatie<br>
+	 * type [ï¿½preferredï¿½|ï¿½non-preferredï¿½]
 	 */
 	public static final String UPDATE_LOCATION = "update_location";
 	
