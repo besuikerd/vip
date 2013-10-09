@@ -14,6 +14,9 @@ aid/gen/
 server/bin/
 vip/bin/
 vip/gen/
+aid/.settings
+vip/.settings
+server/.settings
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -21,4 +24,5 @@ local.properties
 # Eclipse project files
 .classpath
 .project
+.prefs
 project.properties
