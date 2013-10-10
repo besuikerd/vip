@@ -13,7 +13,13 @@ public class Connection implements Runnable{
 	private ProtocolHandler handler;
 	private State state;
 	
-	
+	public Connection(Socket s, ProtocolHandler handler, State state) {
+		this.s = s;
+		this.handler = handler;
+		this.state = state;
+	}
+
+
 	@Override
 	public void run() {
 		ObjectMapper mapper = new ObjectMapper();

@@ -7,6 +7,4 @@ public enum ServerState implements State{
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	
 }
