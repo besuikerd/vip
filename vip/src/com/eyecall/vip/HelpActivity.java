@@ -3,6 +3,7 @@ package com.eyecall.vip;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.hardware.Camera.PreviewCallback;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -14,7 +15,7 @@ import com.eyecall.android.PreviewView;
 import com.eyecall.connection.Connection;
 
 
-public class HelpActivity extends Activity {
+public class HelpActivity extends Activity{
     private Connection connection;
     
     private Camera camera;
@@ -32,7 +33,7 @@ public class HelpActivity extends Activity {
 	        
 	        // Step 3 : Create a preview class
 	        // Create our Preview view and set it as the content of our activity.
-	        PreviewView previewView = new PreviewView(this, camera);
+	        PreviewView previewView = new PreviewView(this, camera, new CameraCallback());
 	        FrameLayout previewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
 	        previewFrame.addView(previewView);
 		}        
@@ -47,9 +48,27 @@ public class HelpActivity extends Activity {
             } catch (Exception e){
               // ignore: tried to stop a non-existent preview
             }
-    		camera.release();
     	}
+    	releaseMediaRecorder();       // if you are using MediaRecorder, release it first
+        releaseCamera();              // release the camera immediately on pause event
     }
+
+    private void releaseMediaRecorder(){
+        /*if (mediaRecorder != null) {
+            mediaRecorder.reset();   // clear recorder configuration
+            mediaRecorder.release(); // release the recorder object
+            mediaRecorder = null;
+            camera.lock();           // lock camera for later use
+        }*/
+    }
+
+    private void releaseCamera(){
+        if (camera != null){
+            camera.release();        // release the camera for other applications
+            camera = null;
+        }
+    }
+
     
     @Override
     public void onResume(){
@@ -82,8 +101,8 @@ public class HelpActivity extends Activity {
     class CameraCallback implements Camera.PreviewCallback{
 
 		@Override
-		public void onPreviewFrame(byte[] arg0, Camera arg1) {
-			Log.d("eyecall", "video frame");
+		public void onPreviewFrame(byte[] data, Camera camera) {
+			//Log.d(MainActivity.TAG, ");
 		}
     	
     }
