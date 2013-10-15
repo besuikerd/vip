@@ -10,6 +10,6 @@ public class SchemaGeneration {
 		.addAnnotatedClass(Volunteer.class)
 		.setProperty("hibernate.hbmddl2.auto", "create")
 		.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-		new SchemaExport(cfg).setDelimiter(";").setOutputFile("schema.sql").setFormat(true).execute(true, false, false, false);
+		new SchemaExport(cfg).setDelimiter(";").setOutputFile("gen/schema.sql").setFormat(true).execute(true, false, false, false);
 	}
 }

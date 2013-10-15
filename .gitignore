@@ -12,6 +12,7 @@
 aid/bin/
 aid/gen/
 server/bin/
+server/gen
 vip/bin/
 vip/gen/
 aid/.settings
