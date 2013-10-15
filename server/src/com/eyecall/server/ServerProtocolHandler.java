@@ -1,5 +1,7 @@
 package com.eyecall.server;
 
+import org.hibernate.Hibernate;
+
 import com.eyecall.connection.Message;
 import com.eyecall.connection.OutQueue;
 import com.eyecall.connection.ProtocolHandler;
