@@ -33,7 +33,7 @@ public class Message {
 	 */
 	public Message() {
 		this.name = "";
-		params = new HashMap<>();
+		params = new HashMap<String, Object>();
 	}
 	
 	/**
