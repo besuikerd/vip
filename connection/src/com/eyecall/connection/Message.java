@@ -6,8 +6,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Model for a message being sent across a {@link Connection}
  * @author Nicker
