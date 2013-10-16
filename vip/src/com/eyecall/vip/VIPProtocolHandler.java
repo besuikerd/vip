@@ -19,10 +19,10 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 		//	logger.debug("message received from {} while connected: {}", name, m.toString());
 			switch(m.getName()){
 			case "request_denied":
-				queue.add(new Message("request_denied"));
-				return VIPState.IDLE;
+				//TODO melding geven dmv audio
+				return VIPState.DISCONNECTED;
 			case "request_granted":
-				queue.add(new Message("request_forwarded"));
+				//TODO melding geven op scherm 
 				return VIPState.BEING_HELPED;	
 			default:
 				return null;
@@ -32,11 +32,10 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 		//	logger.debug("message received while being helped: {}", m);
 			switch(m.getName()){
 			case "request_forwarded":
-				queue.add(new Message("request_forwarded"));
+				//TODO melding geven over het forwarden
 				return VIPState.WAITING;
 			case "other_disconnected":
-				queue.add(new Message("other_disconnected"));
-				return VIPState.IDLE;
+				return VIPState.DISCONNECTED;
 			case "audio_data":
 				// TODO add to audiobuffer
 				/*if(m.hasParam("audio_data")){
