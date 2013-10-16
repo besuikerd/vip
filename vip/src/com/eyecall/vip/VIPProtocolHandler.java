@@ -52,5 +52,5 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 		
 		
 		return null;
-	}	
+	}
 }

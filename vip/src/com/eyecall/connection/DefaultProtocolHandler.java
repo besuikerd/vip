@@ -16,14 +16,11 @@ public class DefaultProtocolHandler implements ProtocolHandler<State>{
 	
 	@Override
 	public State handleMessage(State state, Message m, OutQueue<Message> queue) {
-		switch(m.getName()){
-		case ProtocolHandler.ERROR:
+		if(m.getName().equals( ProtocolHandler.ERROR)){
 			logger.warn("protocol error occurred: [{}]: {}", m.getParam("code", int.class), m.getParam("message"));
-			break;
-		default:
+		}else{
 			//TODO send error message back
 			logger.warn("unknown message sent: {}", m.getName());
-			break;
 		}
 		return state;
 	}
