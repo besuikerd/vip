@@ -1,12 +1,6 @@
 package com.eyecall.connection;
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-public interface ProtocolHandler {
-=======
-=======
->>>>>>> origin/master
 /**
  * This interface handles incoming messages from a {@link Connection}. While
  * handling a Message, a ProtocolHandler can add messages to the OutQueue.
@@ -17,10 +11,6 @@ public interface ProtocolHandler {
  * @param <E> State type
  */
 public interface ProtocolHandler<E extends State> {
-<<<<<<< HEAD
->>>>>>> origin/master
-=======
->>>>>>> origin/master
 	
 	public static final String KEY_NAME = "name";
 	
@@ -144,13 +134,6 @@ public interface ProtocolHandler<E extends State> {
 	 */
 	public static final String UPDATE_PREFFERED_LOCATION = "update_location";
 	
-<<<<<<< HEAD
-<<<<<<< HEAD
-	
-	public State handleMessage(State state, String name, Map<String, Object> params);
-=======
-=======
->>>>>>> origin/master
 	public static final String ERROR = "error";
 	
 	/**
@@ -164,8 +147,4 @@ public interface ProtocolHandler<E extends State> {
 	 * message.
 	 */
 	public State handleMessage(E state, Message m, OutQueue<Message> queue);
-<<<<<<< HEAD
->>>>>>> origin/master
-=======
->>>>>>> origin/master
 }
