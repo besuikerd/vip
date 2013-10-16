@@ -20,7 +20,6 @@ public class ConnectionTest {
 					
 					//wrap Connection around the Socket
 					Connection c = new Connection(s, new TestProtocolHandler(), TestState.AWAITING_CONNECTION);
-					
 					//initialize the connection
 					c.init();
 				} catch (IOException e) {
@@ -47,6 +46,7 @@ public class ConnectionTest {
 		//send a few more messages
 		for(int i = 0 ; i < 10 ; i++){
 			c.send(new Message("periodic_message").add("testModel", new TestModel("kees", "keesserson", "kees@keesmail.com")));
+			Thread.sleep(100);
 		}
 		
 		//send a close message

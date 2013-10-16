@@ -25,18 +25,14 @@ public class TestProtocolHandler implements ProtocolHandler<TestState>{
 		switch(state){
 		case AWAITING_CONNECTION:
 			logger.debug("message received while awaiting connection: {}", m);
-			switch(m.getName()){
-			case "hello":
+			
+			if(m.getName().equals("hello")){
 				if(m.hasParam("hello")){
 					this.name = m.getParam("hello").toString();
 					queue.add(new Message("hello").add("hello", "otherside"));
 					return TestState.CONNECTED;
 				}
-			default:
-				return null;
 			}
-			
-			
 		case CONNECTED:
 			logger.debug("message received from {} while connected: {}", name, m.toString());
 			if(m.hasParam("close") && m.getParam("close", Boolean.class)){
