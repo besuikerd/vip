@@ -17,6 +17,7 @@ public class Database {
 	private Database() {
 		Configuration cfg = new Configuration()
 		.addAnnotatedClass(Volunteer.class)
+		.addAnnotatedClass(Location.class)
 		.configure(); 
 		factory = cfg.buildSessionFactory(new ServiceRegistryBuilder().applySettings(cfg.getProperties()).buildServiceRegistry());
 	}
@@ -79,5 +80,9 @@ public class Database {
 	
 	public <E> E get(Class<E> cls, Serializable key){
 		return cls.cast(startSession().get(cls, key));
+	}
+	
+	public static void main(String[] args) {
+		Database d = Database.getInstance();
 	}
 }
