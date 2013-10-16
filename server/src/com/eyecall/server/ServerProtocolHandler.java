@@ -1,20 +1,23 @@
 package com.eyecall.server;
 
-import java.util.Map;
+import org.hibernate.Hibernate;
 
+import com.eyecall.connection.Message;
+import com.eyecall.connection.OutQueue;
+import com.eyecall.connection.ProtocolHandler;
+import com.eyecall.connection.ServerState;
 import com.eyecall.connection.State;
 
 
-public class ServerProtocolHandler implements com.eyecall.connection.ProtocolHandler {
+public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     private Request request;
     
     class QueryHandler {
     }
 
-	@Override
-	public State handleMessage(State state, String name,
-			Map<String, Object> params) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public State handleMessage(ServerState state, Message m, OutQueue<Message> queue) {
+    	// TODO Auto-generated method stub
+    	return null;
+    }
 }

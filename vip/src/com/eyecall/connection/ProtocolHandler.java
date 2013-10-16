@@ -1,8 +1,20 @@
 package com.eyecall.connection;
 
-import java.util.Map;
 
+<<<<<<< HEAD
 public interface ProtocolHandler {
+=======
+/**
+ * This interface handles incoming messages from a {@link Connection}. While
+ * handling a Message, a ProtocolHandler can add messages to the OutQueue.
+ * A ProtocolHandler obtains the current state of the Connection and can change
+ * the Connection's state by returning a different state.
+ * @author Nicker
+ *
+ * @param <E> State type
+ */
+public interface ProtocolHandler<E extends State> {
+>>>>>>> origin/master
 	
 	public static final String KEY_NAME = "name";
 	
@@ -126,6 +138,22 @@ public interface ProtocolHandler {
 	 */
 	public static final String UPDATE_PREFFERED_LOCATION = "update_location";
 	
+<<<<<<< HEAD
 	
 	public State handleMessage(State state, String name, Map<String, Object> params);
+=======
+	public static final String ERROR = "error";
+	
+	/**
+	 * handles an incoming message.
+	 * @param state {@link Connection}'s current state
+	 * @param m incoming message
+	 * @param queue message queue. Messages added to this queue will be sent to
+	 * the sender of this incoming message
+	 * @return the new state the {@link Connection} should have. Return 
+	 * <code>null</code> to let the {@link DefaultProtocolHandler} handle this
+	 * message.
+	 */
+	public State handleMessage(E state, Message m, OutQueue<Message> queue);
+>>>>>>> origin/master
 }

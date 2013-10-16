@@ -12,6 +12,7 @@
 aid/bin/
 aid/gen/
 server/bin/
+server/gen
 vip/bin/
 vip/gen/
 aid/.settings
@@ -26,3 +27,6 @@ local.properties
 .project
 .prefs
 project.properties
+
+# Logging files
+server/log/
