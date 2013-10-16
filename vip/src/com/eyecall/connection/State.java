@@ -5,5 +5,4 @@ package com.eyecall.connection;
  * @author Nicker
  *
  */
-public interface State {
-}
+public interface State {}
