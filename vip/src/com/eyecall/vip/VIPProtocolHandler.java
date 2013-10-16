@@ -14,8 +14,20 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 		case IDLE:
 			return null;
 		case WAITING:
+			if(m.getName().equals(ProtocolHandler.REQUEST_GRANTED)){
+				return VIPState.BEING_HELPED;
+			}else if(m.getName().equals(ProtocolHandler.REQUEST_DENIED)){
+				return VIPState.IDLE;
+			}
 			return null;
 		case BEING_HELPED:
+			if(m.getName().equals(ProtocolHandler.OTHER_DISCONNECTED)){
+				return VIPState.IDLE;
+			}else if(m.getName().equals(ProtocolHandler.REQUEST_FORWARDED)){
+				return VIPState.WAITING;
+			}else if(m.getName().equals(ProtocolHandler.AUDIO_DATA)){
+				return VIPState.BEING_HELPED;
+			}
 			return null;
 		default:
 			return null;
