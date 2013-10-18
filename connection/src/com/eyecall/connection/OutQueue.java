@@ -56,11 +56,11 @@ public class OutQueue<E> implements Runnable{
 				
 					E message = queue.remove();
 					
-					logger.debug("sending: {}", message);
 					try {
+						logger.debug("sending: {}", mapper.writeValueAsString(message));
 						mapper.writeValue(s.getOutputStream(), message);
 					} catch (IOException e) {
-						logger.error("Unexpected io exception while writing a message from the queue: {}", e.toString());
+						logger.warn("IOException while writing a message from the queue (other side closed connection?): {}", e.toString());
 						
 						//close the socket
 						try {
@@ -86,6 +86,8 @@ public class OutQueue<E> implements Runnable{
 				
 			}
 		}
+		//empty the queue for when the socket wasn't closed gracefully
+		queue.clear();
 	}
 	
 	/**
@@ -94,10 +96,14 @@ public class OutQueue<E> implements Runnable{
 	 * @param e
 	 */
 	public void add(E e){
-		logger.debug("adding message to queue: {}", e);
-		synchronized(this){
-			queue.add(e);
-			notifyAll();
+		if(!s.isClosed()){
+			logger.debug("adding message to queue: {}", e);
+			synchronized(this){
+				queue.add(e);
+				notifyAll();
+			}
+		} else{
+			logger.debug("message added to queue after disconnect");
 		}
 	}
 	

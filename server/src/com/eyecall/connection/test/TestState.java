@@ -5,5 +5,10 @@ import com.eyecall.connection.State;
 public enum TestState implements State{
 	AWAITING_CONNECTION,
 	CONNECTED,
-	DISCONNECTED
+	DISCONNECTED;
+
+	@Override
+	public boolean isTerminal() {
+		return true;
+	}
 }
