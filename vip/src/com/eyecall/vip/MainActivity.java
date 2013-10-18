@@ -1,5 +1,9 @@
 package com.eyecall.vip;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.connection.ProtocolHandler;
@@ -25,11 +29,16 @@ GooglePlayServicesClient.OnConnectionFailedListener {
      * Define a request code to send to Google Play services
      * This code is returned in Activity.onActivityResult
      */
-    private final static int
-            CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
-	
+    /** Tag for this app used for debugging */
 	public static final String TAG = "Eyecall VIP";
+
+	/** Server address or hostname */
+	private static final String SERVER_ADDRESS = null;
+	/** Server port */
+	private static final int SERVER_PORT = 0;
+	
 	public static Connection connection;
 	/** LocationClient used for getting last known location */
 	private LocationClient locationClient;
@@ -45,17 +54,23 @@ GooglePlayServicesClient.OnConnectionFailedListener {
         Location location = locationClient.getLastLocation();
 	    
         // Initialize connection with the server
-		initConnection();
+		try {
+			initConnection();
+		} catch (UnknownHostException e) {
+			Toast.makeText(this, R.string.error_unknown_host, Toast.LENGTH_LONG).show();
+			return;
+		} catch (IOException e) {
+			Toast.makeText(this, R.string.error_connection_failed, Toast.LENGTH_LONG).show();
+			return;
+		}
 		
 		// Send help request
-		connection.send(new Message(ProtocolHandler.REQUEST_HELP).add("longitude", location.getLongitude()).add("latitude", location.getLatitude()));
+		sendHelpRequest(location);
 		
 		// Keep screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		
         // And wait for response ... 
-		
-		//this.openHelpActivity();
     }
 
     @Override
@@ -68,10 +83,18 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	
 	/**
 	 * Initialize the connection with the server
+	 * @throws IOException 
+	 * @throws UnknownHostException 
 	 * @ensure this.connection!=null
 	 */
-	private void initConnection() {
-		// TODO Auto-generated method stub
+	private void initConnection() throws UnknownHostException, IOException {
+		if(connection!=null) return;
+		Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+		connection = new Connection(socket, new VIPProtocolHandler(), VIPState.IDLE);
+	}
+	
+	private void sendHelpRequest(Location location){
+		connection.send(new Message(ProtocolHandler.REQUEST_HELP).add("longitude", location.getLongitude()).add("latitude", location.getLatitude()));
 	}
 
 	public void openHelpActivity(){
@@ -87,7 +110,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
     @Override
     public void onConnected(Bundle dataBundle) {
         // Display the connection status
-        Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Google Services Connected", Toast.LENGTH_SHORT).show();
     }
     
     /*
@@ -97,7 +120,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
     @Override
     public void onDisconnected() {
         // Display the connection status
-        Toast.makeText(this, "Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Google Services Disconnected", Toast.LENGTH_SHORT).show();
     }
     
     /*
