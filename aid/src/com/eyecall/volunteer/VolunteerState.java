@@ -9,3 +9,11 @@ public enum VolunteerState implements State {
 	SHOWING_NOTIFICATION,
 	WAITING_FOR_ACKNOWLEDGEMENT;
 }
+=======
+package com.eyecall.volunteer;
+
+import com.eyecall.connection.State;
+
+public enum VolunteerState implements State{
+
+}

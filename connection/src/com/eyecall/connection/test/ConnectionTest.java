@@ -15,6 +15,7 @@ public class ConnectionTest {
 				try {
 					
 					//open socket
+					@SuppressWarnings("resource")
 					ServerSocket srv = new ServerSocket(5000);
 					Socket s = srv.accept();
 					
