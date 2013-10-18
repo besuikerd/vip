@@ -6,7 +6,7 @@ import com.eyecall.connection.Message;
 import com.eyecall.connection.OutQueue;
 import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
-import com.eyecall.vip.VIPState;
+import com.eyecall.volunteer.VolunteerState;
 
 public class VolunteerProtocolHandler implements ProtocolHandler {
 	public State handleMessage(VolunteerState state, Message m, OutQueue<Message> queue){
