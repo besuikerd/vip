@@ -33,11 +33,14 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			//create new volunteer with generated id
     			Volunteer v = new Volunteer();
     			
+    			
     			//save volunteer in the database
     			Database.getInstance().insertTransaction(v);
     			
     			//add assign_key message to outqueue
     			queue.add(new Message(ProtocolName.ASSIGN_KEY).add(ProtocolField.KEY, v.getId()));
+    			
+    			//disconnect the connection
     			return ServerState.DISCONNECTED;
     		default:
     			break;
