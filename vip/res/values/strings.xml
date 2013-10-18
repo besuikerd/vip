@@ -4,5 +4,7 @@
     <string name="app_name">EyeCall VIP</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello VBP!</string>
+    <string name="error_unknown_host">Onbekende hostname</string>
+    <string name="error_connection_failed">Verbinding mislukt</string>
 
 </resources>
