@@ -1,5 +1,7 @@
 package com.eyecall.connection.test;
 
+import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,6 +9,8 @@ import com.eyecall.connection.Message;
 import com.eyecall.connection.OutQueue;
 import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
+import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 public class TestProtocolHandler implements ProtocolHandler<TestState>{
 	private static final Logger logger = LoggerFactory.getLogger(TestProtocolHandler.class);
@@ -29,7 +33,11 @@ public class TestProtocolHandler implements ProtocolHandler<TestState>{
 		case CONNECTED:
 			
 			if(m.getName().equals("bytearray")){
-				logger.debug("bytearray received: {}", m.getParam("data"));
+				try {
+					logger.debug("bytearray received: {}", Arrays.toString(Base64.decode(m.getParam("data").toString())));
+				} catch (Base64DecodingException e) {
+					e.printStackTrace();
+				}
 			} else	if(m.hasParam("close") && m.getParam("close", Boolean.class)){
 				return TestState.DISCONNECTED;
 			} else{

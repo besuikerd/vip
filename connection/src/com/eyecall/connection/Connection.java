@@ -182,6 +182,14 @@ public class Connection {
 							newState = new DefaultProtocolHandler().handleMessage(state, m, messages);
 						}
 						state = newState;
+						
+						//close connection if state is terminal
+						if(state.isTerminal()){
+							try {
+								close();
+							} catch (IOException e) {
+							}
+						}
 					}
 				}
 			//eww nasty solution by Jackson ObjectMapper. Throws a RuntimeException when the socket is closed...

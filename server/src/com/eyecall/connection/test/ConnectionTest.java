@@ -6,6 +6,7 @@ import java.net.Socket;
 
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 
 public class ConnectionTest {
@@ -55,8 +56,5 @@ public class ConnectionTest {
 		
 		//message after disconnect message, socket is still opened
 		c.send(new Message("after_disconnect"));
-		
-		//close the socket (blocks until OutQueue is being emptied)
-		c.close();
 	}
 }

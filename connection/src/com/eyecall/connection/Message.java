@@ -6,6 +6,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 /**
  * Model for a message being sent across a {@link Connection}
  * @author Nicker
@@ -43,6 +45,10 @@ public class Message {
 		this.name = name;
 	}
 	
+	public Message(Named n){
+		this(n.getName());
+	}
+	
 	/**
 	 * add a parameter to this Message
 	 * @param key parameter key
@@ -52,6 +58,10 @@ public class Message {
 	public Message add(String key, Object value){
 		params.put(key, value);
 		return this;
+	}
+	
+	public Message add(Named n, Object value){
+		return add(n.getName(), value);
 	}
 	
 	/**
@@ -66,8 +76,14 @@ public class Message {
 		return params;
 	}
 	
+	//@JsonSetter to prevent conflict with duplicate setter for name
+	@JsonSetter(value="name")
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public void setName(Named n){
+		setName(n.getName());
 	}
 	
 	public void setParams(Map<String, Object> params) {
@@ -78,8 +94,16 @@ public class Message {
 		return params.containsKey(key);
 	}
 	
+	public boolean hasParam(Named n){
+		return hasParam(n.getName());
+	}
+	
 	public Object getParam(String key){
 		return params.get(key);
+	}
+	
+	public Object getParam(Named n){
+		return getParam(n.getName());
 	}
 	
 	public <E> E getParam(String key, Class<E> cls){
@@ -92,6 +116,10 @@ public class Message {
 			}
 		}
 		return null;
+	}
+	
+	public <E> E getParam(Named n, Class<E> cls){
+		return getParam(n.getName(), cls);
 	}
 
 	@Override

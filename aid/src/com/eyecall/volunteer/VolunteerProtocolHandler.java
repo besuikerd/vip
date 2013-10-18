@@ -12,7 +12,6 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 	@Override
 	public State handleMessage(VolunteerState state, Message m,
 			OutQueue<Message> queue) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

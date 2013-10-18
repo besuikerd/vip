@@ -1,12 +1,21 @@
 package com.eyecall.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.eyecall.connection.Message;
 import com.eyecall.connection.OutQueue;
 import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
+import com.eyecall.database.Database;
+import com.eyecall.database.Volunteer;
+import com.eyecall.protocol.ProtocolField;
+import com.eyecall.protocol.ProtocolName;
 
 
 public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ServerProtocolHandler.class);
     private Request request;
     
     class QueryHandler {
@@ -14,7 +23,29 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
 
     @Override
     public State handleMessage(ServerState state, Message m, OutQueue<Message> queue) {
-    	// TODO Auto-generated method stub
-    	return null;
+    	switch(state){
+    	
+    	case WAITING:
+    		
+    		switch(ProtocolName.lookup(m.getName())){
+    		
+    		case OBTAIN_KEY:
+    			//create new volunteer with generated id
+    			Volunteer v = new Volunteer();
+    			
+    			//save volunteer in the database
+    			Database.getInstance().insertTransaction(v);
+    			
+    			//add assign_key message to outqueue
+    			queue.add(new Message(ProtocolName.ASSIGN_KEY).add(ProtocolField.KEY, v.getId()));
+    			return ServerState.DISCONNECTED;
+    		default:
+    			break;
+    		}
+    	
+    	
+		default: 
+			return null;
+    	}
     }
 }
