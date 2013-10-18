@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import org.slf4j.Logger;
+
 import com.eyecall.connection.Connection;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
@@ -14,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -77,7 +80,9 @@ GooglePlayServicesClient.OnConnectionFailedListener {
     protected void sendRequest(){
         // Initialize connection with the server
 		try {
+			Log.d(TAG, "initConnection()");
 			initConnection();
+			Log.d(TAG, "initConnection() completed");
 		} catch (UnknownHostException e) {
 			Toast.makeText(this, R.string.error_unknown_host, Toast.LENGTH_LONG).show();
 			return;
@@ -114,6 +119,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	}
 
 	public void openHelpActivity(){
+		Log.d(MainActivity.TAG, "Opening HelpActivity...");
 		Intent intent = new Intent(getApplicationContext(), HelpActivity.class);
 		this.startActivity(intent);
 	}
@@ -125,9 +131,12 @@ GooglePlayServicesClient.OnConnectionFailedListener {
      */
     @Override
     public void onConnected(Bundle dataBundle) {
+    	Log.d(MainActivity.TAG, "Google services connected (location)");
         // Display the connection status
         Toast.makeText(this, "Google Services Connected", Toast.LENGTH_SHORT).show();
         location = locationClient.getLastLocation();
+        Log.d(MainActivity.TAG, "Location found: long:" + location.getLongitude() + " lat:" + location.getLatitude());
+        sendRequest();
     }
     
     /*
@@ -137,6 +146,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
     @Override
     public void onDisconnected() {
         // Display the connection status
+    	Log.d(MainActivity.TAG, "Google services disconnected (location)");
         Toast.makeText(this, "Google Services Disconnected", Toast.LENGTH_SHORT).show();
     }
     
@@ -146,6 +156,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
      */
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
+    	Log.d(MainActivity.TAG, "Google services connection failed (location)");
         /*
          * Google Play services can resolve some errors it detects.
          * If the error has a resolution, try sending an Intent to
@@ -173,6 +184,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
              */
             showDialog(connectionResult.getErrorCode());
         }
+        sendRequest();
     }
 
 	
