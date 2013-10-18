@@ -5,7 +5,9 @@ import com.eyecall.connection.Named;
 public enum ProtocolField implements Named{
 	//TODO add all protocol fields
 	
-	KEY("key")
+	KEY("key"), 
+	LONGITUDE("longitude"), 
+	LATITUDE("latitude")
 	
 	;
 	

@@ -1,8 +1,12 @@
 package com.eyecall.vip;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import org.slf4j.Logger;
+
 import com.eyecall.connection.Connection;
-import com.eyecall.connection.Message;
-import com.eyecall.connection.ProtocolHandler;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
@@ -12,7 +16,9 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.Toast;
 
 /**
@@ -25,40 +31,89 @@ GooglePlayServicesClient.OnConnectionFailedListener {
      * Define a request code to send to Google Play services
      * This code is returned in Activity.onActivityResult
      */
-    private final static int
-            CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
-	
+    /** Tag for this app used for debugging */
 	public static final String TAG = "Eyecall VIP";
+
+	/** Server address or hostname */
+	private static final String SERVER_ADDRESS = "123.123.123.123";
+	/** Server port */
+	private static final int SERVER_PORT = 123;
+	
+	/** ProtocolHandler for this app */
+	public static VIPProtocolHandler protocolHandler;
+	/** Connection with the server */
 	public static Connection connection;
+	
+	private static MainActivity instance;
+	
+	
 	/** LocationClient used for getting last known location */
 	private LocationClient locationClient;
+	
+	/** Known location of VBP, could be null */
+	private Location location = null;
+
+	public MainActivity(){
+		instance = this;
+	}
+	
+	public static MainActivity getInstance(){
+		return instance;
+	}
 	
     @Override
     protected void onStart() {
         super.onStart();
         
+        // Add listener to button
+        Button button = (Button) findViewById(R.id.button_request);
+        //button.setOnClickListener(/*Hier komt spul van Nick*/);
+        
+        // Keep screen on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        
         // Determine current location via Google Services
         locationClient = new LocationClient(this, this, this);
         // Connect the client.
         locationClient.connect();
-        Location location = locationClient.getLastLocation();
-	    
+        
+        // If ready -> onConnected (or onConnectionFailed) called
+    }
+    
+    protected void sendRequest(){
         // Initialize connection with the server
-		initConnection();
+		try {
+			Log.d(TAG, "initConnection(): start");
+			initConnection();
+			Log.d(TAG, "initConnection(): completed");
+		} catch (UnknownHostException e) {
+			Toast.makeText(this, R.string.error_unknown_host, Toast.LENGTH_LONG).show();
+			Log.d(TAG, "initConnection(): UnknownHostException");
+			Log.d(TAG, e.getMessage());
+			enableRequestButton();
+			return;
+		} catch (IOException e) {
+			Toast.makeText(this, R.string.error_connection_failed, Toast.LENGTH_LONG).show();
+			Log.d(TAG, "initConnection(): IOException");
+			Log.d(TAG, e.getMessage());
+			enableRequestButton();
+			return;
+		}
 		
 		// Send help request
-		connection.send(new Message(ProtocolHandler.REQUEST_HELP).add("longitude", location.getLongitude()).add("latitude", location.getLatitude()));
-		
-		// Keep screen on
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		protocolHandler.sendHelpRequest(location);
 		
         // And wait for response ... 
-		
-		//this.openHelpActivity();
     }
 
-    @Override
+    private void enableRequestButton() {
+		Button button = (Button) findViewById(R.id.button_request);
+		button.setEnabled(true);
+	}
+
+	@Override
     protected void onStop() {
         // Disconnecting the client invalidates it.
         locationClient.disconnect();
@@ -68,13 +123,19 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	
 	/**
 	 * Initialize the connection with the server
+	 * @throws IOException 
+	 * @throws UnknownHostException 
 	 * @ensure this.connection!=null
 	 */
-	private void initConnection() {
-		// TODO Auto-generated method stub
+	private void initConnection() throws UnknownHostException, IOException {
+		if(connection!=null) return;
+		Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+		protocolHandler = new VIPProtocolHandler();
+		connection = new Connection(socket, protocolHandler, VIPState.IDLE);
 	}
 
 	public void openHelpActivity(){
+		Log.d(MainActivity.TAG, "Opening HelpActivity...");
 		Intent intent = new Intent(getApplicationContext(), HelpActivity.class);
 		this.startActivity(intent);
 	}
@@ -86,8 +147,12 @@ GooglePlayServicesClient.OnConnectionFailedListener {
      */
     @Override
     public void onConnected(Bundle dataBundle) {
+    	Log.d(MainActivity.TAG, "onConnected(): Google services connected (location)");
         // Display the connection status
-        Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Google Services Connected", Toast.LENGTH_SHORT).show();
+        location = locationClient.getLastLocation();
+        Log.d(MainActivity.TAG, "Location found: lat:" + location.getLatitude() + " long:" + location.getLongitude());
+        sendRequest();
     }
     
     /*
@@ -97,7 +162,8 @@ GooglePlayServicesClient.OnConnectionFailedListener {
     @Override
     public void onDisconnected() {
         // Display the connection status
-        Toast.makeText(this, "Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();
+    	Log.d(MainActivity.TAG, "Google services disconnected (location)");
+        Toast.makeText(this, "Google Services Disconnected", Toast.LENGTH_SHORT).show();
     }
     
     /*
@@ -106,6 +172,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
      */
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
+    	Log.d(MainActivity.TAG, "Google services connection failed (location)");
         /*
          * Google Play services can resolve some errors it detects.
          * If the error has a resolution, try sending an Intent to
@@ -133,6 +200,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
              */
             showDialog(connectionResult.getErrorCode());
         }
+        sendRequest();
     }
 
 	

@@ -17,12 +17,17 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ServerProtocolHandler.class);
     private Request request;
-    
-    class QueryHandler {
-    }
 
+    
     @Override
-    public State handleMessage(ServerState state, Message m, OutQueue<Message> queue) {
+    public State messageSent(ServerState state, Message m) {
+    	return state;
+    }
+    
+    
+    
+    @Override
+    public State messageReceived(ServerState state, Message m, OutQueue<Message> queue) {
     	switch(state){
     	
     	case WAITING:
@@ -33,11 +38,14 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			//create new volunteer with generated id
     			Volunteer v = new Volunteer();
     			
+    			
     			//save volunteer in the database
     			Database.getInstance().insertTransaction(v);
     			
     			//add assign_key message to outqueue
     			queue.add(new Message(ProtocolName.ASSIGN_KEY).add(ProtocolField.KEY, v.getId()));
+    			
+    			//disconnect the connection
     			return ServerState.DISCONNECTED;
     		default:
     			break;

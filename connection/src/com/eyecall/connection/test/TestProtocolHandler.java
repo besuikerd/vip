@@ -13,7 +13,12 @@ public class TestProtocolHandler implements ProtocolHandler<TestState>{
 	private String name;
 	
 	@Override
-	public State handleMessage(TestState state, Message m, OutQueue<Message> queue) {
+	public State messageSent(TestState state, Message m) {
+		return state;
+	}
+	
+	@Override
+	public State messageReceived(TestState state, Message m, OutQueue<Message> queue) {
 		
 		switch(state){
 		case AWAITING_CONNECTION:
