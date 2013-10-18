@@ -17,15 +17,14 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ServerProtocolHandler.class);
     private Request request;
-    
-    class QueryHandler {
-    }
 
     
     @Override
     public State messageSent(ServerState state, Message m) {
     	return state;
     }
+    
+    
     
     @Override
     public State messageReceived(ServerState state, Message m, OutQueue<Message> queue) {

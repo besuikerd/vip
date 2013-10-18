@@ -1,18 +1,24 @@
 package com.eyecall.database;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.ForeignKey;
 
 @Entity
 @Table(name = "location")
 public class Location {
 	
 	@ManyToOne
+	@ForeignKey(name="user_id")
 	@JoinColumn(name = "user_id")
 	private Volunteer volunteer;
 	
@@ -32,6 +38,8 @@ public class Location {
 	
 	@Column(name="radius")
 	private int radius;
+	
+	private Date created;
 
 	public Volunteer getVolunteer() {
 		return volunteer;
@@ -71,6 +79,15 @@ public class Location {
 
 	public void setRadius(int radius) {
 		this.radius = radius;
+	}
+	
+	public Date getCreated() {
+		return created;
+	}
+	
+	@PrePersist
+	protected void onCreate(){
+		this.created = new Date();
 	}
 
 	@Override
