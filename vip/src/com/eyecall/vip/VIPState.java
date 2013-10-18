@@ -1,4 +1,5 @@
 package com.eyecall.vip;
+
 import com.eyecall.connection.State;
 
 public enum VIPState implements State {
@@ -20,4 +21,5 @@ public enum VIPState implements State {
 	public boolean isTerminal() {
 		return isTerminal;
 	}
+	
 }

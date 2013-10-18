@@ -10,7 +10,7 @@ import com.eyecall.connection.State;
 public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 
 	@Override
-	public State handleMessage(VIPState state, Message m, OutQueue<Message> queue) {
+	public State messageReceived(VIPState state, Message m, OutQueue<Message> queue) {
 		switch(state){
 		case IDLE:
 		// TODO invullen
@@ -50,6 +50,12 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 		}
 		
 		
+		return null;
+	}
+
+	@Override
+	public State messageSent(VIPState state, Message m) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }
