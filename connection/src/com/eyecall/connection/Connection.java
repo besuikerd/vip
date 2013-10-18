@@ -74,6 +74,20 @@ public class Connection {
 	 */
 	public void send(Message m){
 		messages.add(m);
+		synchronized(state){
+			State newState = handler.messageSent(state, m);
+			if(newState == null){
+				newState = new DefaultProtocolHandler().messageSent(state, m);
+			}
+			state = newState;
+		}
+		if(state.isTerminal()){
+			try {
+				close();
+			} catch (IOException e) {
+			}
+		}
+		
 	}
 	
 	/**
@@ -177,9 +191,9 @@ public class Connection {
 				if(iterator != null){
 					while(iterator.hasNext()){
 						Message m = iterator.next();
-						State newState = handler.handleMessage(state, m, messages); 
+						State newState = handler.messageReceived(state, m, messages); 
 						if(newState == null){
-							newState = new DefaultProtocolHandler().handleMessage(state, m, messages);
+							newState = new DefaultProtocolHandler().messageReceived(state, m, messages);
 						}
 						state = newState;
 						

@@ -15,7 +15,12 @@ public class DefaultProtocolHandler implements ProtocolHandler<State>{
 	private static final Logger logger = LoggerFactory.getLogger(DefaultProtocolHandler.class);
 	
 	@Override
-	public State handleMessage(State state, Message m, OutQueue<Message> queue) {
+	public State messageSent(State state, Message m) {
+		return state;
+	}
+	
+	@Override
+	public State messageReceived(State state, Message m, OutQueue<Message> queue) {
 		
 		if(m.getName() == ProtocolHandler.ERROR){
 			logger.warn("protocol error occurred: [{}]: {}", m.getParam("code", int.class), m.getParam("message"));
