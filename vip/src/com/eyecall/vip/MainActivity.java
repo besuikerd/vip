@@ -18,6 +18,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.Toast;
 
 /**
@@ -66,6 +67,10 @@ GooglePlayServicesClient.OnConnectionFailedListener {
     protected void onStart() {
         super.onStart();
         
+        // Add listener to button
+        Button button = (Button) findViewById(R.id.button_request);
+        //button.setOnClickListener(/*Hier komt spul van Nick*/);
+        
         // Keep screen on
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         
@@ -80,14 +85,20 @@ GooglePlayServicesClient.OnConnectionFailedListener {
     protected void sendRequest(){
         // Initialize connection with the server
 		try {
-			Log.d(TAG, "initConnection()");
+			Log.d(TAG, "initConnection(): start");
 			initConnection();
-			Log.d(TAG, "initConnection() completed");
+			Log.d(TAG, "initConnection(): completed");
 		} catch (UnknownHostException e) {
 			Toast.makeText(this, R.string.error_unknown_host, Toast.LENGTH_LONG).show();
+			Log.d(TAG, "initConnection(): UnknownHostException");
+			Log.d(TAG, e.getMessage());
+			enableRequestButton();
 			return;
 		} catch (IOException e) {
 			Toast.makeText(this, R.string.error_connection_failed, Toast.LENGTH_LONG).show();
+			Log.d(TAG, "initConnection(): IOException");
+			Log.d(TAG, e.getMessage());
+			enableRequestButton();
 			return;
 		}
 		
@@ -97,7 +108,12 @@ GooglePlayServicesClient.OnConnectionFailedListener {
         // And wait for response ... 
     }
 
-    @Override
+    private void enableRequestButton() {
+		Button button = (Button) findViewById(R.id.button_request);
+		button.setEnabled(true);
+	}
+
+	@Override
     protected void onStop() {
         // Disconnecting the client invalidates it.
         locationClient.disconnect();
@@ -131,7 +147,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
      */
     @Override
     public void onConnected(Bundle dataBundle) {
-    	Log.d(MainActivity.TAG, "Google services connected (location)");
+    	Log.d(MainActivity.TAG, "onConnected(): Google services connected (location)");
         // Display the connection status
         Toast.makeText(this, "Google Services Connected", Toast.LENGTH_SHORT).show();
         location = locationClient.getLastLocation();
