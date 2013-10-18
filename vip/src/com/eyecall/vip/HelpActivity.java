@@ -1,42 +1,34 @@
 package com.eyecall.vip;
 
+import java.util.zip.Deflater;
+
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.hardware.Camera.PreviewCallback;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.eyecall.android.PreviewView;
 import com.eyecall.connection.Connection;
+import com.eyecall.event.VideoFrameEvent;
 
+import de.greenrobot.event.EventBus;
 
 public class HelpActivity extends Activity{
     private Connection connection;
     
     private Camera camera;
+    private Deflater deflater;
     
     @Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		this.setContentView(R.layout.activity_help);
 		
-		// Step 1 : Check hardware
-		if(checkCameraHardware()){
-			// Step 2 : Access camera
-			// Create an instance of Camera
-	        camera = getCameraInstance();
-	        
-	        // Step 3 : Create a preview class
-	        // Create our Preview view and set it as the content of our activity.
-	        PreviewView previewView = new PreviewView(this, camera, new CameraCallback());
-	        FrameLayout previewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
-	        previewFrame.addView(previewView);
-		}        
+		//setupCamera();
 	}
     
     @Override
@@ -49,31 +41,54 @@ public class HelpActivity extends Activity{
               // ignore: tried to stop a non-existent preview
             }
     	}
-    	releaseMediaRecorder();       // if you are using MediaRecorder, release it first
         releaseCamera();              // release the camera immediately on pause event
     }
 
-    private void releaseMediaRecorder(){
-        /*if (mediaRecorder != null) {
-            mediaRecorder.reset();   // clear recorder configuration
-            mediaRecorder.release(); // release the recorder object
-            mediaRecorder = null;
-            camera.lock();           // lock camera for later use
-        }*/
+    @Override
+	public void onResume(){
+		super.onResume();
+		
+		setupCamera();
+	}
+    
+    private void setupCamera(){
+    	// Step 1 : Check hardware
+		if(checkCameraHardware()){
+			// Step 2 : Access camera
+			// Create an instance of Camera
+			obtainCamera();
+	        
+	        // Step 3 : Create a preview class
+	        setupPreview();
+	        
+	        // Keep screen on
+	        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		}else{
+			Toast.makeText(this, "No camera on this device", Toast.LENGTH_LONG).show();
+		}
     }
 
-    private void releaseCamera(){
+	private void releaseCamera(){
         if (camera != null){
             camera.release();        // release the camera for other applications
             camera = null;
         }
     }
-
     
-    @Override
-    public void onResume(){
-    	super.onResume();
+    private void obtainCamera(){
+    	if(camera==null){
+	        camera = getCameraInstance();
+    	}
     }
+    
+    private void setupPreview(){
+    	// Create our Preview view and set it as the content of our activity.
+    	PreviewView previewView = new PreviewView(this, camera, new CameraCallback());
+        FrameLayout previewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
+        previewFrame.removeAllViews();
+        previewFrame.addView(previewView);
+    }
+
     
     /** A safe way to get an instance of the Camera object. */
     public static Camera getCameraInstance(){
@@ -93,7 +108,6 @@ public class HelpActivity extends Activity{
             // this device has a camera
             return true;
         } else {
-        	Toast.makeText(this, "No camera on this device", Toast.LENGTH_LONG).show();
             return false;
         }
     }
@@ -102,7 +116,17 @@ public class HelpActivity extends Activity{
 
 		@Override
 		public void onPreviewFrame(byte[] data, Camera camera) {
-			//Log.d(MainActivity.TAG, ");
+			Log.d(MainActivity.TAG, "Framesize: " + String.valueOf(data.length) + " bytes");
+			deflater = new Deflater();
+			deflater.setInput(data);
+			deflater.finish();
+			
+			byte[] result = new byte[data.length];
+			while (!deflater.finished()) {
+		        int byteCount = deflater.deflate(result);
+		        Log.d(MainActivity.TAG, "Compressed: " + byteCount);
+		    }
+			EventBus.getDefault().post(new VideoFrameEvent(result));
 		}
     	
     }

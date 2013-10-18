@@ -2,14 +2,16 @@ package com.eyecall.volunteer;
 
 import java.util.Map;
 
+<<<<<<< HEAD
 import android.content.SharedPreferences.Editor;
 
+=======
+>>>>>>> refs/heads/master
 import com.eyecall.connection.Message;
 import com.eyecall.connection.OutQueue;
 import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
 import com.eyecall.vip.VIPState;
-
 
 public class VolunteerProtocolHandler implements ProtocolHandler {
 	public State handleMessage(VolunteerState state, Message m, OutQueue<Message> queue){
@@ -93,4 +95,3 @@ public class VolunteerProtocolHandler implements ProtocolHandler {
 		return null;
 	}
     }
-}

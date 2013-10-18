@@ -10,3 +10,4 @@ public enum VolunteerState implements State{
 	WAITING_FOR_ACKNOWLEDGEMENT,
 	SHOWING_NOTIFICATION	
 }
+
