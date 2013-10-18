@@ -7,6 +7,8 @@ import java.net.UnknownHostException;
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.connection.ProtocolHandler;
+import com.eyecall.protocol.ProtocolField;
+import com.eyecall.protocol.ProtocolName;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
@@ -94,7 +96,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	}
 	
 	private void sendHelpRequest(Location location){
-		connection.send(new Message(ProtocolHandler.REQUEST_HELP).add("longitude", location.getLongitude()).add("latitude", location.getLatitude()));
+		connection.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LONGITUDE, location.getLongitude()).add(ProtocolField.LATITUDE, location.getLatitude()));
 	}
 
 	public void openHelpActivity(){
