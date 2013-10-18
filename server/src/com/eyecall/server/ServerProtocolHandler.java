@@ -21,8 +21,14 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     class QueryHandler {
     }
 
+    
     @Override
-    public State handleMessage(ServerState state, Message m, OutQueue<Message> queue) {
+    public State messageSent(ServerState state, Message m) {
+    	return state;
+    }
+    
+    @Override
+    public State messageReceived(ServerState state, Message m, OutQueue<Message> queue) {
     	switch(state){
     	
     	case WAITING:

@@ -146,5 +146,6 @@ public interface ProtocolHandler<E extends State> {
 	 * <code>null</code> to let the {@link DefaultProtocolHandler} handle this
 	 * message.
 	 */
-	public State handleMessage(E state, Message m, OutQueue<Message> queue);
+	public State messageSent(E state, Message m);
+	public State messageReceived(E state, Message m, OutQueue<Message> queue);
 }
