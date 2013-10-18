@@ -135,7 +135,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
         // Display the connection status
         Toast.makeText(this, "Google Services Connected", Toast.LENGTH_SHORT).show();
         location = locationClient.getLastLocation();
-        Log.d(MainActivity.TAG, "Location found: long:" + location.getLongitude() + " lat:" + location.getLatitude());
+        Log.d(MainActivity.TAG, "Location found: lat:" + location.getLatitude() + " long:" + location.getLongitude());
         sendRequest();
     }
     

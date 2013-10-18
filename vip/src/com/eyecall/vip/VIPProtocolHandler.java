@@ -1,6 +1,7 @@
 package com.eyecall.vip;
 
 import android.location.Location;
+import android.util.Log;
 
 import com.eyecall.connection.Message;
 import com.eyecall.connection.OutQueue;
@@ -22,6 +23,7 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 	
 	@Override
 	public State messageReceived(VIPState state, Message m, OutQueue<Message> queue) {
+		Log.d(MainActivity.TAG, "Message received: '" + m.getName() + "' State:" + state.toString());
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		switch (state) {
 		case IDLE:
@@ -70,6 +72,7 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 
 	@Override
 	public State messageSent(VIPState state, Message m) {
+		Log.d(MainActivity.TAG, "Message sent: '" + m.getName() + "' State:" + state.toString());
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		switch (state){
 		case IDLE:
