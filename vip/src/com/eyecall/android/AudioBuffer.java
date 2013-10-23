@@ -1,6 +1,5 @@
 package com.eyecall.android;
 
-import de.greenrobot.event.EventBus;
 import android.media.MediaPlayer;
 
 

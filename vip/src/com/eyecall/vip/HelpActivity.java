@@ -14,8 +14,7 @@ import android.widget.Toast;
 import com.eyecall.android.PreviewView;
 import com.eyecall.connection.Connection;
 import com.eyecall.event.VideoFrameEvent;
-
-import de.greenrobot.event.EventBus;
+import com.eyecall.eventbus.EventBus;
 
 public class HelpActivity extends Activity{
     private Connection connection;
@@ -127,7 +126,7 @@ public class HelpActivity extends Activity{
 		        int byteCount = deflater.deflate(result);
 		        Log.d(MainActivity.TAG, "Compressed: " + byteCount);
 		    }
-			EventBus.getDefault().post(new VideoFrameEvent(result));
+			EventBus.getInstance().post(new VideoFrameEvent(EventTag.VIDEO_FRAME.getName(), result));
 		}
     	
     }
