@@ -4,13 +4,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import com.eyecall.connection.Connection;
-import com.eyecall.event.ClickEvent;
-import com.eyecall.event.EventListener;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.LocationClient;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -21,11 +14,21 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.eyecall.connection.Connection;
+import com.eyecall.event.ClickEvent;
+import com.eyecall.eventbus.Event;
+import com.eyecall.eventbus.EventBus;
+import com.eyecall.eventbus.EventListener;
+import com.eyecall.eventbus.InputEventListener;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.location.LocationClient;
+
 /**
  * The main Activity of this Applications
  */
 public class MainActivity extends Activity implements GooglePlayServicesClient.ConnectionCallbacks,
-GooglePlayServicesClient.OnConnectionFailedListener {
+GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	
 	/*
      * Define a request code to send to Google Play services
@@ -39,7 +42,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	/** Server address or hostname */
 	private static final String SERVER_ADDRESS = "123.123.123.123";
 	/** Server port */
-	private static final int SERVER_PORT = 123;
+	private static final int SERVER_PORT = 5000;
 	
 	/** ProtocolHandler for this app */
 	public static VIPProtocolHandler protocolHandler;
@@ -55,11 +58,8 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	/** Known location of VBP, could be null */
 	private Location location = null;
 	
-	private EventHandler eventHandler;
-
 	public MainActivity(){
 		instance = this;
-		eventHandler = new EventHandler(this);
 	}
 	
 	public static MainActivity getInstance(){
@@ -75,11 +75,11 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	    super.onStart();
 	    
 	    // Register for events
-	    EventBus.getInstance().register(eventHandler);
+	    EventBus.getInstance().subscribe(this);
 	    
 	    // Add listener to button
 	    Button button = (Button) findViewById(R.id.button_request);
-	    button.setOnClickListener(new InputEventListener("button_request", null));
+	    button.setOnClickListener(new InputEventListener(EventTag.REQUEST_BUTTON_PRESSED, null));
 	    
 	    // Keep screen on
 	    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -233,29 +233,17 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 		Intent intent = new Intent(getApplicationContext(), HelpActivity.class);
 		this.startActivity(intent);
 	}
-	
-	private class EventHandler implements EventListener{
-		private Activity activity;
-		
-		public EventHandler(Activity activity){
-			this.activity = activity;
-		}
-		
-		@Override
-		public void onEvent(Event e){
-			if(e.getTag().equals("button_request")){
-				if(!(e instanceof ClickEvent)) return;
-				disableRequestButton();
-				if(locationClient==null || !locationClient.isConnected()){
-					connectToGoogleSevices();
-				}else{
-					connectToServer();
-				}
+
+	@Override
+	public void onEvent(Event e) {
+		if(e.getTag().equals(EventTag.REQUEST_BUTTON_PRESSED.getName())){
+			if(!(e instanceof ClickEvent)) return;
+			disableRequestButton();
+			if(locationClient==null || !locationClient.isConnected()){
+				connectToGoogleSevices();
+			}else{
+				connectToServer();
 			}
 		}
-	}
-	
-	
-
-	
+	}	
 }

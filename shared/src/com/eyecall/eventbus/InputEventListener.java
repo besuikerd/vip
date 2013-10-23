@@ -1,12 +1,12 @@
-package com.eyecall.event;
+package com.eyecall.eventbus;
 
 import android.content.DialogInterface;
 import android.view.View;
 import android.view.View.OnClickListener;
 
 import com.eyecall.connection.Named;
-
-import de.greenrobot.event.EventBus;
+import com.eyecall.event.ClickEvent;
+import com.eyecall.event.DialogClickEvent;
 
 public class InputEventListener implements OnClickListener, android.content.DialogInterface.OnClickListener{
 	
@@ -24,12 +24,12 @@ public class InputEventListener implements OnClickListener, android.content.Dial
 
 	@Override
 	public void onClick(DialogInterface dialog, int which) {
-		EventBus.getDefault().post(new DialogClickEvent(dialog, tag, which, data));
+		EventBus.getInstance().post(new DialogClickEvent(dialog, tag, which, data));
 	}
 
 	@Override
 	public void onClick(View v) {
-		EventBus.getDefault().post(new ClickEvent(v, tag, data));
+		EventBus.getInstance().post(new ClickEvent(v, tag, data));
 	}
 
 }
