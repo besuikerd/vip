@@ -4,16 +4,12 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import org.slf4j.Logger;
-
 import com.eyecall.connection.Connection;
 import com.eyecall.event.ClickEvent;
 import com.eyecall.event.EventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
-
-import de.greenrobot.event.EventBus;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -58,9 +54,12 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	
 	/** Known location of VBP, could be null */
 	private Location location = null;
+	
+	private EventHandler eventHandler;
 
 	public MainActivity(){
 		instance = this;
+		eventHandler = new EventHandler(this);
 	}
 	
 	public static MainActivity getInstance(){
@@ -76,11 +75,11 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	    super.onStart();
 	    
 	    // Register for events
-	    EventBus.getDefault().register(this);
+	    EventBus.getInstance().register(eventHandler);
 	    
 	    // Add listener to button
 	    Button button = (Button) findViewById(R.id.button_request);
-	    button.setOnClickListener(new EventListener("button_request", null));
+	    button.setOnClickListener(new InputEventListener("button_request", null));
 	    
 	    // Keep screen on
 	    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -97,15 +96,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	    super.onStop();
 	}
 	
-	public void onEvent(ClickEvent e){
-		if(e.getTag().equals("button_request")){
-			if(locationClient==null || !locationClient.isConnected()){
-				connectToGoogleSevices();
-			}else{
-				connectToServer();
-			}
-		}
-	}
+	
 
 	/**
      * Called by Location Services when the request to connect the
@@ -218,6 +209,11 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 		Button button = (Button) findViewById(R.id.button_request);
 		button.setEnabled(true);
 	}
+    
+    private void disableRequestButton() {
+		Button button = (Button) findViewById(R.id.button_request);
+		button.setEnabled(false);
+	}
 
 	/**
 	 * Initialize the connection with the server
@@ -236,6 +232,27 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 		Log.d(MainActivity.TAG, "Opening HelpActivity...");
 		Intent intent = new Intent(getApplicationContext(), HelpActivity.class);
 		this.startActivity(intent);
+	}
+	
+	private class EventHandler implements EventListener{
+		private Activity activity;
+		
+		public EventHandler(Activity activity){
+			this.activity = activity;
+		}
+		
+		@Override
+		public void onEvent(Event e){
+			if(e.getTag().equals("button_request")){
+				if(!(e instanceof ClickEvent)) return;
+				disableRequestButton();
+				if(locationClient==null || !locationClient.isConnected()){
+					connectToGoogleSevices();
+				}else{
+					connectToServer();
+				}
+			}
+		}
 	}
 	
 	
