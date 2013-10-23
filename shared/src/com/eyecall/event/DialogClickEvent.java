@@ -1,5 +1,7 @@
 package com.eyecall.event;
 
+import com.eyecall.connection.Named;
+
 import android.content.DialogInterface;
 
 public class DialogClickEvent {
@@ -7,6 +9,10 @@ public class DialogClickEvent {
 	private String tag;
 	private int which;
 	private Object data;
+	
+	public DialogClickEvent(DialogInterface dialog, Named tag, int which, Object data) {
+		this(dialog, tag.getName(), which, data);
+	}
 
 	public DialogClickEvent(DialogInterface dialog, String tag, int which, Object data) {
 		this.dialog = dialog;

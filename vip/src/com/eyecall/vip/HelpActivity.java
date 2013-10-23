@@ -64,6 +64,7 @@ public class HelpActivity extends Activity{
 	        // Keep screen on
 	        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		}else{
+			//TODO no hardcoded strings
 			Toast.makeText(this, "No camera on this device", Toast.LENGTH_LONG).show();
 		}
     }
