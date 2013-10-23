@@ -1,10 +1,11 @@
 package com.eyecall.event;
 
 import com.eyecall.connection.Named;
+import com.eyecall.eventbus.Event;
 
 import android.view.View;
 
-public class ClickEvent {
+public class ClickEvent extends Event{
 	private View view;
 	private String tag;
 	private Object data;
@@ -14,6 +15,7 @@ public class ClickEvent {
 	}
 	
 	public ClickEvent(View view, String tag, Object data) {
+		super(tag);
 		this.view = view;
 		this.tag = tag;
 		this.data = data;
