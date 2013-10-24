@@ -40,7 +40,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	public static final String TAG = "Eyecall VIP";
 
 	/** Server address or hostname */
-	private static final String SERVER_ADDRESS = "123.123.123.123";
+	private static final String SERVER_ADDRESS = "besuikerd.nl";
 	/** Server port */
 	private static final int SERVER_PORT = 5000;
 	
@@ -69,6 +69,12 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	/* *****************************************************
 	 *                     CALLBACKS
 	 * *****************************************************/
+	@Override
+	public void onCreate(Bundle savedInstance){
+		super.onCreate(savedInstance);
+		
+		this.setContentView(R.layout.activity_main);
+	}
 	
 	@Override
 	protected void onStart() {
@@ -79,7 +85,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	    
 	    // Add listener to button
 	    Button button = (Button) findViewById(R.id.button_request);
-	    button.setOnClickListener(new InputEventListener(EventTag.REQUEST_BUTTON_PRESSED, null));
+	    button.setOnClickListener(new InputEventListener(EventTag.REQUEST_BUTTON_PRESSED.getName(), null));
 	    
 	    // Keep screen on
 	    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -109,7 +115,13 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
         // Display the connection status
         Toast.makeText(this, "Google Services Connected", Toast.LENGTH_SHORT).show();
         location = locationClient.getLastLocation();
-        Log.d(MainActivity.TAG, "Location found: lat:" + location.getLatitude() + " long:" + location.getLongitude());
+        if(location==null){
+        	 Log.d(MainActivity.TAG, "No last location known!");
+        }else{
+        	 Log.d(MainActivity.TAG, "Location found: lat:" + location.getLatitude() + " long:" + location.getLongitude());
+        }
+        
+        // Now connect to the server
         connectToServer();
     }
     
