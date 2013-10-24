@@ -24,8 +24,6 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	return state;
     }
     
-    
-    
     @Override
     public State messageReceived(ServerState state, Message m, OutQueue<Message> queue) {
     	switch(state){
@@ -35,9 +33,12 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     		switch(ProtocolName.lookup(m.getName())){
     		
     		case OBTAIN_KEY:
+    			
+    			
     			//create new volunteer with generated id
     			Volunteer v = new Volunteer();
     			
+    			logger.debug("key {} assigned to volunteer", v.getId());
     			
     			//save volunteer in the database
     			Database.getInstance().insertTransaction(v);

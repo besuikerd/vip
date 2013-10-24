@@ -77,9 +77,9 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	}
 	
 	@Override
-	protected void onStart() {
-	    super.onStart();
-	    
+	protected void onCreate(Bundle savedInstance) {
+	    super.onCreate(savedInstance);
+	    setContentView(R.layout.activity_main);
 	    // Register for events
 	    EventBus.getInstance().subscribe(this);
 	    
@@ -235,9 +235,8 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	 */
 	private void initConnection() throws UnknownHostException, IOException {
 		if(connection!=null) return;
-		Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
 		protocolHandler = new VIPProtocolHandler();
-		connection = new Connection(socket, protocolHandler, VIPState.IDLE);
+		connection = new Connection(SERVER_ADDRESS, SERVER_PORT, protocolHandler, VIPState.IDLE);
 	}
 
 	public void openHelpActivity(){
