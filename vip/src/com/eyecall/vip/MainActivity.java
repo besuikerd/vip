@@ -1,7 +1,6 @@
 package com.eyecall.vip;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.net.UnknownHostException;
 
 import android.app.Activity;
@@ -16,6 +15,7 @@ import android.widget.Toast;
 
 import com.eyecall.connection.Connection;
 import com.eyecall.event.ClickEvent;
+import com.eyecall.event.RequestGrantedEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
@@ -47,10 +47,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	/** ProtocolHandler for this app */
 	public static VIPProtocolHandler protocolHandler;
 	/** Connection with the server */
-	public static Connection connection;
-	
-	private static MainActivity instance;
-	
+	public static Connection connection;	
 	
 	/** LocationClient used for getting last known location */
 	private LocationClient locationClient;
@@ -58,24 +55,9 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	/** Known location of VBP, could be null */
 	private Location location = null;
 	
-	public MainActivity(){
-		instance = this;
-	}
-	
-	public static MainActivity getInstance(){
-		return instance;
-	}
-	
 	/* *****************************************************
 	 *                     CALLBACKS
 	 * *****************************************************/
-	@Override
-	public void onCreate(Bundle savedInstance){
-		super.onCreate(savedInstance);
-		
-		this.setContentView(R.layout.activity_main);
-	}
-	
 	@Override
 	protected void onCreate(Bundle savedInstance) {
 	    super.onCreate(savedInstance);
@@ -247,14 +229,22 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 
 	@Override
 	public void onEvent(Event e) {
-		if(e.getTag().equals(EventTag.REQUEST_BUTTON_PRESSED.getName())){
-			if(!(e instanceof ClickEvent)) return;
-			disableRequestButton();
-			if(locationClient==null || !locationClient.isConnected()){
-				connectToGoogleSevices();
-			}else{
-				connectToServer();
+		if(e instanceof ClickEvent){
+			
+			// Send a new request ("HELP" button pressed)
+			if(e.getTag().equals(EventTag.REQUEST_BUTTON_PRESSED.getName())){
+				disableRequestButton();
+				if(locationClient==null || !locationClient.isConnected()){
+					connectToGoogleSevices();
+				}else{
+					connectToServer();
+				}
 			}
+		
+		}else if(e instanceof RequestGrantedEvent){
+			// Somebody is willing to help
+			// Open HelpActivity
+			openHelpActivity();
 		}
 	}	
 }

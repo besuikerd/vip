@@ -7,6 +7,8 @@ import com.eyecall.connection.Message;
 import com.eyecall.connection.OutQueue;
 import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
+import com.eyecall.event.RequestGrantedEvent;
+import com.eyecall.eventbus.EventBus;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
 
@@ -37,8 +39,8 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 				// TODO melding geven dmv audio
 				return VIPState.DISCONNECTED;
 			case REQUEST_GRANTED:
-				// Open help activity
-				MainActivity.getInstance().openHelpActivity();
+				// Post an event
+				EventBus.getInstance().post(new RequestGrantedEvent(EventTag.REQUEST_GRANTED));
 				// TODO melding geven op scherm
 				return VIPState.BEING_HELPED;
 			default:

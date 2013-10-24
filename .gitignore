@@ -19,7 +19,7 @@ aid/.settings
 vip/.settings
 server/.settings
 shared/bin/
-shared/gen
+shared/gen/
 
 # Local configuration file (sdk path, etc)
 local.properties
