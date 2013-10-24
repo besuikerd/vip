@@ -4,7 +4,8 @@ import com.eyecall.connection.Named;
 
 public enum EventTag implements Named{
 	REQUEST_BUTTON_PRESSED("request_button"),
-	VIDEO_FRAME("video_frame");
+	VIDEO_FRAME("video_frame"), 
+	REQUEST_GRANTED("request_granted");
 	
 	private String tag;
 	

@@ -2,6 +2,7 @@ package com.eyecall.connection;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 
 import org.slf4j.Logger;
@@ -54,6 +55,9 @@ public class Connection {
 	 */
 	private OutQueue<Message> messages;
 	
+	private int port;
+	private String host;
+	
 	/**
 	 * construct a new Connection
 	 * @param s socket over which messages are passed
@@ -66,6 +70,16 @@ public class Connection {
 		this.state = state;
 		this.messages = new OutQueue<Message>(s);
 	}
+	
+	
+
+	public Connection(String host, int port, ProtocolHandler handler, State state) {
+		this(null, handler, state);
+		this.port = port;
+		this.host = host;
+	}
+
+
 
 	/**
 	 * send a message over this connection. This method is non-blocking; the
@@ -147,11 +161,22 @@ public class Connection {
 		@Override
 		public void run() {
 			
+			
+			
 			//notify that the thread is started
 			synchronized(this){
 				notifyAll();
 			}
 
+			
+			if(s == null){
+				try {
+					s = new Socket(host, port);
+				} catch(IOException e){
+					logger.warn("unable to instantiate socket from {}:{}", host, port);
+					return;
+				}
+			}
 			
 			//initiate and configure ObjectMapper
 			ObjectMapper mapper = new ObjectMapper();
