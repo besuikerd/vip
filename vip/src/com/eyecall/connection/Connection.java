@@ -2,7 +2,6 @@ package com.eyecall.connection;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Iterator;
 
 import org.slf4j.Logger;
