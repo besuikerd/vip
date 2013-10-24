@@ -13,10 +13,12 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_settings);
+		
+		// Set view
+		setContentView(R.layout.activity_locations);
 		
 		/* BUTTONS */
-		Button toevoegen = (Button) findViewById(R.id.button1);
+		Button toevoegen = (Button) findViewById(R.id.button_settings);
 		Button mijnLocaties = (Button) findViewById(R.id.button3);
 		
 		toevoegen.setOnClickListener(new OnClickListener(){
