@@ -1,32 +1,28 @@
 package com.eyecall.android;
 
 import java.io.IOException;
-
-import android.net.LocalSocket;
-import android.net.LocalSocketAddress;
+import java.io.InputStream;
 
 
-public class VideoBuffer {
-	public VideoBuffer(LocalSocketAddress localSocketAddress) {
-		this.localSocketAddress = localSocketAddress;
-	}
+public class VideoBuffer extends Thread {
+	private VideoPipe videoPipe;
 
-	private LocalSocket localSocket;
-	private LocalSocketAddress localSocketAddress;
-
-	/** 
-	 * This VideoBuffer will connect to the corresponding LocalServerSocket
-	 * @throws IOException 
-	 */
-	public void start() throws IOException {
-		localSocket = new LocalSocket();
-		localSocket.connect(localSocketAddress);
+	public VideoBuffer(VideoPipe videoPipe) {
+		this.videoPipe = videoPipe;
 	}
 	
-
-	public void stop() throws IOException {
-		localSocket.close();		
+	@Override
+	public void run(){
+		try {
+			InputStream output = videoPipe.getOutput();
+			// Todo : read video frame and send it via UDP
+			//output.read
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
-	
+
 	
 }

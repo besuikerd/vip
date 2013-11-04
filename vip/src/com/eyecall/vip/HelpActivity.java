@@ -14,22 +14,24 @@ import android.widget.Toast;
 
 import com.eyecall.android.PreviewView;
 import com.eyecall.android.VideoBuffer;
+import com.eyecall.android.VideoPipe;
 import com.eyecall.event.SurfaceCreatedEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
 
 public class HelpActivity extends Activity implements EventListener{
-    private LocalServerSocket localSocket;
-    private VideoBuffer videoBuffer;
-    private static int cameraId;
+    private static final String LOCAL_SOCKET_ADDRESS = "eyecall.vip";
+	private VideoBuffer videoBuffer;
     private Camera camera;
     private PreviewView previewView;
+	private VideoPipe videoPipe;
     
     @Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		this.setContentView(R.layout.activity_help);
+		this.videoPipe = new VideoPipe(LOCAL_SOCKET_ADDRESS);
 		EventBus.getInstance().subscribe(this);
 	}
     
@@ -49,7 +51,7 @@ public class HelpActivity extends Activity implements EventListener{
     	}
     	// Close local socket
     	try {
-			stopLocalSocket();
+			stopVideoPipe();
 		} catch (IOException e) {
 			Log.d(MainActivity.TAG, "Error closing local socket: " + e.getMessage());
 		}
@@ -77,25 +79,10 @@ public class HelpActivity extends Activity implements EventListener{
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
     
-    public void initLocalSocket(String localAddress) throws IOException{
-		this.localSocket = new LocalServerSocket(localAddress);
-		this.videoBuffer = new VideoBuffer(new LocalSocketAddress(localAddress));
-	}
-    
-    public void startLocalSocket() throws IOException{
-    	// Make videoBuffer connect to localSocket
-    	videoBuffer.start();
-    	// Accept connection with videoBuffer
-    	localSocket.accept();
-    }
-    
-    public void stopLocalSocket() throws IOException{
-    	if(videoBuffer!=null){
-    		videoBuffer.stop();
+    public void stopVideoPipe() throws IOException{
+    	if(videoPipe!=null){
+    		videoPipe.close();
     	}
-        if(localSocket != null){
-            localSocket.close();
-        }
     }
 
 	private void setupCamera(){
@@ -128,21 +115,18 @@ public class HelpActivity extends Activity implements EventListener{
         
         // Step 5 : Init local socket
         try {
-			initLocalSocket("eyecall.vip");
+        	videoBuffer = new VideoBuffer(videoPipe);
+			videoPipe.setup();
 		} catch (IOException e) {
-			Log.d(MainActivity.TAG, "Error initializing local socket: " + e.getMessage());
-			return;
-		}
-        try {
-			startLocalSocket();
-		} catch (IOException e) {
-			Log.d(MainActivity.TAG, "Error opening local socket: " + e.getMessage());
+			Log.d(MainActivity.TAG, "Error opening video pipe: " + e.getMessage());
 			return;
 		}
         
         // Step 6 : Start streaming
         try {
-			previewView.startStreaming(localSocket.getFileDescriptor());
+        	// Start streaming and send the frames into the pipe
+        	videoBuffer.start();
+			previewView.startStreaming(videoPipe.getInputFileDescriptor());
 		} catch (IllegalStateException e) {
 			Log.d(MainActivity.TAG, "Error starting streaming (IllegalState): " + e.getMessage());
 			return;

@@ -29,11 +29,9 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		switch (state) {
 		case IDLE:
-			// TODO invullen
-
+			// VIP shouldn't receive message if it is idle
+			return null;
 		case WAITING:
-			// logger.debug("message received from {} while connected: {}",
-			// name, m.toString());
 			switch (messageName) {
 			case REQUEST_DENIED:
 				// TODO melding geven dmv audio

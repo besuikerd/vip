@@ -72,9 +72,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	    // Keep screen on
 	    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	    
-	    openHelpActivity();
-	    
-	    //connectToGoogleSevices();
+	    connectToGoogleSevices();
 	    // After connected to Google, app will continue
 	    // Because in order to continue the location needs to be known
 	}
@@ -171,8 +169,12 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
     }
     
     private void connectToServer(){
+    	// TIJDELIJK
+    	openHelpActivity();
+    	return;
+    	
     	// Initialize connection with the server
-		try {
+		/*try {
 			Log.d(TAG, "initConnection(): start");
 			initConnection();
 			Log.d(TAG, "initConnection(): completed");
@@ -190,7 +192,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 			return;
 		}
 		
-		sendRequest();
+		sendRequest();*/
     }
     
     
@@ -232,7 +234,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	@Override
 	public void onEvent(Event e) {
 		if(e instanceof ClickEvent){
-			
 			// Send a new request ("HELP" button pressed)
 			if(e.getTag().equals(EventTag.REQUEST_BUTTON_PRESSED.getName())){
 				disableRequestButton();
