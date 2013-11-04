@@ -1,10 +1,11 @@
 package com.eyecall.vip;
 
-import java.util.zip.Deflater;
-
+import java.io.IOException;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.net.LocalServerSocket;
+import android.net.LocalSocketAddress;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
@@ -12,45 +13,92 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.eyecall.android.PreviewView;
-import com.eyecall.connection.Connection;
-import com.eyecall.event.VideoFrameEvent;
+import com.eyecall.android.VideoBuffer;
+import com.eyecall.event.SurfaceCreatedEvent;
+import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
+import com.eyecall.eventbus.EventListener;
 
-public class HelpActivity extends Activity{
-    private Connection connection;
-    
+public class HelpActivity extends Activity implements EventListener{
+    private LocalServerSocket localSocket;
+    private VideoBuffer videoBuffer;
+    private static int cameraId;
     private Camera camera;
-    private Deflater deflater;
+    private PreviewView previewView;
     
     @Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		this.setContentView(R.layout.activity_help);
-		
-		//setupCamera();
+		EventBus.getInstance().subscribe(this);
 	}
     
+    /**
+     * If the activity pauses, the camera should be released for other apps
+     */
     @Override
     public void onPause(){
     	super.onPause();
-    	if(camera!=null){
+    	// Stop streaming
+    	if(camera!=null && previewView.isStreaming()){
+    		try {
+				previewView.stopStreaming();
+			} catch (IOException e) {
+				Log.d(MainActivity.TAG, "Error stopping streaming: " + e.getMessage());
+			}
+    	}
+    	// Close local socket
+    	try {
+			stopLocalSocket();
+		} catch (IOException e) {
+			Log.d(MainActivity.TAG, "Error closing local socket: " + e.getMessage());
+		}
+    	
+    	// Stop preview if it exists
+    	if(camera!= null) {
     		try {
                 camera.stopPreview();
             } catch (Exception e){
               // ignore: tried to stop a non-existent preview
             }
     	}
-        releaseCamera();              // release the camera immediately on pause event
+    	// release camera for other apps
+        releaseCamera(); // release the camera immediately on pause event
     }
 
     @Override
 	public void onResume(){
 		super.onResume();
 		
+		// (re)enable streaming
 		setupCamera();
+		
+		// Keep screen on
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
     
-    private void setupCamera(){
+    public void initLocalSocket(String localAddress) throws IOException{
+		this.localSocket = new LocalServerSocket(localAddress);
+		this.videoBuffer = new VideoBuffer(new LocalSocketAddress(localAddress));
+	}
+    
+    public void startLocalSocket() throws IOException{
+    	// Make videoBuffer connect to localSocket
+    	videoBuffer.start();
+    	// Accept connection with videoBuffer
+    	localSocket.accept();
+    }
+    
+    public void stopLocalSocket() throws IOException{
+    	if(videoBuffer!=null){
+    		videoBuffer.stop();
+    	}
+        if(localSocket != null){
+            localSocket.close();
+        }
+    }
+
+	private void setupCamera(){
     	// Step 1 : Check hardware
 		if(checkCameraHardware()){
 			// Step 2 : Access camera
@@ -58,13 +106,49 @@ public class HelpActivity extends Activity{
 			obtainCamera();
 	        
 	        // Step 3 : Create a preview class
-	        setupPreview();
+	        try {
+				setupPreview();
+			} catch (IOException e) {
+				Log.d(MainActivity.TAG, "Error setting camera preview: " + e.getMessage());
+				return;
+			}
 	        
-	        // Keep screen on
-	        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+	        // Voor de andere stappen moet eerst een Surface (camerapreview) bestaan. 
+	        // Het wachten is dus op Android tot de Surface gemaakt is. previewView krijgt
+	        // een melding als deze is gemaakt, waarna een SurfaceCreatedEvent wordt gepost.
 		}else{
 			//TODO no hardcoded strings
 			Toast.makeText(this, "No camera on this device", Toast.LENGTH_LONG).show();
+		}
+	}
+	
+	private void setupStreaming(){
+        // Step 4 : Init MediaRecorder
+        previewView.prepareMediaRecorder(100, 200);
+        
+        // Step 5 : Init local socket
+        try {
+			initLocalSocket("eyecall.vip");
+		} catch (IOException e) {
+			Log.d(MainActivity.TAG, "Error initializing local socket: " + e.getMessage());
+			return;
+		}
+        try {
+			startLocalSocket();
+		} catch (IOException e) {
+			Log.d(MainActivity.TAG, "Error opening local socket: " + e.getMessage());
+			return;
+		}
+        
+        // Step 6 : Start streaming
+        try {
+			previewView.startStreaming(localSocket.getFileDescriptor());
+		} catch (IllegalStateException e) {
+			Log.d(MainActivity.TAG, "Error starting streaming (IllegalState): " + e.getMessage());
+			return;
+		} catch (IOException e) {
+			Log.d(MainActivity.TAG, "Error starting streaming (IOException): " + e.getMessage());
+			return;
 		}
     }
 
@@ -81,19 +165,30 @@ public class HelpActivity extends Activity{
     	}
     }
     
-    private void setupPreview(){
+    private void setupPreview() throws IOException{
     	// Create our Preview view and set it as the content of our activity.
-    	PreviewView previewView = new PreviewView(this, camera, new CameraCallback());
+    	previewView = new PreviewView(this, camera, new CameraCallback());
         FrameLayout previewFrame = (FrameLayout) findViewById(R.id.camera_preview_frame);
         previewFrame.removeAllViews();
         previewFrame.addView(previewView);
+        previewView.startPreview();
     }
 
     
     /** A safe way to get an instance of the Camera object. */
     public static Camera getCameraInstance(){
         Camera c = null;
-        try {
+        
+        /*Camera.getNumberOfCameras();
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+    	for(int i = 0; i<Camera.getNumberOfCameras(); i++){
+    		Camera.getCameraInfo(i, cameraInfo);
+    		if(cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK){
+    			cameraId = i;
+    		}
+    	}*/
+
+    	try {
             c = Camera.open(); // attempt to get a Camera instance
         }
         catch (Exception e){
@@ -116,7 +211,7 @@ public class HelpActivity extends Activity{
 
 		@Override
 		public void onPreviewFrame(byte[] data, Camera camera) {
-			Log.d(MainActivity.TAG, "Framesize: " + String.valueOf(data.length) + " bytes");
+			/*Log.d(MainActivity.TAG, "Framesize: " + String.valueOf(data.length) + " bytes");
 			deflater = new Deflater();
 			deflater.setInput(data);
 			deflater.finish();
@@ -126,8 +221,15 @@ public class HelpActivity extends Activity{
 		        int byteCount = deflater.deflate(result);
 		        Log.d(MainActivity.TAG, "Compressed: " + byteCount);
 		    }
-			EventBus.getInstance().post(new VideoFrameEvent(EventTag.VIDEO_FRAME.getName(), result));
+			EventBus.getInstance().post(new VideoFrameEvent(EventTag.VIDEO_FRAME.getName(), result));*/
 		}
     	
     }
+
+	@Override
+	public void onEvent(Event e) {
+		if(e instanceof SurfaceCreatedEvent){
+			setupStreaming();
+		}
+	}
 }

@@ -72,7 +72,9 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	    // Keep screen on
 	    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	    
-	    connectToGoogleSevices();
+	    openHelpActivity();
+	    
+	    //connectToGoogleSevices();
 	    // After connected to Google, app will continue
 	    // Because in order to continue the location needs to be known
 	}
@@ -80,7 +82,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	@Override
 	protected void onStop() {
 	    // Disconnecting the client invalidates it.
-	    locationClient.disconnect();
+	    if(locationClient!=null) locationClient.disconnect();
 	    super.onStop();
 	}
 	
