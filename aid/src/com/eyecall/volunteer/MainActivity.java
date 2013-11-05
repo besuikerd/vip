@@ -3,11 +3,13 @@ package com.eyecall.volunteer;
 import java.util.List;
 
 import com.eyecall.aid.R;
+import com.eyecall.event.ClickEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -32,11 +34,11 @@ public class MainActivity extends Activity implements EventListener{
 		setContentView(R.layout.activity_locations);
 		
 		// Set listeners
-		Button addLocation = (Button) findViewById(R.id.button_add_location);
+		Button addLocation = (Button) findViewById(R.id.locations_button_add);
 		addLocation.setOnClickListener(new InputEventListener(EventTag.ADD_LOCATION, null));
 		
 		// Set adapter for listview
-		ListView locationList = ((ListView) findViewById(R.id.list_locations));
+		ListView locationList = ((ListView) findViewById(R.id.locations_list));
 		List<Location> locations = preferencesManager.getLocations();
 		locationList.setAdapter(new LocationAdapter(locations));
 		
@@ -56,8 +58,25 @@ public class MainActivity extends Activity implements EventListener{
 	
 	@Override
 	public void onEvent(Event e) {
-		// TODO Auto-generated method stub
+		if(e instanceof ClickEvent){
+			ClickEvent event = (ClickEvent) e;
+			if(event.getTag().equals(EventTag.ADD_LOCATION.getName())){
+				openLocationActivity(null);
+			}
+		}
 		
+	}
+
+	/**
+	 * Opens the LocationActivity and passes the location
+	 * If a location is passed, this location is edited
+	 * If null is passes, a new location is added
+	 * @param location
+	 */
+	private void openLocationActivity(Location location){
+		Intent intent = new Intent(this, LocationActivity.class);
+		if(location!=null) intent.putExtra("location", location);
+		this.startActivity(intent);
 	}
 
 
@@ -89,9 +108,9 @@ public class MainActivity extends Activity implements EventListener{
 			Location l = locations.get(position);
 			ViewGroup v = (ViewGroup) getLayoutInflater().inflate(R.layout.row_location,null);
 			
-			TextView locationText = (TextView) v.findViewById(R.id.text_location);
-			TextView preferredText = (TextView) v.findViewById(R.id.text_preferred);
-			ImageButton removeButton = (ImageButton) v.findViewById(R.id.button_remove_location);
+			TextView locationText = (TextView) v.findViewById(R.id.location_header_preferred);
+			TextView preferredText = (TextView) v.findViewById(R.id.row_text_preferred);
+			ImageButton removeButton = (ImageButton) v.findViewById(R.id.row_button_remove);
 			
 			removeButton.setOnClickListener(new InputEventListener(EventTag.REMOVE_LOCATION, l));
 			

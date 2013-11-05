@@ -29,7 +29,7 @@
             android:text="Ja, help niet vaker met deze locatie" />
         
         <Button
-            android:id="@+id/button_settings"
+            android:id="@+id/location_button_save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Nee, help niet vaker met deze locatie" />
@@ -42,7 +42,7 @@
             android:layout_marginRight="20dp" />
 
         <TextView
-            android:id="@+id/text_location"
+            android:id="@+id/location_header_preferred"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"

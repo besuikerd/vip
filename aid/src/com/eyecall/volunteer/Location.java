@@ -1,22 +1,37 @@
 package com.eyecall.volunteer;
 
-public class Location {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Location implements Parcelable {
+
+	public Location() {
+	}
+
+	private Location(Parcel in) {
+		Location l = new Location();
+		l.id = in.readInt();
+		l.latitude = in.readDouble();
+		l.longitude = in.readDouble();
+		l.preferred = in.readInt()==1;
+		l.radius = in.readInt();
+	}
 
 	private int id;
 
 	private double latitude;
-	
+
 	private double longitude;
-	
+
 	private boolean preferred;
-	
+
 	private int radius;
-	
-	public void setId(int id){
+
+	public void setId(int id) {
 		this.id = id;
 	}
-	
-	public int getId(){
+
+	public int getId() {
 		return id;
 	}
 
@@ -51,4 +66,31 @@ public class Location {
 	public void setRadius(int radius) {
 		this.radius = radius;
 	}
+
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel out, int flags) {
+		out.writeInt(id);
+		out.writeDouble(latitude);
+		out.writeDouble(longitude);
+		out.writeInt(preferred ? 1 : 0);
+		out.writeInt(radius);
+	}
+
+	public static final Parcelable.Creator<Location> CREATOR = new Parcelable.Creator<Location>() {
+		public Location createFromParcel(Parcel in) {
+			return new Location(in);
+		}
+
+		@Override
+		public Location[] newArray(int size) {
+			return new Location[size];
+		}
+	};
+
 }

@@ -5,7 +5,7 @@
     android:orientation="vertical" >
 
     <Button
-        android:id="@+id/button_settings"
+        android:id="@+id/location_button_save"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/action_settings" />

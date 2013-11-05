@@ -5,7 +5,7 @@
     android:orientation="vertical" >
 
     <ListView
-        android:id="@+id/list_locations"
+        android:id="@+id/locations_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1" >
@@ -13,9 +13,9 @@
     </ListView>
 
     <Button
-        android:id="@+id/button_add_location"
+        android:id="@+id/locations_button_add"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/button_add_location" />
+        android:text="@string/locations_button_add" />
 
 </LinearLayout>

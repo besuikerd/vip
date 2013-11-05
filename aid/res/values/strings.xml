@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Eyecall Aid</string>
+    <string name="app_name">Eyecall Volunteer</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="button_add_location">Add location</string>
-    <string name="location_header">Location:</string>
-    <string name="preferred_header">Type:</string>
-    <string name="preferred">Preferred/Known</string>
-    <string name="not_preferred">Not prefereed/Unknown</string>
+    <string name="locations_button_add">Add location</string>
+    <string name="row_header_location">Location:</string>
+    <string name="row_header_preferred">Type:</string>
+    <string name="row_text_preferred">Preferred/Known</string>
+    <string name="row_text_not_preferred">Not prefereed/Unknown</string>
+    <string name="location_button_save">Save</string>
+    <string name="location_button_cancel">Cancel</string>
+    <string name="location_header_preferred">Type:</string>
+    <string name="location_radio_preferred">Preferred</string>
+    <string name="location_radio_not_preferred">Not preferred</string>
 
 </resources>
