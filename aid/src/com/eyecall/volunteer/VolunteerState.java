@@ -8,6 +8,12 @@ public enum VolunteerState implements State {
 	IDLE,
 	HELPING,
 	WAITING_FOR_ACKNOWLEDGEMENT,
-	SHOWING_NOTIFICATION	
+	SHOWING_NOTIFICATION;
+
+	@Override
+	public boolean isTerminal() {
+		// TODO Auto-generated method stub
+		return false;
+	}	
 }
 

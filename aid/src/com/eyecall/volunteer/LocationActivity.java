@@ -14,6 +14,6 @@
 package com.eyecall.volunteer;
 
 
-public class LocationsActivity {
+public class LocationActivity {
     private com.eyecall.connection.Connection connection;
 }

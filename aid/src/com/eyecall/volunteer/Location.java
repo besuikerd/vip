@@ -1,8 +1,6 @@
-package com.eyecall.aid;
+package com.eyecall.volunteer;
 
 public class Location {
-
-	
 
 	private int id;
 
@@ -13,6 +11,14 @@ public class Location {
 	private boolean preferred;
 	
 	private int radius;
+	
+	public void setId(int id){
+		this.id = id;
+	}
+	
+	public int getId(){
+		return id;
+	}
 
 	public double getLatitude() {
 		return latitude;
