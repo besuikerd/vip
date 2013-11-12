@@ -14,6 +14,7 @@ public class PreferencesManager {
 
 	private static final String LOCATIONS_FILE_NAME = "locations";
 	private Context context;
+	
 
 	public PreferencesManager(Context context){
 		this.context = context;
@@ -42,7 +43,11 @@ public class PreferencesManager {
 		return result;
 	}
 	
-	public void addLocation(Location location){
+	public void saveLocation(Location location){
+		
+	}
+	
+	public void deleteLocation(Location location){
 		
 	}
 }

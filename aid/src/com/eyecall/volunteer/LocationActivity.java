@@ -1,22 +1,30 @@
 package com.eyecall.volunteer;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.widget.RadioGroup;
 
-import com.eyecall.aid.R;
+import com.eyecall.event.ClickEvent;
+import com.eyecall.eventbus.Event;
+import com.eyecall.eventbus.EventBus;
+import com.eyecall.eventbus.EventListener;
+import com.eyecall.eventbus.InputEventListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-public class LocationActivity extends Activity{
+public class LocationActivity extends FragmentActivity implements EventListener{
     private com.eyecall.connection.Connection connection;
     
     private Location location;
+    
+    private GoogleMap map;
+    
+    private PreferencesManager preferencesManager;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,14 +32,24 @@ public class LocationActivity extends Activity{
     	
     	this.setContentView(R.layout.activity_location);
     	
+    	preferencesManager = new PreferencesManager(this);
+    	
+    	// Set location
     	Intent intent = getIntent();
     	if(intent.hasExtra("location")){
     		location = intent.getParcelableExtra("location");
     	}
     	
+    	// Register listeners and events
+    	registerEvents();
+    	
+    	// Init map
+    	initMap();
+    }
+    
+    private void initMap(){
     	// Get a handle to the Map Fragment
-    	SupportMapFragment.newInstance().
-        GoogleMap map = ((MapFragment) SupportMapFragment.newInstance().getFragmentManager().findFragmentById(R.id.location_map).getMap();
+    	map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.location_map)).getMap();
         map.setMyLocationEnabled(true);
         if(location==null){
         	LatLng position = new LatLng(0,0);
@@ -41,12 +59,31 @@ public class LocationActivity extends Activity{
         	map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 18));
         	map.addMarker(new MarkerOptions().title("Location").position(position));
         }
-        
-        
-        
-    	
-    	//if(location!=null){
-    	//	
-    	//}
     }
+    
+    private void registerEvents(){
+    	findViewById(R.id.location_button_cancel).setOnClickListener(new InputEventListener(EventTag.CANCEL_LOCATION_ADD, null));
+    	findViewById(R.id.location_button_save).setOnClickListener(new InputEventListener(EventTag.SAVE_LOCATION, null));
+    	EventBus.getInstance().subscribe(this);
+    }
+
+	@Override
+	public void onEvent(Event e) {
+		if(e instanceof ClickEvent){
+			ClickEvent event = (ClickEvent) e;
+			if(event.getTag().equals(EventTag.CANCEL_LOCATION_ADD.getName())){
+				this.finish();
+			}else if(event.getTag().equals(EventTag.SAVE_LOCATION.getName())){
+				if(location==null) location = new Location();
+				//location.setLatitude(map.)
+				RadioGroup radios = (RadioGroup) findViewById(R.id.location_radiogroup_preferred);
+				int selected = radios.getCheckedRadioButtonId();
+				location.setPreferred(preferred)
+				
+				
+				preferencesManager.saveLocation(location);
+			}
+		}
+		
+	}
 }

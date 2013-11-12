@@ -1,61 +1,63 @@
 package com.eyecall.volunteer;
 
-import java.util.Map;
+import android.util.Log;
 
 import com.eyecall.connection.Message;
 import com.eyecall.connection.OutQueue;
 import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
-import com.eyecall.volunteer.VolunteerState;
+import com.eyecall.protocol.ProtocolName;
 
-public class VolunteerProtocolHandler implements ProtocolHandler {
+public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState> {
 	
-	public State messageSent(State state, Message m) {
+	public State messageSent(VolunteerState state, Message m) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public State messageReceived(State state, Message m, OutQueue queue) {
+	public State messageReceived(VolunteerState state, Message m, OutQueue queue) {
+		Log.d(MainActivity.TAG, "Message received: '" + m.getName() + "' State:" + state.toString());
+		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		switch (state){
 		case INITIALISATION:
 			//TODO iets met log
 			
 		case IDLE:
-			switch(m.getName()){
-			case "new_request":
-				if(m.hasParams("request_id","longitude", "latitude")){
+			switch(messageName){
+			case NEW_REQUEST:
+				//if(m.hasParams("request_id","longitude", "latitude")){
 					//TODO pop-up keuze menu
 				return VolunteerState.SHOWING_NOTIFICATION;
-				}	
+				//}	
 			default:
 				return null;
 			}
 			
 		case WAITING_FOR_KEY:
-			switch(m.getName()){
-			case "assign_key":
+			switch(messageName){
+			case ASSIGN_KEY:
 				if(m.hasParam("key")){
 					//TODO shared preferences in context maken
-					Editor edit = sp.edit();
-					edit.putString("Volunteer key", (String)m.getParam("key"));
-					edit.commit();
+					//Editor edit = sp.edit();
+					//edit.putString("Volunteer key", (String)m.getParam("key"));
+					//edit.commit();
 					return VolunteerState.IDLE;
 				}
 			default:
 				return null;
 			}
 		case HELPING:
-			switch(m.getName()){
-			case "other_disconnected":
+			switch(messageName){
+			case OTHER_DISCONNECTED:
 				//TODO pop-up in scherm weergeven
 				
-				return VolunteerState.HELPING;
-			case"update_location":
-				if(m.hasParams("longitude", "latitude")){
+				return VolunteerState.IDLE;
+			case UPDATE_LOCATION:
+				//if(m.hasParams("longitude", "latitude")){
 					return VolunteerState.HELPING;
-				}
-			case "media_data":
+				//}
+			case MEDIA_DATA:
 				if(m.hasParam("data")){
 				//TODO data op scherm tonen	
 				return VolunteerState.HELPING;
@@ -64,8 +66,8 @@ public class VolunteerProtocolHandler implements ProtocolHandler {
 				return null;	
 			}
 		case SHOWING_NOTIFICATION:
-			switch(m.getName()){
-			case "cancel_request":
+			switch(messageName){
+			case CANCEL_REQUEST:
 				if(m.hasParam("request_id")){
 					//TODO gui verdwijnt
 					return VolunteerState.IDLE;
@@ -75,13 +77,13 @@ public class VolunteerProtocolHandler implements ProtocolHandler {
 			}
 			
 		case WAITING_FOR_ACKNOWLEDGEMENT:
-			switch(m.getName()){
-			case "cancel_request":
+			switch(messageName){
+			case CANCEL_REQUEST:
 				if(m.hasParam("request_id")){
 					//TODO gui verdwijnt
 					return VolunteerState.IDLE;
 				}
-			case "acknowledge_help":
+			case ACKNOWLEDGE_HELP:
 				if(m.hasParam("request_id")){
 					return VolunteerState.HELPING;
 				}
@@ -89,6 +91,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler {
 				return null;
 				}
 			}
+		return null;
 	}
  }
 

@@ -2,9 +2,9 @@ package com.eyecall.volunteer;
 
 import java.util.List;
 
-import com.eyecall.aid.R;
 import com.eyecall.event.ClickEvent;
 import com.eyecall.eventbus.Event;
+import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
 
@@ -36,6 +36,8 @@ public class MainActivity extends Activity implements EventListener{
 		// Set listeners
 		Button addLocation = (Button) findViewById(R.id.locations_button_add);
 		addLocation.setOnClickListener(new InputEventListener(EventTag.ADD_LOCATION, null));
+		
+		EventBus.getInstance().subscribe(this);
 		
 		// Set adapter for listview
 		ListView locationList = ((ListView) findViewById(R.id.locations_list));
@@ -116,9 +118,9 @@ public class MainActivity extends Activity implements EventListener{
 			
 			locationText.setText("long " + l.getLongitude() + " lat " + l.getLatitude());
 			if(l.isPreferred()){
-				preferredText.setText(R.string.preferred);
+				preferredText.setText(R.string.row_text_preferred);
 			}else{
-				preferredText.setText(R.string.not_preferred);
+				preferredText.setText(R.string.row_text_not_preferred);
 			}
 			
 			return v;
