@@ -1,12 +1,12 @@
-package com.eyecall.connection.test;
+package com.eyecall.connection.test.conntest;
 
 import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
-import com.eyecall.connection.OutQueue;
 import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
 import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
@@ -22,7 +22,7 @@ public class TestProtocolHandler implements ProtocolHandler<TestState>{
 	}
 	
 	@Override
-	public State messageReceived(TestState state, Message m, OutQueue<Message> queue) {
+	public State messageReceived(TestState state, Message m, Connection c) {
 		
 		switch(state){
 		case AWAITING_CONNECTION:
@@ -31,7 +31,7 @@ public class TestProtocolHandler implements ProtocolHandler<TestState>{
 			if(m.getName().equals("hello")){
 				if(m.hasParam("hello")){
 					this.name = m.getParam("hello").toString();
-					queue.add(new Message("hello").add("hello", "otherside"));
+					c.send(new Message("hello").add("hello", "otherside"));
 					return TestState.CONNECTED;
 				}
 			}
@@ -56,5 +56,9 @@ public class TestProtocolHandler implements ProtocolHandler<TestState>{
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public void onDisconnect(TestState state) {		
 	}
 }

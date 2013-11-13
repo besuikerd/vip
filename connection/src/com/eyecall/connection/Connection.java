@@ -1,7 +1,11 @@
 package com.eyecall.connection;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Iterator;
 
@@ -33,12 +37,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Connection {
 	
+	/**
+	 * length of UDP packet buffer (16kb)
+	 */
+	public static final int UDP_BUFFER_SIZE = 16*1024;
+	
 	private static final Logger logger = LoggerFactory.getLogger(Connection.class);
+	
 	
 	/**
 	 * socket over which messages are passed
 	 */
 	private Socket s;
+	
+	/**
+	 * socket over which UDP packets are sent
+	 */
+	private DatagramSocket udpSocket;
 	
 	/**
 	 * ProtocolHandler handling incoming messages
@@ -56,7 +71,7 @@ public class Connection {
 	private OutQueue<Message> messages;
 	
 	private int port;
-	private String host;
+	private InetAddress host;
 	
 	/**
 	 * construct a new Connection
@@ -68,18 +83,23 @@ public class Connection {
 		this.s = s;
 		this.handler = handler;
 		this.state = state;
-		this.messages = new OutQueue<Message>(s);
+		if(s != null){
+			this.port = s.getPort();
+			this.host = s.getInetAddress();
+		}
 	}
 	
 	
 
-	public Connection(String host, int port, ProtocolHandler handler, State state) {
+	public Connection(String host, int port, ProtocolHandler handler, State state) throws UnknownHostException {
 		this(null, handler, state);
 		this.port = port;
-		this.host = host;
+		this.host = InetAddress.getByName(host);
 	}
-
-
+	
+	private Connection getConnection(){
+		return this;
+	}
 
 	/**
 	 * send a message over this connection. This method is non-blocking; the
@@ -101,7 +121,17 @@ public class Connection {
 			} catch (IOException e) {
 			}
 		}
-		
+	}
+	
+	/**
+	 * send a message with UDP instead of TCP
+	 */
+	public void sendUDP(Message m) throws IOException{
+		byte[] data = new ObjectMapper().writeValueAsBytes(m);
+		if(udpSocket == null){
+			udpSocket = new DatagramSocket(port, host);
+		}
+		udpSocket.send(new DatagramPacket(data, data.length, host, port));
 	}
 	
 	/**
@@ -131,16 +161,81 @@ public class Connection {
 	/**
 	 * Initiates this Connection. Fires up ConnectionHandler thread
 	 */
-	public void init(){
+	public void init(boolean useUDP){
 		//block until ConnectionHandler thread is started up
 		ConnectionHandler handler = new ConnectionHandler();
 		Thread connectionHandlerThread = new Thread(handler);
 		connectionHandlerThread.start();
+		synchronized (handler) {
+			try {
+				handler.wait();
+			} catch (InterruptedException e) {
+			}
+		}
 		while(!connectionHandlerThread.isAlive()){
 			synchronized (handler) {
 				try {
 					handler.wait();
 				} catch (InterruptedException e) {
+				}
+			}
+		}
+		
+		if(useUDP){
+			try {
+				udpSocket = new DatagramSocket(port, host);
+			} catch (SocketException e) {
+				e.printStackTrace();
+				logger.warn("unable to bind to UDP socket");
+				return;
+			}
+			
+		
+		
+			//block until UDPReader thread is started up
+			UDPReader reader = new UDPReader();
+			Thread UDPReaderThread = new Thread(reader);
+			UDPReaderThread.start();
+			while(!UDPReaderThread.isAlive()){
+				synchronized(reader){
+					try{
+						reader.wait();
+					} catch(InterruptedException e){
+						
+					}
+				}
+			}
+		}
+	}
+	
+	private class UDPReader implements Runnable{
+		
+		@Override
+		public void run() {
+			if(udpSocket == null){
+				try {
+					udpSocket = new DatagramSocket(port, host);
+				} catch (SocketException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			//notify that the thread is started
+			synchronized(this){
+				notifyAll();
+			}
+			
+			ObjectMapper mapper = new ObjectMapper();
+			
+			while(!state.isTerminal()){
+				byte[] buff = new byte[UDP_BUFFER_SIZE];
+				DatagramPacket packet = new DatagramPacket(buff, buff.length);
+				try {
+					udpSocket.receive(packet);
+					byte[] data = new byte[packet.getLength()];
+					System.arraycopy(packet.getData(), 0, data, 0, packet.getLength());
+					messages.add(mapper.readValue(data, Message.class));
+				} catch (IOException e) {
 				}
 			}
 		}
@@ -160,15 +255,7 @@ public class Connection {
 		
 		@Override
 		public void run() {
-			
-			
-			
-			//notify that the thread is started
-			synchronized(this){
-				notifyAll();
-			}
-
-			
+			//initiate socket if this hasn't been done yet.
 			if(s == null){
 				try {
 					s = new Socket(host, port);
@@ -177,6 +264,14 @@ public class Connection {
 					return;
 				}
 			}
+			
+			messages = new OutQueue<Message>(s);
+			
+			//notify that the thread is started
+			synchronized(this){
+				notifyAll();
+			}
+
 			
 			//initiate and configure ObjectMapper
 			ObjectMapper mapper = new ObjectMapper();
@@ -216,9 +311,9 @@ public class Connection {
 				if(iterator != null){
 					while(iterator.hasNext()){
 						Message m = iterator.next();
-						State newState = handler.messageReceived(state, m, messages); 
+						State newState = handler.messageReceived(state, m, getConnection()); 
 						if(newState == null){
-							newState = new DefaultProtocolHandler().messageReceived(state, m, messages);
+							newState = new DefaultProtocolHandler().messageReceived(state, m, getConnection());
 						}
 						state = newState;
 						
@@ -240,6 +335,9 @@ public class Connection {
 				s.close();
 			} catch (IOException e) {
 			}
+			
+			//handle disconnect
+			handler.onDisconnect(state);
 		}
 	}
 }

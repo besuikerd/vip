@@ -1,4 +1,4 @@
-package com.eyecall.connection.test;
+package com.eyecall.connection.test.conntest;
 
 public class TestModel {
 	private String name;

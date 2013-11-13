@@ -4,11 +4,16 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.ServerSocket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.eyecall.connection.Connection;
 
 public class Server {
+	private static final Logger logger = LoggerFactory.getLogger(Server.class);
 	
-	private int port;	
+	
+	private int port;
 	
 	public Server(int port){
 		this.port = port;
@@ -19,6 +24,7 @@ public class Server {
 		ServerSocket s = null;
 		try{
 			s = new ServerSocket(port);
+			logger.debug("Server started listening to port {}", port);
 		} catch(BindException e){
 			throw e;
 		} catch (IOException e) {
@@ -27,7 +33,7 @@ public class Server {
 		if(s != null){
 			while(true){
 				try{
-					new Connection(s.accept(), new ServerProtocolHandler(), ServerState.WAITING).init();
+					new Connection(s.accept(), new ServerProtocolHandler(), ServerState.WAITING).init(true);
 				} catch(IOException e){
 					e.printStackTrace();
 					try {

@@ -1,26 +1,25 @@
-package com.eyecall.server;
+package com.eyecall.test;
 
 import com.eyecall.connection.State;
 
-public enum ServerState implements State{
+public enum VIPState implements State {
+	IDLE,
 	WAITING,
-	FINDING_VOLUNTEERS,
-	CALLING,
-	DISCONNECTED(true)
-;
-	
-	
+	BEING_HELPED,
+	DISCONNECTED(true);
+
 	private boolean isTerminal = false;
 
-	private ServerState(boolean isTerminal) {
+	private VIPState(boolean isTerminal) {
 		this.isTerminal = isTerminal;
 	}
 	
-	private ServerState() {
+	private VIPState() {
 	}
 	
 	@Override
 	public boolean isTerminal() {
 		return isTerminal;
 	}
+	
 }
