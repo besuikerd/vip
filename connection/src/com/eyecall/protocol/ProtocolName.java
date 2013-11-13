@@ -7,10 +7,10 @@ public enum ProtocolName implements Named{
 	
 	// Received by Volunteer
 	/**
-	 * Er is een unieke sleutel toegekend aan de client.<br>
+	 * Sleutel is geaccepteerd door de server
 	 * key [String]: de gegenereerde sleutel
 	 */
-	ASSIGN_KEY("assign_key"),
+	ACKNOWLEDGE_KEY("assign_key"),
 	/**
 	 * Een VBP heeft een nieuw hulpverzoek ingediend en deze vrijwilliger wordt opgeroepen om te helpen.<br>
 	 * request_id [integer]: de identifier van deze request<br>
@@ -75,10 +75,11 @@ public enum ProtocolName implements Named{
 	
 	// Received by Server
 	/**
-	 * Aanvragen van een unieke sleutel voor de VBP<br>
+	 * Registreren van een vrijwilliger<br>
+	 * volunteer_id [string] id verkregen van Google Cloud Messaging voor push berichten.
 	 * Geen parameters
 	 */
-	OBTAIN_KEY("obtain_key"),
+	REGISTER("register"),
 	/**
 	 * accepteren van een verzoek<br>
 	 * request_id [integer]: de identifier van de request die geaccepteerd wordt.<br>

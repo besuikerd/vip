@@ -1,4 +1,4 @@
-package com.eyecall.connection.test;
+package com.eyecall.connection.test.conntest;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -22,7 +22,7 @@ public class ConnectionTest {
 					//wrap Connection around the Socket
 					Connection c = new Connection(s, new TestProtocolHandler(), TestState.AWAITING_CONNECTION);
 					//initialize the connection
-					c.init();
+					c.init(false);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -39,7 +39,7 @@ public class ConnectionTest {
 		Connection c = new Connection(s, new TestProtocolHandler(), TestState.AWAITING_CONNECTION);
 		
 		//initialize the connection
-		c.init();
+		c.init(false);
 		
 		//send the first message
 		c.send(new Message("hello").add("hello", "pieter"));
