@@ -2,15 +2,13 @@ package com.eyecall.volunteer;
 
 import java.util.List;
 
-import com.eyecall.event.ClickEvent;
-import com.eyecall.eventbus.Event;
-import com.eyecall.eventbus.EventBus;
-import com.eyecall.eventbus.EventListener;
-import com.eyecall.eventbus.InputEventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,16 +17,31 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.eyecall.event.ClickEvent;
+import com.eyecall.eventbus.Event;
+import com.eyecall.eventbus.EventBus;
+import com.eyecall.eventbus.EventListener;
+import com.eyecall.eventbus.InputEventListener;
+import com.eyecall.protocol.ProtocolField;
+import com.eyecall.push.PushRegistration;
 
 public class MainActivity extends Activity implements EventListener{
+	
+	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
 	
 	public static final String TAG = "Eyecall Volunteer";
 	private PreferencesManager preferencesManager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		
 		super.onCreate(savedInstanceState);
 		preferencesManager = new PreferencesManager(this.getBaseContext());
+		
+		//check if application has yet been registered
+		new PushRegistration(this).register();
 		
 		// Set view
 		setContentView(R.layout.activity_locations);
@@ -60,11 +73,32 @@ public class MainActivity extends Activity implements EventListener{
 	
 	@Override
 	public void onEvent(Event e) {
-		if(e instanceof ClickEvent){
-			ClickEvent event = (ClickEvent) e;
-			if(event.getTag().equals(EventTag.ADD_LOCATION.getName())){
-				openLocationActivity(null);
-			}
+		switch(EventTag.lookup(e.getTag())){
+		case ADD_LOCATION:
+			openLocationActivity(null);
+			break;
+		case ID_ACCEPTED:
+			runOnUiThread(new Runnable() {
+				
+				@Override
+				public void run() {
+					Toast.makeText(getApplicationContext(), "id registered!", Toast.LENGTH_LONG).show();
+				}
+			});
+			
+			PreferenceManager.getDefaultSharedPreferences(this).edit().putString(ProtocolField.VOLUNTEER_ID.getName(), e.getData().toString()).commit();
+			break;
+		case ID_REJECTED:
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					Toast.makeText(getApplicationContext(), R.string.error_register_unable, Toast.LENGTH_LONG).show();
+				}
+			});
+			
+			break;
+		default:
+			break;
 		}
 		
 	}

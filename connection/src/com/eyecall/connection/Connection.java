@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,8 @@ public class Connection {
 	 */
 	public static final int UDP_BUFFER_SIZE = 16*1024;
 	
+	public static final long RESULT_TIMEOUT = 10000;
+	
 	private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 	
 	
@@ -70,6 +73,8 @@ public class Connection {
 	 */
 	private OutQueue<Message> messages;
 	
+	private Message latestMessage;
+	
 	private int port;
 	private InetAddress host;
 	
@@ -97,6 +102,14 @@ public class Connection {
 		this.host = InetAddress.getByName(host);
 	}
 	
+	public Connection(String host, int port) throws UnknownHostException{
+		this(host, port, new StatelessProtocolHandler(), StatelessProtocolHandler.statelessState());
+	}
+	
+	public Connection(Socket s){
+		this(s, new StatelessProtocolHandler(), StatelessProtocolHandler.statelessState());
+	}
+	
 	private Connection getConnection(){
 		return this;
 	}
@@ -121,6 +134,42 @@ public class Connection {
 			} catch (IOException e) {
 			}
 		}
+	}
+	
+	
+	/**
+	 * sends a message over this connection and wait for a result. Note that 
+	 * this method is blocking. Only allowed when the connection is a stateless
+	 * connection (No implementation of ProtocolHandler given). Timeout to wait
+	 * for is set in {@link #RESULT_TIMEOUT}.
+	 * @return
+	 */
+	@Deprecated //not working
+	public Message sendForResult(Message m) throws IOException{
+		if(handler instanceof StatelessProtocolHandler){
+			send(m);
+			Message result = null;
+			logger.debug("message {} sent. waiting for result...", m);
+			synchronized(this){
+				try {
+					wait(RESULT_TIMEOUT);
+				} catch (InterruptedException e) {
+				}
+				logger.debug("out of lock, did we receive a message? {}", latestMessage != null);
+				result = latestMessage;
+				latestMessage = null;
+				if(result == null){
+					throw new IOException("Message not received after timeout");
+				}
+			}
+			return result;
+		} else{
+			throw new IllegalStateException("Not allowed wait for results in a stateful connection");
+		}
+	}
+	
+	protected void setLatestMessage(Message latestMessage) {
+		this.latestMessage = latestMessage;
 	}
 	
 	/**
@@ -163,23 +212,17 @@ public class Connection {
 	 */
 	public void init(boolean useUDP){
 		//block until ConnectionHandler thread is started up
-		ConnectionHandler handler = new ConnectionHandler();
+		CountDownLatch latch = new CountDownLatch(1);
+		ConnectionHandler handler = new ConnectionHandler(latch);
 		Thread connectionHandlerThread = new Thread(handler);
+		connectionHandlerThread.setName(Thread.currentThread().getName() + "-ConnHandler");
 		connectionHandlerThread.start();
-		synchronized (handler) {
-			try {
-				handler.wait();
-			} catch (InterruptedException e) {
-			}
+		try {
+			latch.await();
+		} catch (InterruptedException e1) {
 		}
-		while(!connectionHandlerThread.isAlive()){
-			synchronized (handler) {
-				try {
-					handler.wait();
-				} catch (InterruptedException e) {
-				}
-			}
-		}
+		
+		
 		
 		if(useUDP){
 			try {
@@ -253,6 +296,14 @@ public class Connection {
 	 */
 	private class ConnectionHandler implements Runnable{
 		
+		private CountDownLatch latch;
+		
+		public ConnectionHandler(CountDownLatch latch) {
+			this.latch = latch;
+		}
+
+
+
 		@Override
 		public void run() {
 			//initiate socket if this hasn't been done yet.
@@ -261,35 +312,30 @@ public class Connection {
 					s = new Socket(host, port);
 				} catch(IOException e){
 					logger.warn("unable to instantiate socket from {}:{}", host, port);
-					return;
 				}
 			}
 			
 			messages = new OutQueue<Message>(s);
 			
-			//notify that the thread is started
-			synchronized(this){
-				notifyAll();
+			latch.countDown();
+			
+			if(s == null){
+				return;
 			}
-
 			
 			//initiate and configure ObjectMapper
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 			
 			//fire up outputqueue thread
-			Thread outQueueThread = new Thread(messages);
-			outQueueThread.start();
+			CountDownLatch latch = new CountDownLatch(1);
+			
+			messages.start(latch);
 			
 			//block until outQueue thread is started up
-			while(!outQueueThread.isAlive()){
-				synchronized (messages) {
-					try {
-						messages.wait();
-						
-					} catch (InterruptedException e) {
-					}
-				}
+			try {
+				latch.await();
+			} catch (InterruptedException e2) {
 			}
 			
 			//initiate message iterator that iterates over the InputStream
@@ -311,6 +357,7 @@ public class Connection {
 				if(iterator != null){
 					while(iterator.hasNext()){
 						Message m = iterator.next();
+						logger.debug("message received in state {}: {}", state, m);
 						State newState = handler.messageReceived(state, m, getConnection()); 
 						if(newState == null){
 							newState = new DefaultProtocolHandler().messageReceived(state, m, getConnection());

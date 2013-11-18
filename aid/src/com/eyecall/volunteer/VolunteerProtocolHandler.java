@@ -2,27 +2,47 @@ package com.eyecall.volunteer;
 
 import android.util.Log;
 
+import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
-import com.eyecall.connection.OutQueue;
 import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
+import com.eyecall.eventbus.Event;
+import com.eyecall.eventbus.EventBus;
+import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
 
 public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState> {
 	
 	public State messageSent(VolunteerState state, Message m) {
-		// TODO Auto-generated method stub
-		return null;
+		switch(ProtocolName.lookup(m.getName())){
+		case ACCEPT_REQUEST:
+			return VolunteerState.WAITING_FOR_ACKNOWLEDGEMENT; 
+		case REGISTER:
+			return VolunteerState.WAITING_FOR_KEY;
+		default: 
+			return state;
+		}
 	}
 
 	@Override
-	public State messageReceived(VolunteerState state, Message m, OutQueue queue) {
+	public State messageReceived(VolunteerState state, Message m, Connection c) {
 		Log.d(MainActivity.TAG, "Message received: '" + m.getName() + "' State:" + state.toString());
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		switch (state){
 		case INITIALISATION:
 			//TODO iets met log
 			
+		case WAITING_FOR_KEY:
+			switch(messageName){
+			case ACKNOWLEDGE_KEY:
+				EventBus.getInstance().post(new Event(EventTag.ID_ACCEPTED, m.getParam(ProtocolField.VOLUNTEER_ID)));
+				break;
+			case REJECT_KEY:
+				EventBus.getInstance().post(new Event(EventTag.ID_REJECTED, m.getParam(ProtocolField.VOLUNTEER_ID)));
+				break;
+			}
+			break;
+		
 		case IDLE:
 			switch(messageName){
 			case NEW_REQUEST:
@@ -34,19 +54,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				return null;
 			}
 			
-		case WAITING_FOR_KEY:
-			switch(messageName){
-			case ASSIGN_KEY:
-				if(m.hasParam("key")){
-					//TODO shared preferences in context maken
-					//Editor edit = sp.edit();
-					//edit.putString("Volunteer key", (String)m.getParam("key"));
-					//edit.commit();
-					return VolunteerState.IDLE;
-				}
-			default:
-				return null;
-			}
+		
 		case HELPING:
 			switch(messageName){
 			case OTHER_DISCONNECTED:
@@ -80,11 +88,12 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 			switch(messageName){
 			case CANCEL_REQUEST:
 				if(m.hasParam("request_id")){
-					//TODO gui verdwijnt
+					EventBus.getInstance().post(new Event(EventTag.REQUEST_DENIED));
 					return VolunteerState.IDLE;
 				}
-			case ACKNOWLEDGE_HELP:
+			case ACKNOWLEDGE_KEY:
 				if(m.hasParam("request_id")){
+					EventBus.getInstance().post(new Event(EventTag.REQUEST_ACKNOWLEDGED));
 					return VolunteerState.HELPING;
 				}
 			default:
@@ -92,6 +101,15 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				}
 			}
 		return null;
+	}
+
+	@Override
+	public void onDisconnect(VolunteerState state) {
+//		switch(state){
+//		case WAITING_FOR_KEY:
+//			EventBus.getInstance().post(new Event(EventTag.ID_REJECTED));
+//			break;
+//		}
 	}
  }
 

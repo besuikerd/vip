@@ -25,5 +25,6 @@ public interface ProtocolHandler<E extends State> {
 	 * message.
 	 */
 	public State messageSent(E state, Message m);
-	public State messageReceived(E state, Message m, OutQueue<Message> queue);
+	public State messageReceived(E state, Message m, Connection c);
+	public void onDisconnect(E state);
 }

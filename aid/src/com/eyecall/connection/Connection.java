@@ -1,9 +1,14 @@
 package com.eyecall.connection;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +38,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Connection {
 	
+	/**
+	 * length of UDP packet buffer (16kb)
+	 */
+	public static final int UDP_BUFFER_SIZE = 16*1024;
+	
+	public static final long RESULT_TIMEOUT = 10000;
+	
 	private static final Logger logger = LoggerFactory.getLogger(Connection.class);
+	
 	
 	/**
 	 * socket over which messages are passed
 	 */
 	private Socket s;
+	
+	/**
+	 * socket over which UDP packets are sent
+	 */
+	private DatagramSocket udpSocket;
 	
 	/**
 	 * ProtocolHandler handling incoming messages
@@ -55,8 +73,10 @@ public class Connection {
 	 */
 	private OutQueue<Message> messages;
 	
+	private Message latestMessage;
+	
 	private int port;
-	private String host;
+	private InetAddress host;
 	
 	/**
 	 * construct a new Connection
@@ -68,18 +88,31 @@ public class Connection {
 		this.s = s;
 		this.handler = handler;
 		this.state = state;
-		this.messages = new OutQueue<Message>(s);
+		if(s != null){
+			this.port = s.getPort();
+			this.host = s.getInetAddress();
+		}
 	}
 	
 	
 
-	public Connection(String host, int port, ProtocolHandler handler, State state) {
+	public Connection(String host, int port, ProtocolHandler handler, State state) throws UnknownHostException {
 		this(null, handler, state);
 		this.port = port;
-		this.host = host;
+		this.host = InetAddress.getByName(host);
 	}
-
-
+	
+	public Connection(String host, int port) throws UnknownHostException{
+		this(host, port, new StatelessProtocolHandler(), StatelessProtocolHandler.statelessState());
+	}
+	
+	public Connection(Socket s){
+		this(s, new StatelessProtocolHandler(), StatelessProtocolHandler.statelessState());
+	}
+	
+	private Connection getConnection(){
+		return this;
+	}
 
 	/**
 	 * send a message over this connection. This method is non-blocking; the
@@ -101,7 +134,53 @@ public class Connection {
 			} catch (IOException e) {
 			}
 		}
-		
+	}
+	
+	
+	/**
+	 * sends a message over this connection and wait for a result. Note that 
+	 * this method is blocking. Only allowed when the connection is a stateless
+	 * connection (No implementation of ProtocolHandler given). Timeout to wait
+	 * for is set in {@link #RESULT_TIMEOUT}.
+	 * @return
+	 */
+	@Deprecated //not working
+	public Message sendForResult(Message m) throws IOException{
+		if(handler instanceof StatelessProtocolHandler){
+			send(m);
+			Message result = null;
+			logger.debug("message {} sent. waiting for result...", m);
+			synchronized(this){
+				try {
+					wait(RESULT_TIMEOUT);
+				} catch (InterruptedException e) {
+				}
+				logger.debug("out of lock, did we receive a message? {}", latestMessage != null);
+				result = latestMessage;
+				latestMessage = null;
+				if(result == null){
+					throw new IOException("Message not received after timeout");
+				}
+			}
+			return result;
+		} else{
+			throw new IllegalStateException("Not allowed wait for results in a stateful connection");
+		}
+	}
+	
+	protected void setLatestMessage(Message latestMessage) {
+		this.latestMessage = latestMessage;
+	}
+	
+	/**
+	 * send a message with UDP instead of TCP
+	 */
+	public void sendUDP(Message m) throws IOException{
+		byte[] data = new ObjectMapper().writeValueAsBytes(m);
+		if(udpSocket == null){
+			udpSocket = new DatagramSocket(port, host);
+		}
+		udpSocket.send(new DatagramPacket(data, data.length, host, port));
 	}
 	
 	/**
@@ -131,16 +210,74 @@ public class Connection {
 	/**
 	 * Initiates this Connection. Fires up ConnectionHandler thread
 	 */
-	public void init(){
+	public void init(boolean useUDP){
 		//block until ConnectionHandler thread is started up
-		ConnectionHandler handler = new ConnectionHandler();
+		CountDownLatch latch = new CountDownLatch(1);
+		ConnectionHandler handler = new ConnectionHandler(latch);
 		Thread connectionHandlerThread = new Thread(handler);
 		connectionHandlerThread.start();
-		while(!connectionHandlerThread.isAlive()){
-			synchronized (handler) {
+		try {
+			latch.await();
+		} catch (InterruptedException e1) {
+		}
+		
+		
+		
+		if(useUDP){
+			try {
+				udpSocket = new DatagramSocket(port, host);
+			} catch (SocketException e) {
+				e.printStackTrace();
+				logger.warn("unable to bind to UDP socket");
+				return;
+			}
+			
+		
+		
+			//block until UDPReader thread is started up
+			UDPReader reader = new UDPReader();
+			Thread UDPReaderThread = new Thread(reader);
+			UDPReaderThread.start();
+			while(!UDPReaderThread.isAlive()){
+				synchronized(reader){
+					try{
+						reader.wait();
+					} catch(InterruptedException e){
+						
+					}
+				}
+			}
+		}
+	}
+	
+	private class UDPReader implements Runnable{
+		
+		@Override
+		public void run() {
+			if(udpSocket == null){
 				try {
-					handler.wait();
-				} catch (InterruptedException e) {
+					udpSocket = new DatagramSocket(port, host);
+				} catch (SocketException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			//notify that the thread is started
+			synchronized(this){
+				notifyAll();
+			}
+			
+			ObjectMapper mapper = new ObjectMapper();
+			
+			while(!state.isTerminal()){
+				byte[] buff = new byte[UDP_BUFFER_SIZE];
+				DatagramPacket packet = new DatagramPacket(buff, buff.length);
+				try {
+					udpSocket.receive(packet);
+					byte[] data = new byte[packet.getLength()];
+					System.arraycopy(packet.getData(), 0, data, 0, packet.getLength());
+					messages.add(mapper.readValue(data, Message.class));
+				} catch (IOException e) {
 				}
 			}
 		}
@@ -158,24 +295,31 @@ public class Connection {
 	 */
 	private class ConnectionHandler implements Runnable{
 		
+		private CountDownLatch latch;
+		
+		public ConnectionHandler(CountDownLatch latch) {
+			this.latch = latch;
+		}
+
+
+
 		@Override
 		public void run() {
-			
-			
-			
-			//notify that the thread is started
-			synchronized(this){
-				notifyAll();
-			}
-
-			
+			//initiate socket if this hasn't been done yet.
 			if(s == null){
 				try {
 					s = new Socket(host, port);
 				} catch(IOException e){
 					logger.warn("unable to instantiate socket from {}:{}", host, port);
-					return;
 				}
+			}
+			
+			messages = new OutQueue<Message>(s);
+			
+			latch.countDown();
+			
+			if(s == null){
+				return;
 			}
 			
 			//initiate and configure ObjectMapper
@@ -183,18 +327,14 @@ public class Connection {
 			mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 			
 			//fire up outputqueue thread
-			Thread outQueueThread = new Thread(messages);
-			outQueueThread.start();
+			CountDownLatch latch = new CountDownLatch(1);
+			
+			messages.start(latch);
 			
 			//block until outQueue thread is started up
-			while(!outQueueThread.isAlive()){
-				synchronized (messages) {
-					try {
-						messages.wait();
-						
-					} catch (InterruptedException e) {
-					}
-				}
+			try {
+				latch.await();
+			} catch (InterruptedException e2) {
 			}
 			
 			//initiate message iterator that iterates over the InputStream
@@ -216,9 +356,10 @@ public class Connection {
 				if(iterator != null){
 					while(iterator.hasNext()){
 						Message m = iterator.next();
-						State newState = handler.messageReceived(state, m, messages); 
+						logger.debug("message received in state {}: {}", state, m);
+						State newState = handler.messageReceived(state, m, getConnection()); 
 						if(newState == null){
-							newState = new DefaultProtocolHandler().messageReceived(state, m, messages);
+							newState = new DefaultProtocolHandler().messageReceived(state, m, getConnection());
 						}
 						state = newState;
 						
@@ -240,6 +381,9 @@ public class Connection {
 				s.close();
 			} catch (IOException e) {
 			}
+			
+			//handle disconnect
+			handler.onDisconnect(state);
 		}
 	}
 }

@@ -33,7 +33,7 @@ public class Database {
 		return factory.openSession();
 	}
 	
-	public void insertTransaction(Object... insertions){
+	public boolean insertTransaction(Object... insertions){
 		Session s = startSession();
 		Transaction tx = null;
 		try{
@@ -45,10 +45,12 @@ public class Database {
 		} catch(HibernateException e){
 			if(tx != null) tx.rollback();
 			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 	
-	public void deleteTransaction(Object... deletions){
+	public boolean deleteTransaction(Object... deletions){
 		Session s = startSession();
 		Transaction tx = null;
 		try{
@@ -60,10 +62,12 @@ public class Database {
 		} catch(HibernateException e){
 			if(tx != null) tx.rollback();
 			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 	
-	public void updateTransaction(Object... updates){
+	public boolean updateTransaction(Object... updates){
 		Session s = startSession();
 		Transaction tx = null;
 		try{
@@ -75,7 +79,9 @@ public class Database {
 		} catch(HibernateException e){
 			if(tx != null) tx.rollback();
 			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 	
 	public <E> E get(Class<E> cls, Serializable key){

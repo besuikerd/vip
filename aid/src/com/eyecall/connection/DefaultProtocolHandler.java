@@ -22,7 +22,7 @@ public class DefaultProtocolHandler implements ProtocolHandler<State>{
 	}
 	
 	@Override
-	public State messageReceived(State state, Message m, OutQueue<Message> queue) {
+	public State messageReceived(State state, Message m, Connection c) {
 		
 		if(m.getName() == ProtocolName.ERROR.getName()){
 			logger.warn("protocol error occurred: [{}]: {}", m.getParam("code", int.class), m.getParam("message"));
@@ -32,4 +32,7 @@ public class DefaultProtocolHandler implements ProtocolHandler<State>{
 		return state;
 	}
 	
+	@Override
+	public void onDisconnect(State state) {
+	}
 }

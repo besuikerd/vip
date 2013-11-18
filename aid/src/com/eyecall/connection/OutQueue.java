@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @param <E> Object type to be sent across the socket
  */
-public class OutQueue<E> implements Runnable{
+public class OutQueue<E>{
 	
 	private static Logger logger = LoggerFactory.getLogger(OutQueue.class);
 	
@@ -42,52 +43,12 @@ public class OutQueue<E> implements Runnable{
 		mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 	}
 	
-	@Override
-	public void run() {
-		//notify that thread is started
-		synchronized(this){
-			notifyAll();
-		}
-		
-		while(!s.isClosed()){
-			//empty the queue and send the messages through the socket
-			synchronized(this){
-				while(!queue.isEmpty()){
-				
-					E message = queue.remove();
-					
-					try {
-						logger.debug("sending: {}", mapper.writeValueAsString(message));
-						mapper.writeValue(s.getOutputStream(), message);
-					} catch (IOException e) {
-						logger.warn("IOException while writing a message from the queue (other side closed connection?): {}", e.toString());
-						
-						//close the socket
-						try {
-							s.close();
-						} catch (IOException e2) {
-						}
-					}
-					
-					//notify other threads waiting on this OutQueue 
-					synchronized(this){
-						notifyAll();
-					}
-				}
-			}
-			synchronized(this){
-				try {
-					wait(100);
-					if(!queue.isEmpty())
-						logger.debug("queue: {}", queue);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				
-			}
-		}
-		//empty the queue for when the socket wasn't closed gracefully
-		queue.clear();
+	public void start(){
+		start(null);
+	}
+	
+	public void start(CountDownLatch latch){
+		new Thread(new OutQueueThread(latch)).start();
 	}
 	
 	/**
@@ -96,7 +57,7 @@ public class OutQueue<E> implements Runnable{
 	 * @param e
 	 */
 	public void add(E e){
-		if(!s.isClosed()){
+		if(s!= null && !s.isClosed()){
 			logger.debug("adding message to queue: {}", e);
 			synchronized(this){
 				queue.add(e);
@@ -121,5 +82,61 @@ public class OutQueue<E> implements Runnable{
 	 */
 	public boolean isEmpty(){
 		return queue.isEmpty();	
+	}
+	
+	class OutQueueThread implements Runnable{
+		
+		private CountDownLatch latch;
+		
+		public OutQueueThread(CountDownLatch latch) {
+			this.latch = latch;
+		}
+
+		@Override
+		public void run() {
+			if(latch != null){
+				latch.countDown();
+			}
+			
+			while(!s.isClosed()){
+				//empty the queue and send the messages through the socket
+				synchronized(this){
+					while(!queue.isEmpty()){
+					
+						E message = queue.remove();
+						
+						try {
+							logger.debug("sending: {}", mapper.writeValueAsString(message));
+							mapper.writeValue(s.getOutputStream(), message);
+						} catch (IOException e) {
+							logger.warn("IOException while writing a message from the queue (other side closed connection?): {}", e.toString());
+							
+							//close the socket
+							try {
+								s.close();
+							} catch (IOException e2) {
+							}
+						}
+						
+						//notify other threads waiting on this OutQueue 
+						synchronized(this){
+							notifyAll();
+						}
+					}
+				}
+				synchronized(this){
+					try {
+						wait(100);
+						if(!queue.isEmpty())
+							logger.debug("queue: {}", queue);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					
+				}
+			}
+			//empty the queue for when the socket wasn't closed gracefully
+			queue.clear();
+		}
 	}
 }

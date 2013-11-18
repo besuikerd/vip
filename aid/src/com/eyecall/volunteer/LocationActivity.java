@@ -78,7 +78,7 @@ public class LocationActivity extends FragmentActivity implements EventListener{
 				//location.setLatitude(map.)
 				RadioGroup radios = (RadioGroup) findViewById(R.id.location_radiogroup_preferred);
 				int selected = radios.getCheckedRadioButtonId();
-				location.setPreferred(preferred)
+				//TODO commented out because this isn't done yet? location.setPreferred(preferred)
 				
 				
 				preferencesManager.saveLocation(location);

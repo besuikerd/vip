@@ -10,7 +10,13 @@ public enum ProtocolName implements Named{
 	 * Sleutel is geaccepteerd door de server
 	 * key [String]: de gegenereerde sleutel
 	 */
-	ACKNOWLEDGE_KEY("assign_key"),
+	ACKNOWLEDGE_KEY("acknowledge_key"),
+	
+	/**
+	 * Sleutel is geweigerd door de server
+	 * key [String]: de geweigerde sleutel
+	 */
+	REJECT_KEY("reject_key"),
 	/**
 	 * Een VBP heeft een nieuw hulpverzoek ingediend en deze vrijwilliger wordt opgeroepen om te helpen.<br>
 	 * request_id [integer]: de identifier van deze request<br>
