@@ -1,6 +1,6 @@
 package com.eyecall.volunteer;
 
-import java.net.UnknownHostException;
+import java.util.List;
 
 import android.util.Log;
 
@@ -15,23 +15,44 @@ import com.eyecall.protocol.ProtocolName;
 
 public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState> {
 	
-	public static void removeLocation(Connection connection, Location location){
+	/**
+	 * 
+	 * @param connection Connection to send message via
+	 * @param id Id of this volunteer
+	 * @param location Location to remove
+	 */
+	public static void removeLocation(Connection connection, String id, Location location){
 		connection.send(new Message(
 				ProtocolName.UPDATE_PREFFERED_LOCATION)
-		.add(ProtocolField.ACTION, ProtocolField.ACTION_DELETE)
+		.add(ProtocolField.VOLUNTEER_ID, id)
+		.add(ProtocolField.ACTION, ProtocolField.ACTION_DELETE.getName())
 		.add(ProtocolField.LATITUDE, location.getLatitude())
 		.add(ProtocolField.LONGITUDE, location.getLongitude())
-		.add(ProtocolField.TYPE, location.isPreferred() ? ProtocolField.TYPE_PREFERRED : ProtocolField.TYPE_NON_PREFERRED)
+		.add(ProtocolField.TYPE, location.isPreferred() ? ProtocolField.TYPE_PREFERRED.getName() : ProtocolField.TYPE_NON_PREFERRED.getName())
 				);
 	}
 	
-	public static void addLocation(Connection connection, Location location){
+	/**
+	 * 
+	 * @param connection Connection to send message via
+	 * @param id Id of this volunteer
+	 * @param location Location to add
+	 */
+	public static void addLocation(Connection connection, String id, Location location){
 		connection.send(new Message(
 				ProtocolName.UPDATE_PREFFERED_LOCATION)
-		.add(ProtocolField.ACTION, ProtocolField.ACTION_ADD)
+		.add(ProtocolField.VOLUNTEER_ID, id)
+		.add(ProtocolField.ACTION, ProtocolField.ACTION_ADD.getName())
 		.add(ProtocolField.LATITUDE, location.getLatitude())
 		.add(ProtocolField.LONGITUDE, location.getLongitude())
-		.add(ProtocolField.TYPE, location.isPreferred() ? ProtocolField.TYPE_PREFERRED : ProtocolField.TYPE_NON_PREFERRED)
+		.add(ProtocolField.TYPE, location.isPreferred() ? ProtocolField.TYPE_PREFERRED.getName() : ProtocolField.TYPE_NON_PREFERRED.getName())
+				);
+	}
+	
+	public static void requestLocations(Connection connection, String id){
+		connection.send(new Message(
+				ProtocolName.GET_LOCATIONS)
+		.add(ProtocolField.VOLUNTEER_ID, id)
 				);
 	}
 	
@@ -72,6 +93,11 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 					//TODO pop-up keuze menu
 				return VolunteerState.SHOWING_NOTIFICATION;
 				//}	
+			case LOCATIONS:
+				//m.g
+				
+				
+				return VolunteerState.IDLE;
 			default:
 				return null;
 			}

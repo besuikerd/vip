@@ -31,7 +31,7 @@ import com.eyecall.push.PushRegistration;
 
 public class MainActivity extends Activity implements EventListener{
 	
-	public static Connection connection;
+	//public static Connection connection;
 	
 	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
 	
@@ -42,14 +42,7 @@ public class MainActivity extends Activity implements EventListener{
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
-		try {
-			connection = new Connection(Constants.SERVER_URL, Constants.SERVER_PORT, new VolunteerProtocolHandler(), VolunteerState.INITIALISATION);
-			connection.init(false);
-		} catch (UnknownHostException e) {
-			Toast.makeText(this, "Unable to connect to server", Toast.LENGTH_LONG).show();
-			logger.warn("Unable to connect to server: {}", e.getMessage());
-			this.finish();
-		}
+		
 		preferencesManager = new PreferencesManager(this.getBaseContext());
 		
 		//check if application has yet been registered

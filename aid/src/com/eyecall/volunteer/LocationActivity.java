@@ -5,7 +5,9 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.widget.RadioGroup;
@@ -17,6 +19,7 @@ import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
+import com.eyecall.protocol.ProtocolField;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -37,10 +40,6 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     private GoogleMap map;
     
     private Marker marker;
-	//private VolunteerProtocolHandler protocolHandler;
-	
-    //private PreferencesManager preferencesManager;
-	
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +105,15 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     	
     }
     
+    private String getVolunteerId(){
+    	SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+		String volunteerId = null;
+		if(preferences.contains(ProtocolField.VOLUNTEER_ID.getName())){
+			volunteerId = preferences.getString(ProtocolField.VOLUNTEER_ID.getName(), null);
+		}
+		return volunteerId;
+    }
+    
     private void registerEvents(){
     	findViewById(R.id.location_button_cancel).setOnClickListener(new InputEventListener(EventTag.CANCEL_LOCATION_ADD, null));
     	findViewById(R.id.location_button_save).setOnClickListener(new InputEventListener(EventTag.SAVE_LOCATION, null));
@@ -121,7 +129,7 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 			}else if(event.getTag().equals(EventTag.SAVE_LOCATION.getName())){
 				Connection connection;
 				try {
-					connection = new Connection(Constants.SERVER_URL, Constants.SERVER_PORT, new VolunteerProtocolHandler(), VolunteerState.INITIALISATION);
+					connection = new Connection(Constants.SERVER_URL, Constants.SERVER_PORT, new VolunteerProtocolHandler(), VolunteerState.IDLE);
 					connection.init(false);
 				} catch (IOException exception) {
 					Toast.makeText(this, "Unable to connect to server. Try again later", Toast.LENGTH_LONG).show();
@@ -129,11 +137,19 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 					return;
 				}
 				
+				
+				String volunteerId = getVolunteerId();
+				if(volunteerId==null){
+					Toast.makeText(this, "No app id found. Please restart app", Toast.LENGTH_LONG).show();
+					logger.warn("No volunteer id found");
+					return;
+				}
+				
 				if(location==null){
 					location = new Location();
 				}else{
 					// First remove old location
-					VolunteerProtocolHandler.removeLocation(connection, location);
+					VolunteerProtocolHandler.removeLocation(connection, volunteerId, location);
 					logger.debug("Removed location: {}", location.toString());
 				}
 				//location.setLatitude(map.)
@@ -147,10 +163,19 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 				location.setRadius(0);
 				
 				// Add new location
-				VolunteerProtocolHandler.addLocation(connection, location);
+				VolunteerProtocolHandler.addLocation(connection, volunteerId, location);
 				logger.debug("Added location: {}", location.toString());
 				
+				try {
+					connection.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				
+				// toast
+				
+				this.finish();
 			}
 		}
 		

@@ -129,10 +129,27 @@ public enum ProtocolName implements Named{
 	 * "add": voeg deze locatie toe<br>
 	 * "delete": verwijder deze locatie<br>
 	 * type ["preferred"|"non-preferred"]
+	 * volunteer_id: Id van de vrijwilliger
 	 */
 	UPDATE_PREFFERED_LOCATION("update_location"),
 	
-	ERROR("error")
+	/**
+	 * Vraag aan de server de lijst met opgeslagen locaties<br>
+	 * volunteer_id: Id van de vrijwilliger
+	 */
+	GET_LOCATIONS("get_locations"),
+	
+	/**
+	 * Een lijst met locations wordt van de server naar de vrijwilliger gestuurd<br>
+	 * locations: Lijst van locations<br>
+	 * 		Een location bestaat uit:
+	 * 		latitude [double]: hoogtegraad van de locatie<br>
+	 * 		longitude [double]: breedtegraad van de locatie<br>
+	 * 		type ["preferred"|"non-preferred"]
+	 */
+	LOCATIONS("locations"),
+	
+	ERROR("error"), 
 	
 	
 	;
