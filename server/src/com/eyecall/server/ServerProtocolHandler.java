@@ -39,13 +39,11 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	
     	case WAITING:
     		
-    		String id = m.getParam(ProtocolField.VOLUNTEER_ID).toString();
-    		
     		switch(ProtocolName.lookup(m.getName())){
     		
     		case REGISTER:
     			
-    			
+    			String id = m.getParam(ProtocolField.VOLUNTEER_ID).toString();
     			
     			//create new volunteer with generated id
     			Volunteer v = new Volunteer(id);
@@ -55,16 +53,18 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			//TODO check if key is valid
     			
     			//save volunteer in the database
-    			Database.getInstance().insertTransaction(v);
-    			
-    			//add assign_key message to outqueue
-    			c.send(new Message(ProtocolName.ACKNOWLEDGE_KEY).add(ProtocolField.KEY, id));
-    			
+    			if(Database.getInstance().insertTransaction(v)){
+    				//acknowledge key
+        			c.send(new Message(ProtocolName.ACKNOWLEDGE_KEY).add(ProtocolField.KEY, id));
+    			} else{
+    				c.send(new Message(ProtocolName.REJECT_KEY).add(ProtocolField.KEY, id));
+    			}
     			//disconnect the connection
     			return ServerState.DISCONNECTED;
     		case REJECT_REQUEST:
     			break;
     		case ACCEPT_REQUEST:
+    			id = m.getParam(ProtocolField.REQUEST_ID).toString();
     			if(pool.exists(id)){
     				if(!pool.isConnected(id)){
     					

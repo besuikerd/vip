@@ -13,14 +13,14 @@
 
    <!-- Assume students is the database name -->
    <property name="hibernate.connection.url">
-      jdbc:mysql://localhost/vip
+      jdbc:mysql://localhost/vbp
    </property>
    
    <property name="hibernate.connection.username">
-      vip
+      vbp
    </property>
    <property name="hibernate.connection.password">
-      vip
+      owp
    </property>
 	
 </session-factory>
