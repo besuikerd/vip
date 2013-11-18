@@ -18,14 +18,16 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
-    <permission android:name="com.eyecall.volunteer.permission.C2D_MESSAGE"
-        android:protectionLevel="signature" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    
+    <permission android:name="com.eyecall.volunteer.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+
     <uses-permission android:name="com.eyecall.volunteer.permission.C2D_MESSAGE" />
 
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    
     
     
     <application
@@ -45,11 +47,12 @@
         <activity android:name="com.eyecall.volunteer.LocationActivity"></activity>
         <activity android:name="com.eyecall.volunteer.RequestActivity"></activity>
         <receiver
-            android:name=".GcmBroadcastReceiver"
+            android:name="com.google.android.gcm.GCMBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <category android:name="com.example.pushtest" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <category android:name="com.eyecall.volunteer" />
             </intent-filter>
         </receiver>
         <service android:name=".GcmIntentService" />        
@@ -62,11 +65,7 @@
     	android:value="AIzaSyCbBwPBvuFFScBvJb3A0xMoJJse9VxfrFA"/>
         <meta-data
     	android:name="com.google.android.gms.version"
-    	android:value="2" />
-        
-        
-        
-        
+    	android:value="@integer/google_play_services_version" />
         
     </application>
 

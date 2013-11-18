@@ -1,5 +1,7 @@
 package com.eyecall.volunteer;
 
+import java.net.UnknownHostException;
+
 import android.util.Log;
 
 import com.eyecall.connection.Connection;
@@ -12,6 +14,26 @@ import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
 
 public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState> {
+	
+	public static void removeLocation(Connection connection, Location location) throws UnknownHostException{
+		connection.send(new Message(
+				ProtocolName.UPDATE_PREFFERED_LOCATION)
+		.add(ProtocolField.ACTION, ProtocolField.ACTION_DELETE)
+		.add(ProtocolField.LATITUDE, location.getLatitude())
+		.add(ProtocolField.LONGITUDE, location.getLongitude())
+		.add(ProtocolField.TYPE, location.isPreferred() ? ProtocolField.TYPE_PREFERRED : ProtocolField.TYPE_NON_PREFERRED)
+				);
+	}
+	
+	public static void addLocation(Connection connection, Location location){
+		connection.send(new Message(
+				ProtocolName.UPDATE_PREFFERED_LOCATION)
+		.add(ProtocolField.ACTION, ProtocolField.ACTION_ADD)
+		.add(ProtocolField.LATITUDE, location.getLatitude())
+		.add(ProtocolField.LONGITUDE, location.getLongitude())
+		.add(ProtocolField.TYPE, location.isPreferred() ? ProtocolField.TYPE_PREFERRED : ProtocolField.TYPE_NON_PREFERRED)
+				);
+	}
 	
 	public State messageSent(VolunteerState state, Message m) {
 		switch(ProtocolName.lookup(m.getName())){

@@ -1,5 +1,8 @@
 package com.eyecall.volunteer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -10,21 +13,31 @@ import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-public class LocationActivity extends FragmentActivity implements EventListener{
+public class LocationActivity extends FragmentActivity implements EventListener, OnMapLongClickListener{
+	
+	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
     private com.eyecall.connection.Connection connection;
     
     private Location location;
     
     private GoogleMap map;
     
-    private PreferencesManager preferencesManager;
+    private Marker marker;
+	//private VolunteerProtocolHandler protocolHandler;
+	
+    //private PreferencesManager preferencesManager;
+	
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +45,7 @@ public class LocationActivity extends FragmentActivity implements EventListener{
     	
     	this.setContentView(R.layout.activity_location);
     	
-    	preferencesManager = new PreferencesManager(this);
+    	//preferencesManager = new PreferencesManager(this);
     	
     	// Set location
     	Intent intent = getIntent();
@@ -47,18 +60,47 @@ public class LocationActivity extends FragmentActivity implements EventListener{
     	initMap();
     }
     
+    @Override
+    public void onMapLongClick(LatLng point) {
+    	marker.setPosition(point);
+    }
+    
     private void initMap(){
+    	int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+    	if(status==ConnectionResult.SUCCESS){
+    		map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.location_map)).getMap();
+            if(map!=null){
+            	map.setMyLocationEnabled(true);
+                LatLng position;
+                if(location==null){
+                	position = new LatLng(0,0);
+                	map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
+                }else{
+                	position = new LatLng(location.getLatitude(), location.getLongitude());
+                	map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 18));
+                }
+                map.setOnMapLongClickListener(this);
+                marker = map.addMarker(new MarkerOptions().title("Location").position(position));
+            }else{
+            	logger.warn("Map not loaded, onCreateView not finished");
+            }
+    	}else{
+    		logger.warn("Map not loaded, GooglePlayServices unavailable:");
+    		if(status==ConnectionResult.SERVICE_MISSING){
+    			logger.warn("SERVICE_MISSING");
+    		}else if(status==ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED){
+    			logger.warn("SERVICE_VERSION_UPDATE_REQUIRED");
+    		}else if(status==ConnectionResult.SERVICE_DISABLED){
+    			logger.warn("SERVICE_DISABLED");
+    		}else if(status==ConnectionResult.SERVICE_INVALID){
+    			logger.warn("SERVICE_INVALID");
+    		}
+    	}
+    	
+    	
+    	getSupportFragmentManager().executePendingTransactions();
     	// Get a handle to the Map Fragment
-    	map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.location_map)).getMap();
-        map.setMyLocationEnabled(true);
-        if(location==null){
-        	LatLng position = new LatLng(0,0);
-        	map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
-        }else{
-        	LatLng position = new LatLng(location.getLatitude(), location.getLongitude());
-        	map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 18));
-        	map.addMarker(new MarkerOptions().title("Location").position(position));
-        }
+    	
     }
     
     private void registerEvents(){
@@ -74,14 +116,28 @@ public class LocationActivity extends FragmentActivity implements EventListener{
 			if(event.getTag().equals(EventTag.CANCEL_LOCATION_ADD.getName())){
 				this.finish();
 			}else if(event.getTag().equals(EventTag.SAVE_LOCATION.getName())){
-				if(location==null) location = new Location();
+				if(location==null){
+					location = new Location();
+				}else{
+					// First remove old location
+					VolunteerProtocolHandler.removeLocation(location);
+					logger.debug("Removed location: {}", location.toString());
+				}
 				//location.setLatitude(map.)
 				RadioGroup radios = (RadioGroup) findViewById(R.id.location_radiogroup_preferred);
+				
 				int selected = radios.getCheckedRadioButtonId();
-				//TODO commented out because this isn't done yet? location.setPreferred(preferred)
+				
+				location.setPreferred(selected==R.id.location_radio_preferred);
+				location.setLatitude(marker.getPosition().latitude);
+				location.setLongitude(marker.getPosition().longitude);
+				location.setRadius(0);
+				
+				// Add new location
+				VolunteerProtocolHandler.addLocation(location);
+				logger.debug("Added location: {}", location.toString());
 				
 				
-				preferencesManager.saveLocation(location);
 			}
 		}
 		

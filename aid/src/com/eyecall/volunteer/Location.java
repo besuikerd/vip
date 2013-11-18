@@ -10,14 +10,14 @@ public class Location implements Parcelable {
 
 	private Location(Parcel in) {
 		Location l = new Location();
-		l.id = in.readInt();
+		//l.id = in.readInt();
 		l.latitude = in.readDouble();
 		l.longitude = in.readDouble();
 		l.preferred = in.readInt()==1;
 		l.radius = in.readInt();
 	}
 
-	private int id;
+	//private int id;
 
 	private double latitude;
 
@@ -27,13 +27,13 @@ public class Location implements Parcelable {
 
 	private int radius;
 
-	public void setId(int id) {
-		this.id = id;
-	}
+	//public void setId(int id) {
+	//	this.id = id;
+	//}
 
-	public int getId() {
-		return id;
-	}
+	//public int getId() {
+	//	return id;
+	//}
 
 	public double getLatitude() {
 		return latitude;
@@ -75,7 +75,7 @@ public class Location implements Parcelable {
 
 	@Override
 	public void writeToParcel(Parcel out, int flags) {
-		out.writeInt(id);
+		//out.writeInt(id);
 		out.writeDouble(latitude);
 		out.writeDouble(longitude);
 		out.writeInt(preferred ? 1 : 0);
@@ -91,6 +91,11 @@ public class Location implements Parcelable {
 		public Location[] newArray(int size) {
 			return new Location[size];
 		}
+	};
+	
+	@Override
+	public String toString() {
+		return "lat=" + latitude + " long=" + longitude + " pref=" + (preferred ? "true": "false") + " radius=" + radius;
 	};
 
 }

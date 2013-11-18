@@ -1,5 +1,6 @@
 package com.eyecall.volunteer;
 
+import java.net.UnknownHostException;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.eyecall.connection.Connection;
 import com.eyecall.event.ClickEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
@@ -29,6 +31,8 @@ import com.eyecall.push.PushRegistration;
 
 public class MainActivity extends Activity implements EventListener{
 	
+	public static Connection connection;
+	
 	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
 	
 	public static final String TAG = "Eyecall Volunteer";
@@ -38,6 +42,14 @@ public class MainActivity extends Activity implements EventListener{
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
+		try {
+			connection = new Connection(Constants.SERVER_URL, Constants.SERVER_PORT, new VolunteerProtocolHandler(), VolunteerState.INITIALISATION);
+			connection.init(false);
+		} catch (UnknownHostException e) {
+			Toast.makeText(this, "Unable to connect to server", Toast.LENGTH_LONG).show();
+			logger.warn("Unable to connect to server: {}", e.getMessage());
+			this.finish();
+		}
 		preferencesManager = new PreferencesManager(this.getBaseContext());
 		
 		//check if application has yet been registered
@@ -50,6 +62,7 @@ public class MainActivity extends Activity implements EventListener{
 		Button addLocation = (Button) findViewById(R.id.locations_button_add);
 		addLocation.setOnClickListener(new InputEventListener(EventTag.ADD_LOCATION, null));
 		
+		// Register for events
 		EventBus.getInstance().subscribe(this);
 		
 		// Set adapter for listview

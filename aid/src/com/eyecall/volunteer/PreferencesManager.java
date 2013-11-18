@@ -33,7 +33,7 @@ public class PreferencesManager {
 				continue;
 			}
 			Location location = new Location();
-			location.setId(id);
+			//location.setId(id);
 			location.setLatitude(prefs.getFloat(string + "-lat", 0));
 			location.setLongitude(prefs.getFloat(string + "-long", 0));
 			location.setPreferred(prefs.getBoolean(string + "-pref", true));
