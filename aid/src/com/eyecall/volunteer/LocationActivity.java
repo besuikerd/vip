@@ -1,5 +1,7 @@
 package com.eyecall.volunteer;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,7 +9,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
+import com.eyecall.connection.Connection;
 import com.eyecall.event.ClickEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
@@ -27,7 +31,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class LocationActivity extends FragmentActivity implements EventListener, OnMapLongClickListener{
 	
 	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
-    private com.eyecall.connection.Connection connection;
     
     private Location location;
     
@@ -116,11 +119,21 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 			if(event.getTag().equals(EventTag.CANCEL_LOCATION_ADD.getName())){
 				this.finish();
 			}else if(event.getTag().equals(EventTag.SAVE_LOCATION.getName())){
+				Connection connection;
+				try {
+					connection = new Connection(Constants.SERVER_URL, Constants.SERVER_PORT, new VolunteerProtocolHandler(), VolunteerState.INITIALISATION);
+					connection.init(false);
+				} catch (IOException exception) {
+					Toast.makeText(this, "Unable to connect to server. Try again later", Toast.LENGTH_LONG).show();
+					logger.warn("Unable to connect to server: {}", exception.getMessage());
+					return;
+				}
+				
 				if(location==null){
 					location = new Location();
 				}else{
 					// First remove old location
-					VolunteerProtocolHandler.removeLocation(location);
+					VolunteerProtocolHandler.removeLocation(connection, location);
 					logger.debug("Removed location: {}", location.toString());
 				}
 				//location.setLatitude(map.)
@@ -134,7 +147,7 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 				location.setRadius(0);
 				
 				// Add new location
-				VolunteerProtocolHandler.addLocation(location);
+				VolunteerProtocolHandler.addLocation(connection, location);
 				logger.debug("Added location: {}", location.toString());
 				
 				

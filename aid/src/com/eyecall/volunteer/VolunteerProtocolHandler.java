@@ -15,7 +15,7 @@ import com.eyecall.protocol.ProtocolName;
 
 public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState> {
 	
-	public static void removeLocation(Connection connection, Location location) throws UnknownHostException{
+	public static void removeLocation(Connection connection, Location location){
 		connection.send(new Message(
 				ProtocolName.UPDATE_PREFFERED_LOCATION)
 		.add(ProtocolField.ACTION, ProtocolField.ACTION_DELETE)
