@@ -3,6 +3,7 @@ package com.eyecall.vip;
 import android.location.Location;
 import android.util.Log;
 
+import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.connection.OutQueue;
 import com.eyecall.connection.ProtocolHandler;
@@ -22,9 +23,44 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 		}
 		// State is changed when messageSent is called
 	}
-	
+
 	@Override
-	public State messageReceived(VIPState state, Message m, OutQueue<Message> queue) {
+	public State messageSent(VIPState state, Message m) {
+		Log.d(MainActivity.TAG, "Message sent: '" + m.getName() + "' State:" + state.toString());
+		ProtocolName messageName = ProtocolName.lookup(m.getName());
+		switch (state){
+		case IDLE:
+			switch(messageName){
+			case REQUEST_HELP:
+				return VIPState.WAITING;
+			default:
+				return null;
+			}
+		case WAITING:
+			switch(messageName){
+			case DISCONNECT:
+				return VIPState.DISCONNECTED;
+			default:
+				return null;
+			}
+		case BEING_HELPED:
+			switch(messageName){
+			case MEDIA_DATA:
+				return VIPState.BEING_HELPED;
+			case UPDATE_LOCATION:
+				return VIPState.BEING_HELPED;
+			case DISCONNECT:
+				return VIPState.DISCONNECTED;
+			default:
+				return null;
+			}
+		default:
+			return null;
+		}
+	}
+
+	@Override
+	public State messageReceived(VIPState state, Message m, Connection c) {
 		Log.d(MainActivity.TAG, "Message received: '" + m.getName() + "' State:" + state.toString());
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		switch (state) {
@@ -71,37 +107,8 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 	}
 
 	@Override
-	public State messageSent(VIPState state, Message m) {
-		Log.d(MainActivity.TAG, "Message sent: '" + m.getName() + "' State:" + state.toString());
-		ProtocolName messageName = ProtocolName.lookup(m.getName());
-		switch (state){
-		case IDLE:
-			switch(messageName){
-			case REQUEST_HELP:
-				return VIPState.WAITING;
-			default:
-				return null;
-			}
-		case WAITING:
-			switch(messageName){
-			case DISCONNECT:
-				return VIPState.DISCONNECTED;
-			default:
-				return null;
-			}
-		case BEING_HELPED:
-			switch(messageName){
-			case MEDIA_DATA:
-				return VIPState.BEING_HELPED;
-			case UPDATE_LOCATION:
-				return VIPState.BEING_HELPED;
-			case DISCONNECT:
-				return VIPState.DISCONNECTED;
-			default:
-				return null;
-			}
-		default:
-			return null;
-		}
+	public void onDisconnect(VIPState state) {
+		// TODO Auto-generated method stub
+		
 	}
 }
