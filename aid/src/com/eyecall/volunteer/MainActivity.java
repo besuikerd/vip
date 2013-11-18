@@ -91,6 +91,7 @@ public class MainActivity extends Activity implements EventListener{
 			openLocationActivity(null);
 			break;
 		case ID_ACCEPTED:
+			PreferenceManager.getDefaultSharedPreferences(this).edit().putString(ProtocolField.VOLUNTEER_ID.getName(), e.getData().toString()).commit();
 			runOnUiThread(new Runnable() {
 				
 				@Override
@@ -98,8 +99,6 @@ public class MainActivity extends Activity implements EventListener{
 					Toast.makeText(getApplicationContext(), "id registered!", Toast.LENGTH_LONG).show();
 				}
 			});
-			
-			PreferenceManager.getDefaultSharedPreferences(this).edit().putString(ProtocolField.VOLUNTEER_ID.getName(), e.getData().toString()).commit();
 			break;
 		case ID_REJECTED:
 			runOnUiThread(new Runnable() {

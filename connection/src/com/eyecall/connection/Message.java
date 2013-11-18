@@ -106,6 +106,16 @@ public class Message {
 		return getParam(n.getName());
 	}
 	
+	public String getParamString(Named n){
+		Object p = getParam(n);
+		return p == null ? null : p.toString();
+	}
+	
+	public String getParamString(String key){
+		Object p = getParam(key);
+		return p == null ? null : p.toString();
+	}
+	
 	public <E> E getParam(String key, Class<E> cls){
 		if(params.containsKey(key)){
 			Object val = getParam(key);

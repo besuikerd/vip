@@ -57,10 +57,10 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 		case WAITING_FOR_KEY:
 			switch(messageName){
 			case ACKNOWLEDGE_KEY:
-				EventBus.getInstance().post(new Event(EventTag.ID_ACCEPTED, m.getParam(ProtocolField.VOLUNTEER_ID)));
+				EventBus.getInstance().post(new Event(EventTag.ID_ACCEPTED, m.getParam(ProtocolField.KEY)));
 				break;
 			case REJECT_KEY:
-				EventBus.getInstance().post(new Event(EventTag.ID_REJECTED, m.getParam(ProtocolField.VOLUNTEER_ID)));
+				EventBus.getInstance().post(new Event(EventTag.ID_REJECTED, m.getParam(ProtocolField.KEY)));
 				break;
 			}
 			break;
