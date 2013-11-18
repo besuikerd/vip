@@ -1,7 +1,14 @@
 package com.eyecall.server;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import sun.security.util.PendingException;
 
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
@@ -12,6 +19,7 @@ import com.eyecall.database.Volunteer;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
 import com.eyecall.test.ConnectionTest;
+import com.google.android.gcm.server.Sender;
 
 
 public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
@@ -43,19 +51,16 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     		
     		case REGISTER:
     			
-    			String id = m.getParam(ProtocolField.VOLUNTEER_ID).toString();
+    			String id = m.getParamString(ProtocolField.VOLUNTEER_ID);
     			
     			//create new volunteer with generated id
     			Volunteer v = new Volunteer(id);
     			
-    			logger.debug("key {} assigned to volunteer", v.getId());
-    			
-    			//TODO check if key is valid
-    			
     			//save volunteer in the database
     			if(Database.getInstance().insertTransaction(v)){
     				//acknowledge key
-        			c.send(new Message(ProtocolName.ACKNOWLEDGE_KEY).add(ProtocolField.KEY, id));
+        			
+    				c.send(new Message(ProtocolName.ACKNOWLEDGE_KEY).add(ProtocolField.KEY, id));
     			} else{
     				c.send(new Message(ProtocolName.REJECT_KEY).add(ProtocolField.KEY, id));
     			}
@@ -94,6 +99,50 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				ConnectionTest.REQUEST_ID = request.getId();
     				old.notifyAll();
     			}
+    			
+    			//TODO change this query to a better one
+    			String query = "SELECT v FROM Volunteer v";
+    			
+    			final List<Volunteer> potentialVolunteers = Database.getInstance().queryForList(query, Volunteer.class);
+    			
+    			logger.debug("potential volunteers: {}", potentialVolunteers);
+    			
+    			request.addPendingVolunteers(potentialVolunteers);
+    			
+    			
+    			Sender sender = new Sender(Constants.API_KEY);
+    			for(Volunteer volunteer : potentialVolunteers){
+    				com.google.android.gcm.server.Message message = new com.google.android.gcm.server.Message.Builder()
+    				.addData(ProtocolField.REQUEST_ID.getName(), request.getId())
+    				.addData(ProtocolField.LATITUDE.getName(), m.getParamString(ProtocolField.LATITUDE))
+    				.addData(ProtocolField.LONGITUDE.getName(), m.getParamString(ProtocolField.LONGITUDE))
+    				.build();
+    				try {
+						sender.sendNoRetry(message, volunteer.getId());
+					} catch (IOException e) {
+					}
+    			}
+    			
+    			
+    			TimerTask t = new TimerTask(){
+    				@Override
+    				public void run() {
+    					for(Volunteer volunteer : potentialVolunteers){
+    						if(!volunteer.getId().equals(request.getVolunteerId())){
+    							//TODO send reject request messages?
+    						}
+    					}
+    					request.rejectPendingVolunteers();
+    					
+    					//TODO resend to other group of volunteers
+    					/*
+    					if(!request.connected()){
+    						new Timer().schedule(this, Constants.REQUEST_DELAY);
+    					}
+    					*/
+    				}
+    			};
+    			new Timer().schedule(t, Constants.REQUEST_DELAY);
     			
     			
     			//TODO find list of volunteers, send out push messages and schedule a task to look for more volunteers

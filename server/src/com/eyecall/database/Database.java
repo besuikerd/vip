@@ -1,8 +1,11 @@
 package com.eyecall.database;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.AbstractMap.SimpleEntry;
 
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -48,6 +51,15 @@ public class Database {
 			return false;
 		}
 		return true;
+	}
+	
+	public <E> List<E> queryForList(String query, Class<E> cls, Object... params){
+		Query q = startSession().createQuery(query);
+		for(int i = 0 ; i < params.length ; i++){
+			Object param = params[i];
+			q.setParameter(i, param);
+		}
+		return q.list();
 	}
 	
 	public boolean deleteTransaction(Object... deletions){
