@@ -30,9 +30,7 @@ import com.eyecall.protocol.ProtocolField;
 import com.eyecall.push.PushRegistration;
 
 public class MainActivity extends Activity implements EventListener{
-	
-	//public static Connection connection;
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
 	
 	public static final String TAG = "Eyecall Volunteer";
@@ -42,7 +40,6 @@ public class MainActivity extends Activity implements EventListener{
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
-		
 		preferencesManager = new PreferencesManager(this.getBaseContext());
 		
 		//check if application has yet been registered
