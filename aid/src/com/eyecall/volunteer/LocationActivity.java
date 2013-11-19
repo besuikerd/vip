@@ -69,15 +69,18 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     
     private void initMap(){
     	int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-    	if(status==ConnectionResult.SUCCESS){
+    	if(status == ConnectionResult.SUCCESS){
     		map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.location_map)).getMap();
             if(map!=null){
+            	// Setup map
             	map.setMyLocationEnabled(true);
                 LatLng position;
                 if(location==null){
-                	position = new LatLng(0,0);
+                	// New location
+                	position = new LatLng(map.getMyLocation().getLatitude(), map.getMyLocation().getLongitude());
                 	map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
                 }else{
+                	// Exisiting location
                 	position = new LatLng(location.getLatitude(), location.getLongitude());
                 	map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 18));
                 }
@@ -98,11 +101,6 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     			logger.warn("SERVICE_INVALID");
     		}
     	}
-    	
-    	
-    	getSupportFragmentManager().executePendingTransactions();
-    	// Get a handle to the Map Fragment
-    	
     }
     
     private String getVolunteerId(){
@@ -127,6 +125,15 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 			if(event.getTag().equals(EventTag.CANCEL_LOCATION_ADD.getName())){
 				this.finish();
 			}else if(event.getTag().equals(EventTag.SAVE_LOCATION.getName())){
+				// Get volunteer id
+				String volunteerId = getVolunteerId();
+				if(volunteerId==null){
+					Toast.makeText(this, "No app id found. Please restart app", Toast.LENGTH_LONG).show();
+					logger.warn("No volunteer id found");
+					return;
+				}
+				
+				// Make connection with server
 				Connection connection;
 				try {
 					connection = new Connection(Constants.SERVER_URL, Constants.SERVER_PORT, new VolunteerProtocolHandler(), VolunteerState.IDLE);
@@ -137,14 +144,7 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 					return;
 				}
 				
-				
-				String volunteerId = getVolunteerId();
-				if(volunteerId==null){
-					Toast.makeText(this, "No app id found. Please restart app", Toast.LENGTH_LONG).show();
-					logger.warn("No volunteer id found");
-					return;
-				}
-				
+				// Check if old location should be removed
 				if(location==null){
 					location = new Location();
 				}else{
@@ -152,11 +152,10 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 					VolunteerProtocolHandler.removeLocation(connection, volunteerId, location);
 					logger.debug("Removed location: {}", location.toString());
 				}
-				//location.setLatitude(map.)
+				
+				// Get input 
 				RadioGroup radios = (RadioGroup) findViewById(R.id.location_radiogroup_preferred);
-				
 				int selected = radios.getCheckedRadioButtonId();
-				
 				location.setPreferred(selected==R.id.location_radio_preferred);
 				location.setLatitude(marker.getPosition().latitude);
 				location.setLongitude(marker.getPosition().longitude);
@@ -166,6 +165,7 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 				VolunteerProtocolHandler.addLocation(connection, volunteerId, location);
 				logger.debug("Added location: {}", location.toString());
 				
+				// Close connection
 				try {
 					connection.close();
 				} catch (IOException e1) {
@@ -174,7 +174,9 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 				}
 				
 				// toast
+				Toast.makeText(this, "Location saved", Toast.LENGTH_LONG).show();
 				
+				// Go back to list
 				this.finish();
 			}
 		}
