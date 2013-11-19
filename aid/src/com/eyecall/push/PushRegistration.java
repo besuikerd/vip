@@ -58,6 +58,8 @@ public class PushRegistration {
 				protected String doInBackground(Void... params) {
 					try {
 						// register at GCM
+						
+						/*
 						GCMRegistrar.checkDevice(context);
 						GCMRegistrar.checkManifest(context);
 						String key = GCMRegistrar.getRegistrationId(context);
@@ -68,6 +70,9 @@ public class PushRegistration {
 						} else {
 							logger.debug("Already registered");
 						}
+						*/
+						String key = GoogleCloudMessaging.getInstance(context).register(SENDER_KEY);
+						logger.debug("key obtained: {}", key);
 						// send registry key to server
 						Connection c = new Connection(Constants.SERVER_URL,
 								Constants.SERVER_PORT,
