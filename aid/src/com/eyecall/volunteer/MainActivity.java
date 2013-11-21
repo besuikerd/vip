@@ -1,6 +1,5 @@
 package com.eyecall.volunteer;
 
-import java.net.UnknownHostException;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -20,14 +19,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.eyecall.connection.Connection;
-import com.eyecall.event.ClickEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.push.PushRegistration;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 public class MainActivity extends Activity implements EventListener{
 
@@ -41,6 +40,9 @@ public class MainActivity extends Activity implements EventListener{
 		
 		super.onCreate(savedInstanceState);
 		preferencesManager = new PreferencesManager(this.getBaseContext());
+		
+		
+		checkPlayServices();
 		
 		//check if application has yet been registered
 		new PushRegistration(this).register();
@@ -71,6 +73,14 @@ public class MainActivity extends Activity implements EventListener{
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+	
+	private void checkPlayServices(){
+		int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getApplicationContext());
+		if (resultCode != ConnectionResult.SUCCESS){
+		} else{
+			GooglePlayServicesUtil.getErrorDialog(resultCode, this, 1);
+		}
 	}
 	
 	

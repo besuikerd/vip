@@ -1,4 +1,4 @@
-package com.eyecall.volunteer;
+package com.eyecall.vip;
 
 public class Constants {
 	//public static final String SERVER_URL = "www.besuikerd.nl";

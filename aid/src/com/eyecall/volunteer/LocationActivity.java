@@ -69,8 +69,8 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     
     private void initMap(){
     	int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-    	if(status == ConnectionResult.SUCCESS){
-    		map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.location_map)).getMap();
+    	if(status==ConnectionResult.SUCCESS){
+    		map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_map)).getMap();
             if(map!=null){
             	// Setup map
             	map.setMyLocationEnabled(true);

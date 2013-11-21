@@ -14,6 +14,9 @@
     <string name="location_radio_preferred">Preferred</string>
     <string name="location_radio_not_preferred">Not preferred</string>
     
+    <string name="title_video">Beeld</string>
+    <string name="title_map">Kaart</string>
+    
     <string name="accept">Accept</string>
     <string name="reject">Reject</string>
     

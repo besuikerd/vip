@@ -13,6 +13,6 @@ public class VIPSimulation {
 	public static void main(String[] args) throws UnknownHostException, IOException {
 		Connection c = new Connection(new Socket("localhost", 5000));
 		c.init(false);
-		c.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LATITUDE, 0d).add(ProtocolField.LONGITUDE, 0d));
+		c.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LATITUDE, 52d).add(ProtocolField.LONGITUDE, 7d));
 	}
 }
