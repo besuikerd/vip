@@ -6,7 +6,7 @@
     android:orientation="vertical" >
 
     <fragment
-        android:id="@+id/location_map"
+        android:id="@+id/fragment_map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

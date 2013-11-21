@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.util.Log;
 
+import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.connection.ProtocolHandler;
@@ -139,7 +140,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 					EventBus.getInstance().post(new Event(EventTag.REQUEST_DENIED));
 					return VolunteerState.IDLE;
 				}
-			case ACKNOWLEDGE_KEY:
+			case ACKNOWLEDGE_HELP:
 				if(m.hasParam("request_id")){
 					EventBus.getInstance().post(new Event(EventTag.REQUEST_ACKNOWLEDGED));
 					return VolunteerState.HELPING;
@@ -153,11 +154,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 
 	@Override
 	public void onDisconnect(VolunteerState state) {
-//		switch(state){
-//		case WAITING_FOR_KEY:
-//			EventBus.getInstance().post(new Event(EventTag.ID_REJECTED));
-//			break;
-//		}
+		ConnectionInstance.clear();
 	}
  }
 

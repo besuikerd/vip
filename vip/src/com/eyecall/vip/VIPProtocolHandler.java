@@ -3,6 +3,7 @@ package com.eyecall.vip;
 import android.location.Location;
 import android.util.Log;
 
+import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.connection.OutQueue;
@@ -14,15 +15,6 @@ import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
 
 public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
-	
-	public void sendHelpRequest(Location location){
-		if(location!=null){
-			MainActivity.connection.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LONGITUDE, location.getLongitude()).add(ProtocolField.LATITUDE, location.getLatitude()));
-		}else{
-			MainActivity.connection.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LONGITUDE, 0.0D).add(ProtocolField.LATITUDE, 0.0D));
-		}
-		// State is changed when messageSent is called
-	}
 
 	@Override
 	public State messageSent(VIPState state, Message m) {
@@ -108,7 +100,6 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 
 	@Override
 	public void onDisconnect(VIPState state) {
-		// TODO Auto-generated method stub
-		
+		ConnectionInstance.clear();
 	}
 }
