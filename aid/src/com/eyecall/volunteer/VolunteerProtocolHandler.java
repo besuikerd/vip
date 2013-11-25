@@ -1,6 +1,8 @@
 package com.eyecall.volunteer;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,8 +122,11 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				return VolunteerState.SHOWING_NOTIFICATION;
 				//}	
 			case LOCATIONS:
-				//m.g
+				List<Location> locations = new ArrayList<Location>();
 				
+				EventBus.getInstance().post(new Event(EventTag.LOCATIONS_RECEIVED, locations));
+				//m.g
+				//LocationAdapter.getInstance().addLocation();
 				
 				return VolunteerState.IDLE;
 			default:

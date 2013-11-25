@@ -1,24 +1,23 @@
 package com.eyecall.volunteer;
 
+import java.net.UnknownHostException;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.eyecall.connection.Connection;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
@@ -33,20 +32,19 @@ public class MainActivity extends Activity implements EventListener{
 	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
 	
 	public static final String TAG = "Eyecall Volunteer";
-	private PreferencesManager preferencesManager;
+	
+	private ProgressDialog dialog;
+
+	private LocationAdapter locationAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
-		preferencesManager = new PreferencesManager(this.getBaseContext());
 		
-		
+		// Check Google Play Services
 		checkPlayServices();
-		
-		//check if application has yet been registered
-		new PushRegistration(this).register();
-		
+
 		// Set view
 		setContentView(R.layout.activity_locations);
 		
@@ -59,13 +57,49 @@ public class MainActivity extends Activity implements EventListener{
 		
 		// Set adapter for listview
 		ListView locationList = ((ListView) findViewById(R.id.locations_list));
-		List<Location> locations = preferencesManager.getLocations();
-		locationList.setAdapter(new LocationAdapter(locations));
+		locationAdapter = new LocationAdapter(this);
+		locationList.setAdapter(locationAdapter);
 		
+		//check if application has yet been registered
+		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		if (!preferences.contains(ProtocolField.VOLUNTEER_ID.getName())) {
+			// No id saved -> Get id
+			new PushRegistration(this).register();
+			// Locations in the list are loaded when registration is complete (id is needed)
+		}else{
+			// Id found -> Set id and continue
+			Constants.VOLUNTEER_ID = preferences.getString(ProtocolField.VOLUNTEER_ID.getName(), "");
+			this.loadLocationList();
+		}
+
 		/* DIALOGS */
 		// TODO verplaatsen naar dialoggedeelte
 		//new AlertDialog.Builder(this).setTitle("Heeft u kunnen helpen?").setView(getLayoutInflater().inflate(R.layout.dialog_success,null));
 		//new AlertDialog.Builder(this).setTitle("Wilt u vaker oproepen in de buurt van deze locatie ontvangen?").setView(getLayoutInflater().inflate(R.layout.dialog_preferred,null));
+	}
+
+	/**
+	 * Request the locations from the server and load them into the view
+	 * This can only be used if the volunteer id is known!
+	 */
+	private void loadLocationList() {
+		this.dialog = new ProgressDialog(this);
+		dialog.setTitle(R.string.loading_locations);
+		dialog.setCancelable(false);
+		dialog.setMessage(getString(R.string.wait));
+		dialog.show();
+		
+		Connection c;
+		try {
+			c = new Connection(Constants.SERVER_URL,
+					Constants.SERVER_PORT,
+					new VolunteerProtocolHandler(),
+					VolunteerState.IDLE);
+			c.init(false);
+			VolunteerProtocolHandler.requestLocations(c, Constants.VOLUNTEER_ID);
+		} catch (UnknownHostException e) {
+			logger.warn("Unable to connect: {}", e);
+		}
 	}
 
 	@Override
@@ -90,8 +124,19 @@ public class MainActivity extends Activity implements EventListener{
 		case ADD_LOCATION:
 			openLocationActivity(null);
 			break;
+		case LOCATIONS_RECEIVED:
+			dialog.dismiss();
+			List<Location> locations = (List<Location>) e.getData();
+			for(Location location : locations){
+				locationAdapter.addLocation(location);
+			}
 		case ID_ACCEPTED:
+			// Volunteer id is accepted -> Save it
 			PreferenceManager.getDefaultSharedPreferences(this).edit().putString(ProtocolField.VOLUNTEER_ID.getName(), e.getData().toString()).commit();
+			Constants.VOLUNTEER_ID = e.getData().toString();
+			// Continue loading
+			this.loadLocationList();
+			
 			runOnUiThread(new Runnable() {
 				
 				@Override
@@ -128,50 +173,6 @@ public class MainActivity extends Activity implements EventListener{
 	}
 
 
-	class LocationAdapter extends BaseAdapter {
-		private List<Location> locations;
-		
-		public LocationAdapter(List<Location> locations) {
-			super();
-			this.locations = locations;
-		}
-
-		@Override
-		public int getCount() {
-			return locations.size();
-		}
-
-		@Override
-		public Object getItem(int position) {
-			return locations.get(position);
-		}
-
-		@Override
-		public long getItemId(int position) {
-			return position;
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			Location l = locations.get(position);
-			ViewGroup v = (ViewGroup) getLayoutInflater().inflate(R.layout.row_location,null);
-			
-			TextView locationText = (TextView) v.findViewById(R.id.location_header_preferred);
-			TextView preferredText = (TextView) v.findViewById(R.id.row_text_preferred);
-			ImageButton removeButton = (ImageButton) v.findViewById(R.id.row_button_remove);
-			
-			removeButton.setOnClickListener(new InputEventListener(EventTag.REMOVE_LOCATION, l));
-			
-			locationText.setText("long " + l.getLongitude() + " lat " + l.getLatitude());
-			if(l.isPreferred()){
-				preferredText.setText(R.string.row_text_preferred);
-			}else{
-				preferredText.setText(R.string.row_text_not_preferred);
-			}
-			
-			return v;
-		}
-		
-	}
+	
 
 }
