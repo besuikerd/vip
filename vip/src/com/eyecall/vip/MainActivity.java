@@ -1,6 +1,5 @@
 package com.eyecall.vip;
 
-import java.io.IOException;
 import java.net.UnknownHostException;
 
 import android.app.Activity;
@@ -13,13 +12,17 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
+import com.eyecall.connection.Message;
 import com.eyecall.event.ClickEvent;
 import com.eyecall.event.RequestGrantedEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
+import com.eyecall.protocol.ProtocolField;
+import com.eyecall.protocol.ProtocolName;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
@@ -44,11 +47,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	/** Server port */
 	private static final int SERVER_PORT = 5000;
 	
-	/** ProtocolHandler for this app */
-	public static VIPProtocolHandler protocolHandler;
-	/** Connection with the server */
-	public static Connection connection;	
-	
 	/** LocationClient used for getting last known location */
 	private LocationClient locationClient;
 	
@@ -66,8 +64,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	    EventBus.getInstance().subscribe(this);
 	    
 	    // Add listener to button
-	    Button button = (Button) findViewById(R.id.button_request);
-	    button.setOnClickListener(new InputEventListener(EventTag.REQUEST_BUTTON_PRESSED.getName(), null));
+	    ((Button) findViewById(R.id.button_request)).setOnClickListener(new InputEventListener(EventTag.REQUEST_BUTTON_PRESSED.getName(), null));
 	    
 	    // Keep screen on
 	    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -102,9 +99,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
         }else{
         	 Log.d(MainActivity.TAG, "Location found: lat:" + location.getLatitude() + " long:" + location.getLongitude());
         }
-        
-        // Now connect to the server
-        connectToServer();
+        ((Button) findViewById(R.id.button_request)).setEnabled(true);
     }
     
     /**
@@ -152,7 +147,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
              */
             showDialog(connectionResult.getErrorCode());
         }
-        connectToServer();
     }
     
     /* *****************************************************
@@ -167,41 +161,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	    
 	    // If ready -> onConnected (or onConnectionFailed) called
     }
-    
-    private void connectToServer(){
-    	// TIJDELIJK
-    	openHelpActivity();
-    	return;
-    	
-    	// Initialize connection with the server
-		/*try {
-			Log.d(TAG, "initConnection(): start");
-			initConnection();
-			Log.d(TAG, "initConnection(): completed");
-		} catch (UnknownHostException e) {
-			Toast.makeText(this, R.string.error_unknown_host, Toast.LENGTH_LONG).show();
-			Log.d(TAG, "initConnection(): UnknownHostException");
-			Log.d(TAG, e.getMessage());
-			enableRequestButton();
-			return;
-		} catch (IOException e) {
-			Toast.makeText(this, R.string.error_connection_failed, Toast.LENGTH_LONG).show();
-			Log.d(TAG, "initConnection(): IOException");
-			Log.d(TAG, e.getMessage());
-			enableRequestButton();
-			return;
-		}
-		
-		sendRequest();*/
-    }
-    
-    
-    private void sendRequest(){
-		// Send help request
-		protocolHandler.sendHelpRequest(location);
-		
-        // And wait for response ... (VIPProtocolHandler)
-    }
 
     private void enableRequestButton() {
 		Button button = (Button) findViewById(R.id.button_request);
@@ -213,17 +172,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 		button.setEnabled(false);
 	}
 
-	/**
-	 * Initialize the connection with the server
-	 * @throws IOException 
-	 * @throws UnknownHostException 
-	 * @ensure this.connection!=null
-	 */
-	private void initConnection() throws UnknownHostException, IOException {
-		if(connection!=null) return;
-		protocolHandler = new VIPProtocolHandler();
-		connection = new Connection(SERVER_ADDRESS, SERVER_PORT, protocolHandler, VIPState.IDLE);
-	}
 
 	public void openHelpActivity(){
 		Log.d(MainActivity.TAG, "Opening HelpActivity...");
@@ -239,9 +187,15 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 				disableRequestButton();
 				if(locationClient==null || !locationClient.isConnected()){
 					connectToGoogleSevices();
-				}else{
-					connectToServer();
 				}
+				Location l = locationClient.getLastLocation();
+				try {
+					Connection c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
+					c.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LATITUDE, l.getLatitude()).add(ProtocolField.LONGITUDE, l.getLongitude()));
+				} catch (UnknownHostException e1) {
+					e1.printStackTrace();
+				}
+				
 			}
 		
 		}else if(e instanceof RequestGrantedEvent){
