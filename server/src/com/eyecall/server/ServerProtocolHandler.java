@@ -8,13 +8,12 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sun.security.util.PendingException;
-
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
 import com.eyecall.database.Database;
+import com.eyecall.database.Location;
 import com.eyecall.database.Volunteer;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
@@ -147,6 +146,14 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			
     			//TODO find list of volunteers, send out push messages and schedule a task to look for more volunteers
     			return ServerState.FINDING_VOLUNTEERS;
+    		case GET_LOCATIONS:
+    			String volunteerId = (String) m.getParam(ProtocolField.VOLUNTEER_ID);
+    			List<Location> locations = Database.getInstance().queryForList("SELECT l FROM location l WHERE l.volunteer_id=?", Location.class, volunteerId);
+    			
+    			
+    			Message msg = new Message(ProtocolName.LOCATIONS);
+    			msg.add(ProtocolField.LOCATIONS, locations);
+    			c.send(msg);
     		default:
     			break;
     		}

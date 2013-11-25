@@ -15,7 +15,8 @@ public enum ProtocolField implements Named{
 	TYPE("type"), 
 	TYPE_NON_PREFERRED("non-preferred"), 
 	TYPE_PREFERRED("preferred"), 
-	VOLUNTEER_ID("volunteer_id")
+	VOLUNTEER_ID("volunteer_id"), 
+	LOCATIONS("locations")
 	
 	;
 	

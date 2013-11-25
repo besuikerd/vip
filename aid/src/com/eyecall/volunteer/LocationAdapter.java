@@ -1,6 +1,5 @@
 package com.eyecall.volunteer;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,14 +14,12 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.eyecall.connection.Connection;
 import com.eyecall.eventbus.InputEventListener;
-import com.eyecall.push.PushRegistration;
 
 class LocationAdapter extends BaseAdapter {
 	
 	private static final Logger logger = LoggerFactory
-			.getLogger(PushRegistration.class);
+			.getLogger(LocationAdapter.class);
 	
 	private List<Location> locations;
 	private Context context;

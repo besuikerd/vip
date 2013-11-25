@@ -18,12 +18,11 @@ import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
-import com.eyecall.push.PushRegistration;
 
 public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState> {
 	
 	private static final Logger logger = LoggerFactory
-			.getLogger(PushRegistration.class);
+			.getLogger(VolunteerProtocolHandler.class);
 	
 	/**
 	 * 
@@ -122,8 +121,10 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				return VolunteerState.SHOWING_NOTIFICATION;
 				//}	
 			case LOCATIONS:
+				String raw = m.getParam(ProtocolField.LOCATIONS).toString();
+				logger.debug("Locations received! raw json: {}", raw);
+				//List<Location> locations = (List<Location>) m.getParam(ProtocolField.LOCATIONS);
 				List<Location> locations = new ArrayList<Location>();
-				
 				EventBus.getInstance().post(new Event(EventTag.LOCATIONS_RECEIVED, locations));
 				//m.g
 				//LocationAdapter.getInstance().addLocation();

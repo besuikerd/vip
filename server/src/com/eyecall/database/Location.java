@@ -13,8 +13,6 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.ForeignKey;
 
-import com.sun.org.glassfish.gmbal.Description;
-
 @Entity
 @Table(name = "location")
 public class Location {
