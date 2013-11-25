@@ -38,14 +38,16 @@
         <activity
             android:name="com.eyecall.volunteer.MainActivity"
             android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity android:name="com.eyecall.volunteer.LocationActivity"></activity>
         <activity android:name="com.eyecall.volunteer.RequestActivity"></activity>
+        <activity android:name="com.eyecall.volunteer.SupportActivity">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+        </activity>
         <receiver
             android:name="com.eyecall.push.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
@@ -65,7 +67,6 @@
         <meta-data
     	android:name="com.google.android.gms.version"
     	android:value="@integer/google_play_services_version" />
-        <activity android:name="SupportActivity"></activity>
         
     </application>
 
