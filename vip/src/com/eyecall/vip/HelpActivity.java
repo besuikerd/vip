@@ -1,11 +1,10 @@
 package com.eyecall.vip;
 
 import java.io.IOException;
+
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.net.LocalServerSocket;
-import android.net.LocalSocketAddress;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;

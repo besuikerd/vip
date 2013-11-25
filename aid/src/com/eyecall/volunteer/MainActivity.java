@@ -1,6 +1,5 @@
 package com.eyecall.volunteer;
 
-import java.net.UnknownHostException;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -20,8 +19,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.eyecall.connection.Connection;
-import com.eyecall.event.ClickEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;

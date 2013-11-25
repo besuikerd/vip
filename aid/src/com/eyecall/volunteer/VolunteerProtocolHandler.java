@@ -1,6 +1,9 @@
 package com.eyecall.volunteer;
 
-import java.util.List;
+import java.net.UnknownHostException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import android.util.Log;
 
@@ -12,8 +15,12 @@ import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
+import com.eyecall.push.PushRegistration;
 
 public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState> {
+	
+	private static final Logger logger = LoggerFactory
+			.getLogger(PushRegistration.class);
 	
 	/**
 	 * 
@@ -54,6 +61,24 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				ProtocolName.GET_LOCATIONS)
 		.add(ProtocolField.VOLUNTEER_ID, id)
 				);
+	}
+	
+	public static void sendKeyToServer(String key){
+		// send registry key to server
+		Connection c;
+		try {
+			logger.debug("Sending key to server...: {}", key);
+			c = new Connection(Constants.SERVER_URL,
+					Constants.SERVER_PORT,
+					new VolunteerProtocolHandler(),
+					VolunteerState.INITIALISATION);
+			c.init(false);
+			c.send(new Message(ProtocolName.REGISTER).add(
+					ProtocolField.VOLUNTEER_ID, key));
+			logger.debug("Succes!");
+		} catch (UnknownHostException e) {
+			logger.error("Unable to connect to server: {}}", e);
+		}
 	}
 	
 	public State messageSent(VolunteerState state, Message m) {

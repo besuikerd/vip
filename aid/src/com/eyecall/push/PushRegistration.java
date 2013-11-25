@@ -11,15 +11,12 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 
-import com.eyecall.connection.Connection;
-import com.eyecall.connection.Message;
 import com.eyecall.protocol.ProtocolField;
-import com.eyecall.protocol.ProtocolName;
-import com.eyecall.volunteer.Constants;
 import com.eyecall.volunteer.R;
 import com.eyecall.volunteer.VolunteerProtocolHandler;
-import com.eyecall.volunteer.VolunteerState;
 import com.google.android.gcm.GCMRegistrar;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class PushRegistration {
@@ -35,63 +32,77 @@ public class PushRegistration {
 	}
 
 	public void register() {
-		final SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		if (!prefs.contains(ProtocolField.VOLUNTEER_ID.getName())) {
-			// get GCM key and register to server
-			final GoogleCloudMessaging gcm = GoogleCloudMessaging
-					.getInstance(context);
+			
+			int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
+	    	if(status == ConnectionResult.SUCCESS){
+	    		// Request id in background
+	    		new AsyncTask<Void, Void, String>() {
 
-			new AsyncTask<Void, Void, String>() {
+					private ProgressDialog dialog;
 
-				private ProgressDialog dialog;
+					protected void onPreExecute() {
+						this.dialog = new ProgressDialog(context);
+						dialog.setTitle(R.string.registering);
+						dialog.setCancelable(false);
+						dialog.setMessage(context.getString(R.string.wait));
+						dialog.show();
+					};
 
-				protected void onPreExecute() {
-					this.dialog = new ProgressDialog(context);
-					dialog.setTitle(R.string.registering);
-					dialog.setCancelable(false);
-					dialog.setMessage(context.getString(R.string.wait));
-					dialog.show();
-				};
-
-				@Override
-				protected String doInBackground(Void... params) {
-					try {
-						// register at GCM
-						
-						/*
-						GCMRegistrar.checkDevice(context);
-						GCMRegistrar.checkManifest(context);
-						String key = GCMRegistrar.getRegistrationId(context);
-						if (key.equals("")) {
-							GCMRegistrar.register(context, SENDER_KEY);
-							key = GCMRegistrar.getRegistrationId(context);
-							logger.debug("key obtained: {}", key);
-						} else {
-							logger.debug("Already registered");
-						}
-						*/
-						String key = GoogleCloudMessaging.getInstance(context).register(SENDER_KEY);
-						logger.debug("key obtained: {}", key);
-						// send registry key to server
-						Connection c = new Connection(Constants.SERVER_URL,
-								Constants.SERVER_PORT,
-								new VolunteerProtocolHandler(),
-								VolunteerState.INITIALISATION);
-						c.init(false);
-						c.send(new Message(ProtocolName.REGISTER).add(
-								ProtocolField.VOLUNTEER_ID, key));
-					} catch (IOException e) {
-						logger.warn("Unable to register, error: {}", e);
+					@Override
+					protected String doInBackground(Void... params) {
+						GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
+						String key = null;
+						try {
+							// Register via new method
+							key = gcm.register(SENDER_KEY);
+							logger.debug("GCM key obtained: {}", key);
+							if(key!=null && key.length()>0){
+								VolunteerProtocolHandler.sendKeyToServer(key);
+							}else{
+								logger.error("Key is not valid, not sending to server");
+							}
+						} catch (IOException e) {
+							// Device is too old. Try deprecated method
+							logger.warn("Unable to register, error: {}", e);
+							logger.warn("Trying deprecated method...");
+							
+							try{
+								GCMRegistrar.checkDevice(context);
+								GCMRegistrar.checkManifest(context);
+								logger.debug("Device and manifest are valid");
+								
+								GCMRegistrar.register(context, SENDER_KEY);
+								// GcmRegistrationIntentService will receive key
+							}catch(Exception e2){
+								logger.warn("Device or manifest is not valid: {}", e2);
+							}
+							
+						}						
+						return null;
 					}
-					return null;
-				}
 
-				protected void onPostExecute(String result) {
-					dialog.dismiss();
-					logger.debug("dialog dismissed");
-				};
-			}.execute();
+					protected void onPostExecute(String result) {
+						dialog.dismiss();
+						logger.debug("dialog dismissed");
+					};
+				}.execute();
+	    	}else{
+	    		// Google Play Services unavailable
+	    		logger.warn("Unable to register, GooglePlayServices unavailable:");
+	    		if(status==ConnectionResult.SERVICE_MISSING){
+	    			logger.warn("SERVICE_MISSING");
+	    		}else if(status==ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED){
+	    			logger.warn("SERVICE_VERSION_UPDATE_REQUIRED");
+	    		}else if(status==ConnectionResult.SERVICE_DISABLED){
+	    			logger.warn("SERVICE_DISABLED");
+	    		}else if(status==ConnectionResult.SERVICE_INVALID){
+	    			logger.warn("SERVICE_INVALID");
+	    		}
+	    	}
+			
+			
 		}
 	}
 }

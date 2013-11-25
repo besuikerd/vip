@@ -168,9 +168,8 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 				// Close connection
 				try {
 					connection.close();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				} catch (IOException exception) {
+					logger.warn("Unable to close connection: {}", exception);
 				}
 				
 				// toast
