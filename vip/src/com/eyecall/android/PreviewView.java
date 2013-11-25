@@ -3,10 +3,8 @@ package com.eyecall.android;
 import java.io.FileDescriptor;
 import java.io.IOException;
 
-import com.eyecall.event.SurfaceCreatedEvent;
-import com.eyecall.eventbus.EventBus;
-import com.eyecall.vip.EventTag;
-import com.eyecall.vip.MainActivity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import android.content.Context;
 import android.hardware.Camera;
@@ -17,11 +15,18 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.eyecall.event.SurfaceCreatedEvent;
+import com.eyecall.eventbus.EventBus;
+import com.eyecall.vip.EventTag;
+import com.eyecall.vip.MainActivity;
+
 /** 
  * A basic Camera preview class 
  * Source: http://developer.android.com/guide/topics/media/camera.html#camera-preview
  */
 public class PreviewView extends SurfaceView implements SurfaceHolder.Callback {
+	private static final Logger logger = LoggerFactory.getLogger(PreviewView.class);
+	
     private SurfaceHolder surfaceHolder;
     private Camera camera;
 	private PreviewCallback previewCallback;
@@ -52,22 +57,25 @@ public class PreviewView extends SurfaceView implements SurfaceHolder.Callback {
           // ignore: tried to stop a non-existent preview
         }
     	// Unlock camera for recording
+    	camera.lock();
         camera.unlock();
         
         mediaRecorder.setCamera(camera);
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
         mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
         
         /*mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mediaRecorder.setVideoFrameRate(15);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         mediaRecorder.setVideoSize(width, height);
-        mediaRecorder.setVideoFrameRate(25);
+        
         mediaRecorder.setVideoEncodingBitRate(512*1024);*/
     }
     
     public void startPreview() throws IOException{
+    	logger.debug("camera: {}, surfaceholder: {}", camera, surfaceHolder);
     	 camera.setPreviewDisplay(surfaceHolder);
     	 camera.setPreviewCallback(previewCallback);
          camera.startPreview();
@@ -86,7 +94,6 @@ public class PreviewView extends SurfaceView implements SurfaceHolder.Callback {
    	 	//camera.setPreviewCallback(previewCallback);
         
     	mediaRecorder.prepare();
-            
         mediaRecorder.start();    
     }
     
