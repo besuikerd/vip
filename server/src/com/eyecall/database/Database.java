@@ -2,7 +2,6 @@ package com.eyecall.database;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.AbstractMap.SimpleEntry;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -60,6 +59,16 @@ public class Database {
 			q.setParameter(i, param);
 		}
 		return q.list();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <E> E query(String query, Class<E> cls, Object... params){
+		Query q = startSession().createQuery(query);
+		for(int i = 0 ; i < params.length ; i++){
+			Object param = params[i];
+			q.setParameter(i, param);
+		}
+		return (E) q.uniqueResult();
 	}
 	
 	public boolean deleteTransaction(Object... deletions){

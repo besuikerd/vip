@@ -103,15 +103,6 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     	}
     }
     
-    private String getVolunteerId(){
-    	SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-		String volunteerId = null;
-		if(preferences.contains(ProtocolField.VOLUNTEER_ID.getName())){
-			volunteerId = preferences.getString(ProtocolField.VOLUNTEER_ID.getName(), null);
-		}
-		return volunteerId;
-    }
-    
     private void registerEvents(){
     	findViewById(R.id.location_button_cancel).setOnClickListener(new InputEventListener(EventTag.CANCEL_LOCATION_ADD, null));
     	findViewById(R.id.location_button_save).setOnClickListener(new InputEventListener(EventTag.SAVE_LOCATION, null));
@@ -126,8 +117,7 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 				this.finish();
 			}else if(event.getTag().equals(EventTag.SAVE_LOCATION.getName())){
 				// Get volunteer id
-				String volunteerId = getVolunteerId();
-				if(volunteerId==null){
+				if(Constants.VOLUNTEER_ID==null){
 					Toast.makeText(this, "No app id found. Please restart app", Toast.LENGTH_LONG).show();
 					logger.warn("No volunteer id found");
 					return;
@@ -149,7 +139,7 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 					location = new Location();
 				}else{
 					// First remove old location
-					VolunteerProtocolHandler.removeLocation(connection, volunteerId, location);
+					VolunteerProtocolHandler.removeLocation(connection, Constants.VOLUNTEER_ID, location);
 					logger.debug("Removed location: {}", location.toString());
 				}
 				
@@ -162,7 +152,7 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 				location.setRadius(0);
 				
 				// Add new location
-				VolunteerProtocolHandler.addLocation(connection, volunteerId, location);
+				VolunteerProtocolHandler.addLocation(connection, Constants.VOLUNTEER_ID, location);
 				logger.debug("Added location: {}", location.toString());
 				
 				// Close connection

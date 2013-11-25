@@ -15,6 +15,7 @@ import com.eyecall.connection.State;
 import com.eyecall.database.Database;
 import com.eyecall.database.Location;
 import com.eyecall.database.Volunteer;
+import com.eyecall.protocol.ErrorCode;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
 import com.eyecall.test.ConnectionTest;
@@ -154,6 +155,40 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			Message msg = new Message(ProtocolName.LOCATIONS);
     			msg.add(ProtocolField.LOCATIONS, locations);
     			c.send(msg);
+    		case UPDATE_PREFFERED_LOCATION:
+    			String action = m.getParamString(ProtocolField.ACTION);
+    			
+    			volunteerId = m.getParamString(ProtocolField.VOLUNTEER_ID);
+    			Volunteer volunteer = Database.getInstance().query("SELECT v FROM Volunteer v WHERE v.id=?", Volunteer.class, volunteerId);
+    			if(volunteer==null){
+    				c.send(new Message(ProtocolName.ERROR).add(ProtocolField.ERROR_CODE, ErrorCode.INVALID_VOLUNTEER_ID).add(ProtocolField.ERROR_MESSAGE, ""));
+    				return ServerState.WAITING;
+    			}
+    			
+    			
+    			if(action.equals(ProtocolField.ACTION_ADD.getName())){
+    				// Add
+    				Location location = new Location();
+    				location.setVolunteer(volunteer);
+    				location.setLongitude((float) m.getParam(ProtocolField.LONGITUDE));
+    				location.setLatitude((float) m.getParam(ProtocolField.LATITUDE));
+    				location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
+    				location.setRadius((int) m.getParam(ProtocolField.RADIUS));
+    				
+    				Database.getInstance().insertTransaction(location);
+    			}else{
+    				// Remove
+    				Location location = new Location();
+    				location.setVolunteer(volunteer);
+    				location.setLongitude((float) m.getParam(ProtocolField.LONGITUDE));
+    				location.setLatitude((float) m.getParam(ProtocolField.LATITUDE));
+    				location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
+    				location.setRadius((int) m.getParam(ProtocolField.RADIUS));
+    				
+    				// TODO continue
+    				
+    				//Database.getInstance().
+    			}
     		default:
     			break;
     		}
