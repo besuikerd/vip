@@ -376,6 +376,7 @@ public class Connection {
 			//eww nasty solution by Jackson ObjectMapper. Throws a RuntimeException when the socket is closed...
 			} catch(RuntimeException e){
 				logger.debug("message iterator seems to be done. Is the socket closed?: {}", e.toString());
+				e.printStackTrace();
 			}
 			//close the socket
 			try {

@@ -154,6 +154,9 @@ public class MainActivity extends Activity implements EventListener{
 			});
 			
 			break;
+		case ID_INVALID:
+			// Try to re-register
+			new PushRegistration(this).register();
 		default:
 			break;
 		}

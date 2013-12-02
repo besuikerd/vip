@@ -149,20 +149,21 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			return ServerState.FINDING_VOLUNTEERS;
     		case GET_LOCATIONS:
     			String volunteerId = (String) m.getParam(ProtocolField.VOLUNTEER_ID);
-    			List<Location> locations = Database.getInstance().queryForList("SELECT l FROM location l WHERE l.volunteer_id=?", Location.class, volunteerId);
+    			List<Location> locations = Database.getInstance().queryForList("FROM Location WHERE volunteer.id=?", Location.class, volunteerId);
     			
     			
     			Message msg = new Message(ProtocolName.LOCATIONS);
     			msg.add(ProtocolField.LOCATIONS, locations);
     			c.send(msg);
+    			return ServerState.DISCONNECTED;
     		case UPDATE_PREFFERED_LOCATION:
     			String action = m.getParamString(ProtocolField.ACTION);
     			
     			volunteerId = m.getParamString(ProtocolField.VOLUNTEER_ID);
     			Volunteer volunteer = Database.getInstance().query("SELECT v FROM Volunteer v WHERE v.id=?", Volunteer.class, volunteerId);
     			if(volunteer==null){
-    				c.send(new Message(ProtocolName.ERROR).add(ProtocolField.ERROR_CODE, ErrorCode.INVALID_VOLUNTEER_ID).add(ProtocolField.ERROR_MESSAGE, ""));
-    				return ServerState.WAITING;
+    				c.send(new Message(ProtocolName.ERROR).add(ProtocolField.ERROR_CODE, ErrorCode.INVALID_VOLUNTEER_ID.getCode()).add(ProtocolField.ERROR_MESSAGE, ""));
+    				return ServerState.DISCONNECTED;
     			}
     			
     			
@@ -170,25 +171,26 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				// Add
     				Location location = new Location();
     				location.setVolunteer(volunteer);
-    				location.setLongitude((float) m.getParam(ProtocolField.LONGITUDE));
-    				location.setLatitude((float) m.getParam(ProtocolField.LATITUDE));
+    				location.setLongitude((Float) m.getParam(ProtocolField.LONGITUDE));
+    				location.setLatitude((Float) m.getParam(ProtocolField.LATITUDE));
     				location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
-    				location.setRadius((int) m.getParam(ProtocolField.RADIUS));
+    				location.setRadius((Integer) m.getParam(ProtocolField.RADIUS));
     				
     				Database.getInstance().insertTransaction(location);
     			}else{
     				// Remove
     				Location location = new Location();
     				location.setVolunteer(volunteer);
-    				location.setLongitude((float) m.getParam(ProtocolField.LONGITUDE));
-    				location.setLatitude((float) m.getParam(ProtocolField.LATITUDE));
+    				location.setLongitude((Float) m.getParam(ProtocolField.LONGITUDE));
+    				location.setLatitude((Float) m.getParam(ProtocolField.LATITUDE));
     				location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
-    				location.setRadius((int) m.getParam(ProtocolField.RADIUS));
+    				location.setRadius((Integer) m.getParam(ProtocolField.RADIUS));
     				
     				// TODO continue
     				
     				//Database.getInstance().
     			}
+    			return ServerState.DISCONNECTED;
     		default:
     			break;
     		}

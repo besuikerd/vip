@@ -7,6 +7,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.eyecall.android.ConnectionInstance;
@@ -16,6 +17,7 @@ import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
+import com.eyecall.protocol.ErrorCode;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
 
@@ -98,6 +100,14 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 	public State messageReceived(VolunteerState state, Message m, Connection c) {
 		Log.d(MainActivity.TAG, "Message received: '" + m.getName() + "' State:" + state.toString());
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
+		
+		if(messageName.equals(ProtocolName.ERROR)){
+			if(m.getParam(ProtocolField.ERROR_CODE).equals(ErrorCode.INVALID_VOLUNTEER_ID)){
+				EventBus.getInstance().post(new Event(EventTag.ID_INVALID));
+				return state;
+			}
+		}
+		
 		switch (state){
 		case INITIALISATION:
 			//TODO iets met log

@@ -10,10 +10,15 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.eyecall.server.ServerProtocolHandler;
 
 
 public class Database {
 	private static Database instance;
+	private static final Logger logger = LoggerFactory.getLogger(Database.class);
 	private SessionFactory factory;
 	
 	private Database() {
@@ -52,12 +57,15 @@ public class Database {
 		return true;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <E> List<E> queryForList(String query, Class<E> cls, Object... params){
 		Query q = startSession().createQuery(query);
 		for(int i = 0 ; i < params.length ; i++){
 			Object param = params[i];
 			q.setParameter(i, param);
 		}
+		logger.debug("Query:");
+		logger.debug(q.getQueryString());
 		return q.list();
 	}
 	
