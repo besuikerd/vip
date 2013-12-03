@@ -41,7 +41,11 @@ public class MainActivity extends Activity implements EventListener{
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
-		
+		try{
+			Class.forName("com.eyecall.protocol.ProtocolField");
+		} catch(Exception e){
+			throw new RuntimeException("failed to load class: " + e.getMessage());
+		}
 		// Check Google Play Services
 		checkPlayServices();
 
@@ -69,7 +73,7 @@ public class MainActivity extends Activity implements EventListener{
 		}else{
 			// Id found -> Set id and continue
 			Constants.VOLUNTEER_ID = preferences.getString(ProtocolField.VOLUNTEER_ID.getName(), "");
-			this.loadLocationList();
+			//TODO uncomment this this.loadLocationList();
 		}
 
 		/* DIALOGS */

@@ -11,7 +11,6 @@ public enum ProtocolField implements Named{
 	REQUEST_ID("request_id"),
 	VOLUNTEER_ID("volunteer_id"),
 	LOCATIONS("locations"),
-	
 	ERROR_CODE("error_code"),
 	ERROR_MESSAGE("error_message"),
 	

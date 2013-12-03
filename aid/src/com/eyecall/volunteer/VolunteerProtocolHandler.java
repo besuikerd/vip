@@ -20,6 +20,7 @@ import com.eyecall.eventbus.EventBus;
 import com.eyecall.protocol.ErrorCode;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
+import com.google.android.gms.maps.model.LatLng;
 
 public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState> {
 	
@@ -152,7 +153,10 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				
 				return VolunteerState.IDLE;
 			case UPDATE_LOCATION:
-				//if(m.hasParams("longitude", "latitude")){
+//				if(m.hasParams("longitude", "latitude")){
+					double lng = m.getParam(ProtocolField.LONGITUDE, Double.class);
+					double lat = m.getParam(ProtocolField.LATITUDE, Double.class);
+					EventBus.getInstance().post(new Event(EventTag.LOCATION_UPDATE, new LatLng(lat, lng)));
 					return VolunteerState.HELPING;
 				//}
 			case MEDIA_DATA:

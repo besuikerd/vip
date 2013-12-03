@@ -1,6 +1,11 @@
 package com.eyecall.vip;
 
 import java.net.UnknownHostException;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -26,12 +31,16 @@ import com.eyecall.protocol.ProtocolName;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 
 /**
  * The main Activity of this Applications
  */
 public class MainActivity extends Activity implements GooglePlayServicesClient.ConnectionCallbacks,
 GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
+	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
+	
 	
 	/*
      * Define a request code to send to Google Play services
@@ -77,7 +86,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	@Override
 	protected void onStop() {
 	    // Disconnecting the client invalidates it.
-	    if(locationClient!=null) locationClient.disconnect();
+	    //if(locationClient!=null) locationClient.disconnect();
 	    super.onStop();
 	}
 	
@@ -90,6 +99,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
      */
     @Override
     public void onConnected(Bundle dataBundle) {
+    	
     	Log.d(MainActivity.TAG, "onConnected(): Google services connected (location)");
         // Display the connection status
         Toast.makeText(this, "Google Services Connected", Toast.LENGTH_SHORT).show();
@@ -100,7 +110,53 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
         	 Log.d(MainActivity.TAG, "Location found: lat:" + location.getLatitude() + " long:" + location.getLongitude());
         }
         ((Button) findViewById(R.id.button_request)).setEnabled(true);
+        
+        
+        
+        
+        //register location listener
+        locationClient.requestLocationUpdates(LocationRequest.create(), new LocationListener() {
+			
+			@Override
+			public void onLocationChanged(Location arg0) {
+				logger.debug("location changed: ({},{})", location.getLatitude(), location.getLongitude());
+				runOnUiThread(new Runnable() {
+					
+					@Override
+					public void run() {
+						Toast.makeText(getApplicationContext(), String.format("location update: (%f,%f)", location.getLatitude(), location.getLongitude()), Toast.LENGTH_SHORT).show();
+					}
+				});
+				
+				
+				Connection c = ConnectionInstance.getInstance();
+				if(c != null && c.getState().equals(VIPState.BEING_HELPED)){
+					c.send(new Message(ProtocolName.UPDATE_LOCATION).add(ProtocolField.LATITUDE, location.getLatitude()).add(ProtocolField.LONGITUDE, location.getLongitude()));
+				}
+			}
+		});
+        
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+			@Override
+			public void run() {
+				
+				final Location loc = locationClient.getLastLocation();
+				if(loc != null){
+					runOnUiThread(new Runnable(){
+						@Override
+						public void run() {
+							Toast.makeText(getApplicationContext(), String.format("location: (%s,%s)", loc.getLatitude(), loc.getLongitude()), Toast.LENGTH_SHORT).show();
+						}
+					});
+					try {
+						ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT).send(new Message(ProtocolName.UPDATE_LOCATION).add(ProtocolField.LATITUDE, loc.getLatitude()).add(ProtocolField.LONGITUDE, loc.getLongitude()));
+					} catch (UnknownHostException e) {
+					}
+				}
+			}
+		}, 0, 20000);
     }
+    
     
     /**
      * Called by Location Services if the connection to the
@@ -158,7 +214,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	    locationClient = new LocationClient(this, this, this);
 	    // Connect the client.
 	    locationClient.connect();
-	    
 	    // If ready -> onConnected (or onConnectionFailed) called
     }
 

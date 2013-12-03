@@ -46,6 +46,7 @@ public class RequestPool {
 	}
 	
 	public void tunnelUdp(String id, Entity e, Message m) throws IOException{
+		if(true) throw new UnsupportedOperationException("not yet implemented");
 		if(connections.containsKey(id)){
 			Request r = connections.get(id);
 			Connection c = null;
@@ -55,7 +56,7 @@ public class RequestPool {
 			case VOLUNTEER:
 				c = r.getVolunteerConnection();
 			}
-			c.sendUDP(m);
+			//c.sendUDP(m);
 		}
 	}
 	
