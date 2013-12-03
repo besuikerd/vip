@@ -96,6 +96,10 @@ public class Location implements Parcelable {
 	@Override
 	public String toString() {
 		return "lat=" + latitude + " long=" + longitude + " pref=" + (preferred ? "true": "false") + " radius=" + radius;
+	}
+
+	public String getTag() {
+		return latitude + ";" + longitude + ";" + (preferred ? "T": "F") + ";" + radius;
 	};
 
 }

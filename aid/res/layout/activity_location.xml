@@ -54,14 +54,12 @@
             android:id="@+id/location_button_save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="@string/location_button_save" />
 
         <Button
             android:id="@+id/location_button_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="@string/location_button_cancel" />
     </LinearLayout>
 

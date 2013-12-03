@@ -3,11 +3,11 @@ package com.eyecall.volunteer;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.eyecall.android.ConnectionInstance;
@@ -34,7 +34,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 	 */
 	public static void removeLocation(Connection connection, String id, Location location){
 		connection.send(new Message(
-				ProtocolName.UPDATE_PREFFERED_LOCATION)
+				ProtocolName.UPDATE_PREFERED_LOCATION)
 		.add(ProtocolField.VOLUNTEER_ID, id)
 		.add(ProtocolField.ACTION, ProtocolField.ACTION_DELETE.getName())
 		.add(ProtocolField.LATITUDE, location.getLatitude())
@@ -51,7 +51,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 	 */
 	public static void addLocation(Connection connection, String id, Location location){
 		connection.send(new Message(
-				ProtocolName.UPDATE_PREFFERED_LOCATION)
+				ProtocolName.UPDATE_PREFERED_LOCATION)
 		.add(ProtocolField.VOLUNTEER_ID, id)
 		.add(ProtocolField.ACTION, ProtocolField.ACTION_ADD.getName())
 		.add(ProtocolField.LATITUDE, location.getLatitude())
@@ -102,10 +102,13 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		
 		if(messageName.equals(ProtocolName.ERROR)){
-			if(m.getParam(ProtocolField.ERROR_CODE).equals(ErrorCode.INVALID_VOLUNTEER_ID)){
+			int errorCode = (Integer) m.getParam(ProtocolField.ERROR_CODE);
+			if(errorCode == ErrorCode.INVALID_VOLUNTEER_ID.getCode()){
+				logger.debug("Error code received: Invalid volunteer id. Posting event...");
 				EventBus.getInstance().post(new Event(EventTag.ID_INVALID));
 				return state;
 			}
+	
 		}
 		
 		switch (state){
@@ -133,11 +136,26 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 			case LOCATIONS:
 				String raw = m.getParam(ProtocolField.LOCATIONS).toString();
 				logger.debug("Locations received! raw json: {}", raw);
-				//List<Location> locations = (List<Location>) m.getParam(ProtocolField.LOCATIONS);
+				
+				// Get input
+				List<Object> input = (List<Object>) m.getParam(ProtocolField.LOCATIONS);
+				
+				// Define variables
 				List<Location> locations = new ArrayList<Location>();
+				Map<String, Object> itemMap;
+				
+				for(Object item : input){
+					itemMap = (Map<String, Object>) item;
+					Location location = new Location();
+					location.setLatitude( (float) ((Double)itemMap.get("latitude") ).doubleValue());
+					location.setLongitude((float) ((Double)itemMap.get("longitude")).doubleValue());
+					location.setPreferred(((Boolean)itemMap.get("preferred")).booleanValue());
+					location.setRadius(((Integer)itemMap.get("radius")).intValue());
+					logger.debug("Location parsed: {}", location.toString());
+					locations.add(location);
+				}
+				
 				EventBus.getInstance().post(new Event(EventTag.LOCATIONS_RECEIVED, locations));
-				//m.g
-				//LocationAdapter.getInstance().addLocation();
 				
 				return VolunteerState.IDLE;
 			default:

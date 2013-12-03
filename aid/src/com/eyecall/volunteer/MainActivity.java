@@ -6,12 +6,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.widget.Button;
 import android.widget.ListView;
@@ -27,7 +29,7 @@ import com.eyecall.push.PushRegistration;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
-public class MainActivity extends Activity implements EventListener{
+public class MainActivity extends FragmentActivity implements EventListener{
 
 	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
 	
@@ -89,6 +91,21 @@ public class MainActivity extends Activity implements EventListener{
 		dialog.setMessage(getString(R.string.wait));
 		dialog.show();
 		
+		Handler timerHandler = new Handler();
+	    Runnable timerRunnable = new Runnable() {	
+	        @Override
+	        public void run() {
+	        	if(dialog!=null){
+	        		Context context = dialog.getContext();
+	        		dialog.dismiss();
+	        		dialog=null;
+	        		Toast.makeText(context, R.string.loading_locations_timeout, Toast.LENGTH_LONG).show();
+	        	}
+	        }
+	    };
+	    
+	    timerHandler.postDelayed(timerRunnable, 5000);
+		
 		Connection c;
 		try {
 			c = new Connection(Constants.SERVER_URL,
@@ -124,12 +141,26 @@ public class MainActivity extends Activity implements EventListener{
 		case ADD_LOCATION:
 			openLocationActivity(null);
 			break;
+		case REMOVE_LOCATION:
+			// TODO do this :P
+			break;
+		case EDIT_LOCATION:
+			openLocationActivity((Location) e.getData());
+			break;
 		case LOCATIONS_RECEIVED:
-			dialog.dismiss();
-			List<Location> locations = (List<Location>) e.getData();
-			for(Location location : locations){
-				locationAdapter.addLocation(location);
-			}
+			if(dialog!=null) dialog.dismiss();
+			dialog = null;
+			final List<Location> locations = (List<Location>) e.getData();
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					for(Location location : locations){
+						locationAdapter.addLocation(location);
+					}
+				}
+			});
+			
+			break;
 		case ID_ACCEPTED:
 			// Volunteer id is accepted -> Save it
 			PreferenceManager.getDefaultSharedPreferences(this).edit().putString(ProtocolField.VOLUNTEER_ID.getName(), e.getData().toString()).commit();
@@ -156,7 +187,15 @@ public class MainActivity extends Activity implements EventListener{
 			break;
 		case ID_INVALID:
 			// Try to re-register
-			new PushRegistration(this).register();
+			logger.debug("It seems the volunteer id is invalid. Re-registering...");
+			final Context context = this;
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					new PushRegistration(context).register();
+				}
+			});
+			
 		default:
 			break;
 		}

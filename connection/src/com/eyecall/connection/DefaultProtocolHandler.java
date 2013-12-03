@@ -27,7 +27,7 @@ public class DefaultProtocolHandler implements ProtocolHandler<State>{
 		if(m.getName() == ProtocolName.ERROR.getName()){
 			logger.warn("protocol error occurred: [{}]: {}", m.getParam("code", int.class), m.getParam("message"));
 		} else{
-			logger.warn("unknown message sent: {}", m.getName());
+			logger.warn("unknown message received: {}", m.getName());
 		}
 		return state;
 	}

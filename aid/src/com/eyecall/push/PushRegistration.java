@@ -46,6 +46,7 @@ public class PushRegistration {
 	
 				@Override
 				protected String doInBackground(Void... params) {
+					logger.debug("Starting registration...");
 					GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
 					String key = null;
 					try {
@@ -73,7 +74,8 @@ public class PushRegistration {
 							logger.warn("Device or manifest is not valid: {}", e2);
 						}
 						
-					}						
+					}				
+					logger.debug("... registration end");
 					return null;
 				}
 	

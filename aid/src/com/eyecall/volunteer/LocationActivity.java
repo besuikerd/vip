@@ -5,9 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.widget.RadioGroup;
@@ -19,7 +17,6 @@ import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
-import com.eyecall.protocol.ProtocolField;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -33,13 +30,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class LocationActivity extends FragmentActivity implements EventListener, OnMapLongClickListener{
 	
-	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
+	private static final Logger logger = LoggerFactory.getLogger(LocationActivity.class);
     
     private Location location;
     
     private GoogleMap map;
     
     private Marker marker;
+
+	private Connection connection;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +76,14 @@ public class LocationActivity extends FragmentActivity implements EventListener,
                 LatLng position;
                 if(location==null){
                 	// New location
-                	position = new LatLng(map.getMyLocation().getLatitude(), map.getMyLocation().getLongitude());
-                	map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
+                	android.location.Location myLocation = map.getMyLocation();
+                	if(myLocation!=null){
+                		position = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+                		map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
+                	}else{
+                		position = new LatLng(0,0);
+                		map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 1));
+                	}
                 }else{
                 	// Exisiting location
                 	position = new LatLng(location.getLatitude(), location.getLongitude());
@@ -124,7 +129,6 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 				}
 				
 				// Make connection with server
-				Connection connection;
 				try {
 					connection = new Connection(Constants.SERVER_URL, Constants.SERVER_PORT, new VolunteerProtocolHandler(), VolunteerState.IDLE);
 					connection.init(false);
@@ -156,12 +160,19 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 				logger.debug("Added location: {}", location.toString());
 				
 				// Close connection
-				try {
-					connection.close();
-				} catch (IOException exception) {
-					logger.warn("Unable to close connection: {}", exception);
-				}
+				// Run in other thread to avoid blocking of UI thread
+				new Thread(){
+					@Override
+					public void run() {
+						try {
+							connection.close();
+						} catch (IOException exception) {
+							logger.warn("Unable to close connection: {}", exception);
+						}
+					};
+				}.start();
 				
+				logger.debug("Location saved: {}", location.toString());
 				// toast
 				Toast.makeText(this, "Location saved", Toast.LENGTH_LONG).show();
 				

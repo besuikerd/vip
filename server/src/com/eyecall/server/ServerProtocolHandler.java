@@ -43,6 +43,8 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	
     	RequestPool pool = RequestPool.getInstance();
     	
+    	logger.debug("Message received of type (" + m.getName() + "): " + ProtocolName.lookup(m.getName()));
+    	
     	switch(state){
     	
     	case WAITING:
@@ -156,7 +158,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			msg.add(ProtocolField.LOCATIONS, locations);
     			c.send(msg);
     			return ServerState.DISCONNECTED;
-    		case UPDATE_PREFFERED_LOCATION:
+    		case UPDATE_PREFERED_LOCATION:
     			String action = m.getParamString(ProtocolField.ACTION);
     			
     			volunteerId = m.getParamString(ProtocolField.VOLUNTEER_ID);
@@ -171,18 +173,18 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				// Add
     				Location location = new Location();
     				location.setVolunteer(volunteer);
-    				location.setLongitude((Float) m.getParam(ProtocolField.LONGITUDE));
-    				location.setLatitude((Float) m.getParam(ProtocolField.LATITUDE));
+    				location.setLongitude((float) ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue());
+    				location.setLatitude( (float) ((Double) m.getParam(ProtocolField.LATITUDE) ).doubleValue());
     				location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
-    				location.setRadius((Integer) m.getParam(ProtocolField.RADIUS));
+    				//location.setRadius((Integer) m.getParam(ProtocolField.RADIUS));
     				
     				Database.getInstance().insertTransaction(location);
     			}else{
     				// Remove
     				Location location = new Location();
     				location.setVolunteer(volunteer);
-    				location.setLongitude((Float) m.getParam(ProtocolField.LONGITUDE));
-    				location.setLatitude((Float) m.getParam(ProtocolField.LATITUDE));
+    				location.setLongitude((float) ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue());
+    				location.setLatitude( (float) ((Double) m.getParam(ProtocolField.LATITUDE) ).doubleValue());
     				location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
     				location.setRadius((Integer) m.getParam(ProtocolField.RADIUS));
     				

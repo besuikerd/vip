@@ -131,7 +131,7 @@ public enum ProtocolName implements Named{
 	 * type ["preferred"|"non-preferred"]
 	 * volunteer_id: Id van de vrijwilliger
 	 */
-	UPDATE_PREFFERED_LOCATION("update_location"),
+	UPDATE_PREFERED_LOCATION("update_prefered_location"),
 	
 	/**
 	 * Vraag aan de server de lijst met opgeslagen locaties<br>

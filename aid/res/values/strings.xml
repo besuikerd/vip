@@ -21,6 +21,7 @@
     <string name="reject">Reject</string>
     
     <string name="loading_locations">Loading locations</string>
+    <string name="loading_locations_timeout">Failed!</string>
     <string name="registering">Registering</string>
     <string name="wait">Please wait</string>
     

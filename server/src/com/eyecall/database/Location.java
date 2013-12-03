@@ -18,7 +18,7 @@ import org.hibernate.annotations.ForeignKey;
 public class Location {
 	
 	@ManyToOne
-	@JoinColumn(name = "volunteer_id")
+	@JoinColumn(name = "user_id")
 	private Volunteer volunteer;
 	
 	@GeneratedValue
