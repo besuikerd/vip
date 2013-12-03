@@ -148,7 +148,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			return ServerState.FINDING_VOLUNTEERS;
     		case GET_LOCATIONS:
     			String volunteerId = (String) m.getParam(ProtocolField.VOLUNTEER_ID);
-    			List<Location> locations = Database.getInstance().queryForList("SELECT l FROM location l WHERE l.volunteer_id=?", Location.class, volunteerId);
+    			List<Location> locations = Database.getInstance().queryForList("SELECT l FROM Location l WHERE l.volunteer.user_id=?", Location.class, volunteerId);
     			
     			
     			Message msg = new Message(ProtocolName.LOCATIONS);

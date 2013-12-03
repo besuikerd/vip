@@ -1,25 +1,40 @@
 package com.eyecall.vip;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.eyecall.android.ConnectionInstance;
 import com.eyecall.android.PreviewView;
 import com.eyecall.android.VideoBuffer;
 import com.eyecall.android.VideoPipe;
+import com.eyecall.connection.Connection;
+import com.eyecall.connection.Message;
 import com.eyecall.event.SurfaceCreatedEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
-
-public class HelpActivity extends Activity implements EventListener{
+import com.eyecall.protocol.ProtocolField;
+import com.eyecall.protocol.ProtocolName;
+public class HelpActivity extends Activity implements EventListener, LocationListener{
+	private static final Logger logger = LoggerFactory.getLogger(HelpActivity.class);
+	
     private static final String LOCAL_SOCKET_ADDRESS = "eyecall.vip";
 	private VideoBuffer videoBuffer;
     private Camera camera;
@@ -41,26 +56,33 @@ public class HelpActivity extends Activity implements EventListener{
     public void onPause(){
     	super.onPause();
     	// Stop streaming
+    	logger.debug("onpause called");
+    	logger.debug("1");
     	if(camera!=null && previewView.isStreaming()){
     		try {
 				previewView.stopStreaming();
-			} catch (IOException e) {
-				Log.d(MainActivity.TAG, "Error stopping streaming: " + e.getMessage());
+				logger.debug("2");
+    		} catch (IOException e) {
+				logger.warn("Error stopping streaming: {}", e.getMessage());
+			} catch(RuntimeException e){
+				logger.warn("for some reason android camera API fails and throws an undocumented RuntimeException: {}", e.getMessage());
 			}
     	}
     	// Close local socket
     	try {
 			stopVideoPipe();
+			logger.debug("2");
 		} catch (IOException e) {
-			Log.d(MainActivity.TAG, "Error closing local socket: " + e.getMessage());
+			logger.warn("Error closing local socket: {}", e.getMessage());
 		}
-    	
     	// Stop preview if it exists
     	if(camera!= null) {
     		try {
+    			logger.debug("3");
                 camera.stopPreview();
             } catch (Exception e){
               // ignore: tried to stop a non-existent preview
+            	logger.warn("error stopping camera preview: {}", e.getMessage());
             }
     	}
     	// release camera for other apps
@@ -137,8 +159,11 @@ public class HelpActivity extends Activity implements EventListener{
 
 	private void releaseCamera(){
         if (camera != null){
+        	logger.debug("releasing camera..");
             camera.release();        // release the camera for other applications
             camera = null;
+        } else{
+        	logger.warn("camera was null");
         }
     }
     
@@ -214,5 +239,24 @@ public class HelpActivity extends Activity implements EventListener{
 		if(e instanceof SurfaceCreatedEvent){
 			setupStreaming();
 		}
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
 	}
 }

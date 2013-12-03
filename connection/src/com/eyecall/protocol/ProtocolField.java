@@ -10,7 +10,13 @@ public enum ProtocolField implements Named{
 	LATITUDE("latitude"),
 	REQUEST_ID("request_id"),
 	VOLUNTEER_ID("volunteer_id"),
-	LOCATIONS("locations")
+	LOCATIONS("locations"),
+	ACTION("action"), 
+	ACTION_ADD("add"), 
+	ACTION_DELETE("delete"), 
+	TYPE("type"), 
+	TYPE_NON_PREFERRED("non-preferred"), 
+	TYPE_PREFERRED("preferred")
 	
 	;
 	

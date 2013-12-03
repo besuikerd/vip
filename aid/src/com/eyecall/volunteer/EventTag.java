@@ -16,7 +16,12 @@ public enum EventTag implements Named{
 	
 	ID_ACCEPTED("id_accepted"),
 	ID_REJECTED("id_rejected"), 
+	
+	LOCATION_UPDATE("location_update"),
+	
 	LOCATIONS_RECEIVED("locations_received");
+	
+	
 	
 	private String tag;
 	
