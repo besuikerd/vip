@@ -5,7 +5,6 @@ import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -13,7 +12,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
@@ -37,13 +35,15 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 	private Vibrator vibrator;
 	private GoogleMap map;
 	private Marker marker;
+	private double latitude;
+	private double longitude;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_request);
-		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-		vibrator.vibrate(new long[]{200, 600}, 0);
+		//vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+		//vibrator.vibrate(new long[]{200, 600}, 0);
 		
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
 	            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
@@ -61,11 +61,11 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 		if(map != null){
 			//map.setMyLocationEnabled(true);
 			Bundle extras = getIntent().getExtras();
-			double lat = Double.parseDouble(extras.getString(ProtocolField.LATITUDE.getName()));
-			double lng = Double.parseDouble(extras.getString(ProtocolField.LONGITUDE.getName()));
-			logger.debug("showing coordinates: ({},{})", lat, lng);
+			latitude = Double.parseDouble(extras.getString(ProtocolField.LATITUDE.getName()));
+			longitude = Double.parseDouble(extras.getString(ProtocolField.LONGITUDE.getName()));
+			logger.debug("showing coordinates: ({},{})", latitude, longitude);
 			
-			LatLng pos = new LatLng(lat, lng);
+			LatLng pos = new LatLng(latitude, longitude);
 			marker = map.addMarker(new MarkerOptions().title("Bla").position(pos));
 			map.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 18f));
 			
@@ -75,7 +75,9 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 	@Override
 	protected void onPause() {
 		super.onPause();
-		vibrator.cancel();
+		if(vibrator != null){
+			vibrator.cancel();
+		}
 	}
 	
 	@Override
@@ -88,7 +90,9 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		vibrator.cancel();
+		if(vibrator != null){
+			vibrator.cancel();
+		}
 	}
 
 	@Override
@@ -122,7 +126,10 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			//TODO start new call activity
 			logger.debug("request acknowledged!");
 			Intent i = new Intent(this, SupportActivity.class);
-			i.putExtras(getIntent().getExtras());
+			Bundle b = new Bundle();
+			b.putDouble(ProtocolField.LATITUDE.getName(), latitude);
+			b.putDouble(ProtocolField.LONGITUDE.getName(), longitude);
+			i.putExtras(b);
 			startActivity(i);
 			break;
 		case REQUEST_DENIED:

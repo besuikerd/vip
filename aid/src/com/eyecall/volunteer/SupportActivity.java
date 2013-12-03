@@ -17,17 +17,30 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TabHost;
+import android.widget.Toast;
 import android.widget.TabHost.OnTabChangeListener;
 
-public class SupportActivity extends FragmentActivity implements OnTabChangeListener, OnPageChangeListener{
+import com.eyecall.eventbus.Event;
+import com.eyecall.eventbus.EventBus;
+import com.eyecall.eventbus.EventListener;
+import com.eyecall.protocol.ProtocolField;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+public class SupportActivity extends FragmentActivity implements EventListener, OnTabChangeListener, OnPageChangeListener{
 	
 	private static final Logger logger = LoggerFactory.getLogger(SupportActivity.class);
 	
 	private static final String TAG_VIDEO = "video";
 	private static final String TAG_MAP = "map";
 	
-	private Fragment videoFragment;
-	private Fragment mapFragment;
+	private VideoFragment videoFragment;
+	private MapFragment mapFragment;
 	private ViewPager pager;
 	private TabHost tabHost;
 	
@@ -49,6 +62,8 @@ public class SupportActivity extends FragmentActivity implements OnTabChangeList
 		tabHost.addTab(tabHost.newTabSpec(TAG_MAP).setIndicator(getString(R.string.title_map)).setContent(R.id.map));
 		logger.debug("tab count: {}", tabHost.getTabWidget().getTabCount());
 		tabHost.setOnTabChangedListener(this);
+		
+		EventBus.getInstance().subscribe(this);
 	}
 	
 	public static class VideoFragment extends Fragment{
@@ -60,10 +75,41 @@ public class SupportActivity extends FragmentActivity implements OnTabChangeList
 	}
 	
 	public static class MapFragment extends Fragment{
+		private GoogleMap map;
+		private Marker marker;
+		
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			return inflater.inflate(R.layout.fragment_map, container, false);
+		}
+		
+		@Override
+		public void onViewCreated(View view, Bundle savedInstanceState) {
+			super.onViewCreated(view, savedInstanceState);
+			
+			map = ((SupportMapFragment) getFragmentManager().findFragmentById(R.id.fragment_map)).getMap();
+			Bundle b = getActivity().getIntent().getExtras();
+			if(b!= null){
+				LatLng pos = new LatLng(b.getDouble(ProtocolField.LATITUDE.getName(), 0d), b.getDouble(ProtocolField.LONGITUDE.getName(), 0d));
+				logger.debug("setting map marker to ({},{})", pos.latitude, pos.longitude);
+				marker = map.addMarker(new MarkerOptions().title("VIP location").position(pos));
+				marker.setTitle(String.format("(%f, %f)", marker.getPosition().latitude, marker.getPosition().longitude));
+				map.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 18f));
+			}
+		}
+		
+		public void updateLocation(double lat, double lng){
+			if(map != null){
+				logger.debug("updating coordinates: ({},{})", lat, lng);
+				LatLng pos = new LatLng(lat, lng);
+				if(marker == null){
+					marker = map.addMarker(new MarkerOptions().title("VIP position").position(pos));
+				} else{
+					marker.setPosition(pos);
+					marker.setTitle(String.format("(%f, %f)", marker.getPosition().latitude, marker.getPosition().longitude));
+				}
+			}
 		}
 	}
 	
@@ -119,5 +165,20 @@ public class SupportActivity extends FragmentActivity implements OnTabChangeList
 
 	@Override
 	public void onPageScrolled(int arg0, float arg1, int arg2) {
+	}
+
+	@Override
+	public void onEvent(Event e) {
+		switch(EventTag.lookup(e.getTag())){
+		case LOCATION_UPDATE:
+			final LatLng coords = (LatLng) e.getData();
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					Toast.makeText(getApplicationContext(), String.format("location update! (%f,%f)", coords.latitude, coords.longitude), Toast.LENGTH_SHORT).show();
+					mapFragment.updateLocation(coords.latitude, coords.longitude);
+				}
+			});
+		}
 	}
 }

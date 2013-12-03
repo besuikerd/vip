@@ -63,6 +63,7 @@ public class PreviewView extends SurfaceView implements SurfaceHolder.Callback {
         mediaRecorder.setCamera(camera);
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+        
         mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
         
         /*mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
@@ -109,8 +110,8 @@ public class PreviewView extends SurfaceView implements SurfaceHolder.Callback {
     	mediaRecorder.reset();
     	mediaRecorder.release();
     	mediaRecorder = null;
-    	camera.lock();
-    	startPreview();
+    	//camera.lock();
+    	//startPreview();
     }
 
     public boolean isStreaming() {

@@ -76,7 +76,7 @@ public class Connection {
 	private Message latestMessage;
 	
 	private int port;
-	private InetAddress host;
+	private String host;
 	
 	/**
 	 * construct a new Connection
@@ -90,7 +90,7 @@ public class Connection {
 		this.state = state;
 		if(s != null){
 			this.port = s.getPort();
-			this.host = s.getInetAddress();
+			this.host = s.getInetAddress().getHostAddress();
 		}
 	}
 	
@@ -99,7 +99,7 @@ public class Connection {
 	public Connection(String host, int port, ProtocolHandler handler, State state) throws UnknownHostException {
 		this(null, handler, state);
 		this.port = port;
-		this.host = InetAddress.getByName(host);
+		this.host = host;
 	}
 	
 	public Connection(String host, int port) throws UnknownHostException{
@@ -175,6 +175,8 @@ public class Connection {
 	/**
 	 * send a message with UDP instead of TCP
 	 */
+	
+	/*
 	public void sendUDP(Message m) throws IOException{
 		byte[] data = new ObjectMapper().writeValueAsBytes(m);
 		if(udpSocket == null){
@@ -182,6 +184,7 @@ public class Connection {
 		}
 		udpSocket.send(new DatagramPacket(data, data.length, host, port));
 	}
+	*/
 	
 	/**
 	 * closes this connection and corresponding Socket. blocks until OutQueue
@@ -223,7 +226,7 @@ public class Connection {
 		}
 		
 		
-		
+		/*
 		if(useUDP){
 			try {
 				udpSocket = new DatagramSocket(port, host);
@@ -249,12 +252,14 @@ public class Connection {
 				}
 			}
 		}
+		*/
 	}
 	
 	private class UDPReader implements Runnable{
 		
 		@Override
 		public void run() {
+			/*
 			if(udpSocket == null){
 				try {
 					udpSocket = new DatagramSocket(port, host);
@@ -262,6 +267,7 @@ public class Connection {
 					e.printStackTrace();
 				}
 			}
+			*/
 			
 			//notify that the thread is started
 			synchronized(this){
@@ -387,5 +393,13 @@ public class Connection {
 			//handle disconnect
 			handler.onDisconnect(state);
 		}
+	}
+	
+	public boolean isClosed(){
+		return s == null || s.isClosed();
+	}
+	
+	public State getState() {
+		return state;
 	}
 }
