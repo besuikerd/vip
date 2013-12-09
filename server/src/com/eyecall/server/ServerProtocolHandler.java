@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.hibernate.Query;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,16 +183,47 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				Database.getInstance().insertTransaction(location);
     			}else{
     				// Remove
-    				Location location = new Location();
-    				location.setVolunteer(volunteer);
-    				location.setLongitude((float) ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue());
-    				location.setLatitude( (float) ((Double) m.getParam(ProtocolField.LATITUDE) ).doubleValue());
-    				location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
-    				location.setRadius((Integer) m.getParam(ProtocolField.RADIUS));
+    				//Location location = new Location();
+    				//location.setVolunteer(volunteer);
+    				//location.setLongitude((float) ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue());
+    				//location.setLatitude( (float) ((Double) m.getParam(ProtocolField.LATITUDE) ).doubleValue());
+    				//location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
+    				//location.setRadius((Integer) m.getParam(ProtocolField.RADIUS));
     				
-    				// TODO continue
+    				String deleteQuery = "delete from Location where volunteer.id=:volunteerId and longitude like :longitude and latitude like :latitude";
     				
-    				//Database.getInstance().
+    				
+    				// Afrondingsdingetjes
+    				// "0.0" staat in database als "0"
+    				String longitude, latitude;
+    				if(((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue()%1.0 > 0.0){
+    					longitude = ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue() + "%";
+    				}else{
+    					longitude = (int)(((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue()) + "%";
+    				}
+    				if(((Double) m.getParam(ProtocolField.LATITUDE)).doubleValue()%1.0 > 0.0){
+    					latitude = ((Double) m.getParam(ProtocolField.LATITUDE)).doubleValue() + "%";
+    				}else{
+    					latitude = (int)(((Double) m.getParam(ProtocolField.LATITUDE)).doubleValue()) + "%";
+    				} 
+    				
+    				// Execute query
+    				Session session = Database.getInstance().startSession();
+    				Query q = session.createQuery(deleteQuery);
+    				q.setString("volunteerId", volunteer.getId());
+    				q.setString("longitude",  longitude);
+    				q.setString("latitude",   latitude);
+    				logger.debug("QueryString: {}", q.getQueryString());
+    				logger.debug("volunteerId: {}", volunteer.getId());
+    				logger.debug("longitude: {}",  longitude);
+    				logger.debug("latitude: {}",   latitude);
+    				q.executeUpdate();
+    				session.close();
+    				/*Database.getInstance().query(deleteQuery, Object.class, 
+    						volunteer.getId(), 
+    						(float) ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue(),
+    						(float) ((Double) m.getParam(ProtocolField.LATITUDE) ).doubleValue()
+    						);*/
     			}
     			return ServerState.DISCONNECTED;
     		default:

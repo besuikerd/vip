@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +14,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.widget.Button;
 import android.widget.ListView;
@@ -29,7 +29,7 @@ import com.eyecall.push.PushRegistration;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
-public class MainActivity extends FragmentActivity implements EventListener{
+public class MainActivity extends Activity implements EventListener{
 
 	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
 	
@@ -57,6 +57,8 @@ public class MainActivity extends FragmentActivity implements EventListener{
 		// Set listeners
 		Button addLocation = (Button) findViewById(R.id.locations_button_add);
 		addLocation.setOnClickListener(new InputEventListener(EventTag.ADD_LOCATION, null));
+		Button refresh = (Button) findViewById(R.id.locations_button_refresh);
+		refresh.setOnClickListener(new InputEventListener(EventTag.REFRESH_LOCATIONS, null));
 		
 		// Register for events
 		EventBus.getInstance().subscribe(this);
@@ -75,13 +77,20 @@ public class MainActivity extends FragmentActivity implements EventListener{
 		}else{
 			// Id found -> Set id and continue
 			Constants.VOLUNTEER_ID = preferences.getString(ProtocolField.VOLUNTEER_ID.getName(), "");
-			//TODO uncomment this this.loadLocationList();
+			this.loadLocationList();
 		}
 
 		/* DIALOGS */
 		// TODO verplaatsen naar dialoggedeelte
 		//new AlertDialog.Builder(this).setTitle("Heeft u kunnen helpen?").setView(getLayoutInflater().inflate(R.layout.dialog_success,null));
 		//new AlertDialog.Builder(this).setTitle("Wilt u vaker oproepen in de buurt van deze locatie ontvangen?").setView(getLayoutInflater().inflate(R.layout.dialog_preferred,null));
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		locationAdapter.notifyDataSetChanged();
 	}
 
 	/**
@@ -146,10 +155,37 @@ public class MainActivity extends FragmentActivity implements EventListener{
 			openLocationActivity(null);
 			break;
 		case REMOVE_LOCATION:
-			// TODO do this :P
+			Connection c;
+			Location location = (Location) e.getData();
+			if(location.getId()>0){
+				try {
+					c = new Connection(Constants.SERVER_URL,
+							Constants.SERVER_PORT,
+							new VolunteerProtocolHandler(),
+							VolunteerState.IDLE);
+					c.init(false);
+					VolunteerProtocolHandler.removeLocation(c, Constants.VOLUNTEER_ID, location);
+				} catch (UnknownHostException ex) {
+					logger.warn("Unable to connect: {}", ex);
+				}
+				
+				locationAdapter.removeLocation(location);
+			 
+				Toast.makeText(this, R.string.location_removed, Toast.LENGTH_SHORT).show();
+			}else{
+				Toast.makeText(this, R.string.location_refresh_first, Toast.LENGTH_SHORT).show();
+			}
 			break;
 		case EDIT_LOCATION:
 			openLocationActivity((Location) e.getData());
+			break;
+		case REFRESH_LOCATIONS:
+			loadLocationList();
+			break;
+		case LOCATION_ADDED:
+			// Add location to list
+			locationAdapter.addLocation((Location) e.getData());
+			loadLocationList();
 			break;
 		case LOCATIONS_RECEIVED:
 			if(dialog!=null) dialog.dismiss();
@@ -158,6 +194,7 @@ public class MainActivity extends FragmentActivity implements EventListener{
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
+					locationAdapter.clear();
 					for(Location location : locations){
 						locationAdapter.addLocation(location);
 					}

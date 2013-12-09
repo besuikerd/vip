@@ -40,6 +40,10 @@ public class Location {
 	
 	private Date created;
 
+	public int getId() {
+		return id;
+	}
+
 	public Volunteer getVolunteer() {
 		return volunteer;
 	}

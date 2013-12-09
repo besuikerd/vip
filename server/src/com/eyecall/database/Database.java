@@ -52,31 +52,39 @@ public class Database {
 		} catch(HibernateException e){
 			if(tx != null) tx.rollback();
 			e.printStackTrace();
+			s.close();
 			return false;
 		}
+		s.close();
 		return true;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public <E> List<E> queryForList(String query, Class<E> cls, Object... params){
-		Query q = startSession().createQuery(query);
+		Session s = startSession();
+		Query q = s.createQuery(query);
 		for(int i = 0 ; i < params.length ; i++){
 			Object param = params[i];
 			q.setParameter(i, param);
 		}
 		logger.debug("Query:");
 		logger.debug(q.getQueryString());
-		return q.list();
+		List<E> result = q.list();
+		s.close();
+		return result;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public <E> E query(String query, Class<E> cls, Object... params){
-		Query q = startSession().createQuery(query);
+		Session s = startSession();
+		Query q = s.createQuery(query);
 		for(int i = 0 ; i < params.length ; i++){
 			Object param = params[i];
 			q.setParameter(i, param);
 		}
-		return (E) q.uniqueResult();
+		E result = (E) q.uniqueResult();
+		s.close();
+		return result;
 	}
 	
 	public boolean deleteTransaction(Object... deletions){
@@ -91,8 +99,10 @@ public class Database {
 		} catch(HibernateException e){
 			if(tx != null) tx.rollback();
 			e.printStackTrace();
+			s.close();
 			return false;
 		}
+		s.close();
 		return true;
 	}
 	
@@ -108,13 +118,18 @@ public class Database {
 		} catch(HibernateException e){
 			if(tx != null) tx.rollback();
 			e.printStackTrace();
+			s.close();
 			return false;
 		}
+		s.close();
 		return true;
 	}
 	
 	public <E> E get(Class<E> cls, Serializable key){
-		return cls.cast(startSession().get(cls, key));
+		Session s = startSession();
+		E result = cls.cast(startSession().get(cls, key));
+		s.close();
+		return result;
 	}
 	
 	public static void main(String[] args) {

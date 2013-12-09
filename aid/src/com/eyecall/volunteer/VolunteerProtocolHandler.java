@@ -38,9 +38,10 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				ProtocolName.UPDATE_PREFERED_LOCATION)
 		.add(ProtocolField.VOLUNTEER_ID, id)
 		.add(ProtocolField.ACTION, ProtocolField.ACTION_DELETE.getName())
-		.add(ProtocolField.LATITUDE, location.getLatitude())
-		.add(ProtocolField.LONGITUDE, location.getLongitude())
-		.add(ProtocolField.TYPE, location.isPreferred() ? ProtocolField.TYPE_PREFERRED.getName() : ProtocolField.TYPE_NON_PREFERRED.getName())
+		.add(ProtocolField.LOCATION_ID, location.getId())
+		//.add(ProtocolField.LATITUDE, location.getLatitude())
+		//.add(ProtocolField.LONGITUDE, location.getLongitude())
+		//.add(ProtocolField.TYPE, location.isPreferred() ? ProtocolField.TYPE_PREFERRED.getName() : ProtocolField.TYPE_NON_PREFERRED.getName())
 				);
 	}
 	
@@ -51,6 +52,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 	 * @param location Location to add
 	 */
 	public static void addLocation(Connection connection, String id, Location location){
+		logger.debug("Sending location addition...");
 		connection.send(new Message(
 				ProtocolName.UPDATE_PREFERED_LOCATION)
 		.add(ProtocolField.VOLUNTEER_ID, id)
@@ -148,6 +150,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				for(Object item : input){
 					itemMap = (Map<String, Object>) item;
 					Location location = new Location();
+					location.setId((Integer)itemMap.get("id"));
 					location.setLatitude( (float) ((Double)itemMap.get("latitude") ).doubleValue());
 					location.setLongitude((float) ((Double)itemMap.get("longitude")).doubleValue());
 					location.setPreferred(((Boolean)itemMap.get("preferred")).booleanValue());

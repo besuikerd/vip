@@ -52,6 +52,10 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     	Intent intent = getIntent();
     	if(intent.hasExtra("location")){
     		location = intent.getParcelableExtra("location");
+    		logger.debug("LocationActivity started with location {}", location);
+    	}else{
+    		location = null;
+    		logger.debug("LocationActivity started without location");
     	}
     	
     	// Register listeners and events
@@ -116,70 +120,82 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 
 	@Override
 	public void onEvent(Event e) {
-		if(e instanceof ClickEvent){
-			ClickEvent event = (ClickEvent) e;
-			if(event.getTag().equals(EventTag.CANCEL_LOCATION_ADD.getName())){
-				this.finish();
-			}else if(event.getTag().equals(EventTag.SAVE_LOCATION.getName())){
-				// Get volunteer id
-				if(Constants.VOLUNTEER_ID==null){
-					Toast.makeText(this, "No app id found. Please restart app", Toast.LENGTH_LONG).show();
-					logger.warn("No volunteer id found");
-					return;
-				}
-				
-				// Make connection with server
-				try {
-					connection = new Connection(Constants.SERVER_URL, Constants.SERVER_PORT, new VolunteerProtocolHandler(), VolunteerState.IDLE);
-					connection.init(false);
-				} catch (IOException exception) {
-					Toast.makeText(this, "Unable to connect to server. Try again later", Toast.LENGTH_LONG).show();
-					logger.warn("Unable to connect to server: {}", exception.getMessage());
-					return;
-				}
-				
-				// Check if old location should be removed
-				if(location==null){
-					location = new Location();
-				}else{
-					// First remove old location
-					VolunteerProtocolHandler.removeLocation(connection, Constants.VOLUNTEER_ID, location);
-					logger.debug("Removed location: {}", location.toString());
-				}
-				
-				// Get input 
-				RadioGroup radios = (RadioGroup) findViewById(R.id.location_radiogroup_preferred);
-				int selected = radios.getCheckedRadioButtonId();
-				location.setPreferred(selected==R.id.location_radio_preferred);
-				location.setLatitude(marker.getPosition().latitude);
-				location.setLongitude(marker.getPosition().longitude);
-				location.setRadius(0);
-				
-				// Add new location
-				VolunteerProtocolHandler.addLocation(connection, Constants.VOLUNTEER_ID, location);
-				logger.debug("Added location: {}", location.toString());
-				
-				// Close connection
-				// Run in other thread to avoid blocking of UI thread
-				new Thread(){
-					@Override
-					public void run() {
-						try {
-							connection.close();
-						} catch (IOException exception) {
-							logger.warn("Unable to close connection: {}", exception);
-						}
-					};
-				}.start();
-				
-				logger.debug("Location saved: {}", location.toString());
-				// toast
-				Toast.makeText(this, "Location saved", Toast.LENGTH_LONG).show();
-				
-				// Go back to list
-				this.finish();
+		switch(EventTag.lookup(e.getTag())){
+		case CANCEL_LOCATION_ADD:
+			this.finish();
+			break;
+		case SAVE_LOCATION:
+			// Get volunteer id
+			if(Constants.VOLUNTEER_ID==null){
+				Toast.makeText(this, "No app id found. Please restart app", Toast.LENGTH_LONG).show();
+				logger.warn("No volunteer id found");
+				return;
 			}
+			
+			// Disable save button
+			this.findViewById(R.id.location_button_save).setEnabled(false);
+			
+			// Make connection with server
+			if(!connect()) return;
+			
+			// Check if old location should be removed
+			if(location==null){
+				location = new Location();
+			}else{
+				// First remove old location
+				VolunteerProtocolHandler.removeLocation(connection, Constants.VOLUNTEER_ID, location);
+				logger.debug("Removed location: {}", location.toString());
+				
+				// Server disconnected => reconnect
+				if(!connect()) return;
+			}
+			
+			// Get input 
+			RadioGroup radios = (RadioGroup) findViewById(R.id.location_radiogroup_preferred);
+			int selected = radios.getCheckedRadioButtonId();
+			location.setPreferred(selected==R.id.location_radio_preferred);
+			location.setLatitude(marker.getPosition().latitude);
+			location.setLongitude(marker.getPosition().longitude);
+			location.setRadius(0);
+			location.setId(-1);
+			
+			// Add new location
+			VolunteerProtocolHandler.addLocation(connection, Constants.VOLUNTEER_ID, location);
+			EventBus.getInstance().post(new Event(EventTag.LOCATION_ADDED, location));
+			logger.debug("Added location: {}", location.toString());
+			
+			// Close connection
+			// Run in other thread to avoid blocking of UI thread
+			new Thread(){
+				@Override
+				public void run() {
+					try {
+						connection.close();
+					} catch (IOException exception) {
+						logger.warn("Unable to close connection: {}", exception);
+					}
+				};
+			}.start();
+			
+			logger.debug("Location saved: {}", location.toString());
+			// Toast
+			Toast.makeText(this, "Location saved", Toast.LENGTH_LONG).show();
+			
+			// Go back to list
+			this.finish();
+			break;
 		}
-		
+	}
+	
+	private boolean connect(){
+		try {
+			connection = new Connection(Constants.SERVER_URL, Constants.SERVER_PORT, new VolunteerProtocolHandler(), VolunteerState.IDLE);
+			connection.init(false);
+			return true;
+		} catch (IOException exception) {
+			Toast.makeText(this, "Unable to connect to server. Try again later", Toast.LENGTH_LONG).show();
+			logger.warn("Unable to connect to server: {}", exception.getMessage());
+			return false;
+		}
 	}
 }

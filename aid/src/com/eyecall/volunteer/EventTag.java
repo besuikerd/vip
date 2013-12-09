@@ -19,7 +19,9 @@ public enum EventTag implements Named{
 	ID_REJECTED("id_rejected"), 
 	LOCATIONS_RECEIVED("locations_received"), 
 	ID_INVALID("id_invalid"),
-	LOCATION_UPDATE("location_update")
+	LOCATION_UPDATE("location_update"), 
+	LOCATION_ADDED("location_added"), 
+	REFRESH_LOCATIONS("refresh_locations"),
 	
 	;
 	

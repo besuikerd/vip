@@ -11,11 +11,24 @@
         android:layout_weight="1" >
 
     </ListView>
+    
+    <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
 
-    <Button
-        android:id="@+id/locations_button_add"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/locations_button_add" />
-
+	    <Button
+	        android:id="@+id/locations_button_add"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
+	        android:text="@string/locations_button_add" />
+	     <Button
+	        android:id="@+id/locations_button_refresh"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="1"
+	        android:text="@string/locations_button_refresh" />
+	     
+	</LinearLayout>
 </LinearLayout>
