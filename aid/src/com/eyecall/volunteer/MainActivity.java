@@ -156,7 +156,7 @@ public class MainActivity extends Activity implements EventListener{
 		case REMOVE_LOCATION:
 			new AlertDialog.Builder(this)
 	        .setIcon(android.R.drawable.ic_dialog_alert)
-	        .setTitle(R.string.remove_location)
+	        .setTitle(R.string.remove_location_confirm_title)
 	        .setMessage(R.string.remove_location_confirm)
 	        .setPositiveButton(R.string.remove, new InputEventListener(EventTag.REMOVE_LOCATION_CONFIRM, e.getData()))
 	        .setNegativeButton(R.string.cancel, null)

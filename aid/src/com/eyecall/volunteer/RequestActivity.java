@@ -5,6 +5,7 @@ import java.net.UnknownHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -97,9 +98,9 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 
 	@Override
 	public void onEvent(Event e) {
+		Connection c;
 		switch(EventTag.lookup(e.getTag())){
 		case ACCEPT_REQUEST:
-			Connection c;
 			try {
 				c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
 				
@@ -119,6 +120,21 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			break;
 			
 		case REJECT_REQUEST:
+			try {
+				c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
+				
+				Bundle extras = getIntent().getExtras();
+				String requestId = extras.getString(ProtocolField.REQUEST_ID.getName());
+				String volunteerId = PreferenceManager.getDefaultSharedPreferences(this).getString(ProtocolField.VOLUNTEER_ID.getName(), null);
+				
+				if(requestId != null && volunteerId != null){
+					c.send(new Message(ProtocolName.REJECT_REQUEST)
+					.add(ProtocolField.REQUEST_ID, requestId)
+					.add(ProtocolField.VOLUNTEER_ID, volunteerId));
+				}
+			} catch (UnknownHostException e1) {
+			}
+			
 			finish();
 			break;
 			
@@ -134,6 +150,12 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			break;
 		case REQUEST_DENIED:
 			//TODO show dialog that request was already fulfilled
+			new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.ic_dialog_info)
+				.setTitle(R.string.request_denied_title)
+				.setMessage(R.string.request_denied)
+				.setPositiveButton(R.string.ok, null)
+				.show();
 			finish();
 			break;
 			

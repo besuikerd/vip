@@ -22,6 +22,8 @@ public enum ProtocolField implements Named{
 	TYPE_NON_PREFERRED("non-preferred"), 
 	TYPE_PREFERRED("preferred"), 
 	LOCATION_ID("location_id"), 
+	// For the name of the message used in GCM messages
+	NAME("name"), 
 	
 	;
 	

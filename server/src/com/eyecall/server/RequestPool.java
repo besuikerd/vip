@@ -64,15 +64,15 @@ public class RequestPool {
 	 * setup a request
 	 * @param c Connection to VIP
 	 * @return
-	 */
-	public Request setup(Connection c){
+	 */	
+	public Request setup(Connection c, String longitude, String latitude) {
 		String id = new BigInteger(128, new SecureRandom()).toString(16);
 		logger.debug("setting up new request with id: {}", id);
-		Request r = new Request(id, c);
+		Request r = new Request(id, c, longitude, latitude);
 		connections.put(id, r);
 		return r;
 	}
-	
+
 	/**
 	 * attach a volunteer to a request
 	 * @param id

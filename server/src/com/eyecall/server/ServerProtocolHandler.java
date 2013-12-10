@@ -2,8 +2,6 @@ package com.eyecall.server;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -20,14 +18,59 @@ import com.eyecall.database.Volunteer;
 import com.eyecall.protocol.ErrorCode;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
-import com.eyecall.test.ConnectionTest;
 import com.google.android.gcm.server.Sender;
 
 
 public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
 	
+	/*public ServerProtocolHandler(Volunteer volunteer){
+		
+	}*/
+	
 	private static final Logger logger = LoggerFactory.getLogger(ServerProtocolHandler.class);
-    private Request request;
+    
+	/**
+	 * The request corresponding to this connection, could be null
+	 */
+	private Request request;
+    
+    public static Sender getGCMSender(){
+    	return new Sender(Constants.API_KEY);
+    }
+    
+    /**
+     * Send a GCM message to the volunteer that the request is cancelled
+     * @param volunteer
+     */
+    public static void sendRequestCancelled(Volunteer volunteer, Request request){
+    	com.google.android.gcm.server.Message message = new com.google.android.gcm.server.Message.Builder()
+		.addData(ProtocolField.NAME.getName(), ProtocolName.CANCEL_REQUEST.getName())
+		.addData(ProtocolField.REQUEST_ID.getName(), request.getId())
+		.build();
+		try {
+			getGCMSender().sendNoRetry(message, volunteer.getId());
+		} catch (IOException e) {
+		}
+    }
+    
+    /**
+     * Send A new request via GCM to the volunteer
+     * @param volunteer
+     * @param longitude
+     * @param latitude
+     */
+    public static void sendNewRequest(Volunteer volunteer, Request request){
+    	com.google.android.gcm.server.Message message = new com.google.android.gcm.server.Message.Builder()
+    	.addData(ProtocolField.NAME.getName(), ProtocolName.NEW_REQUEST.getName())
+    	.addData(ProtocolField.REQUEST_ID.getName(), request.getId())
+		.addData(ProtocolField.LATITUDE.getName(), request.getLatitude())
+		.addData(ProtocolField.LONGITUDE.getName(), request.getLongitude())
+		.build();
+		try {
+			getGCMSender().sendNoRetry(message, volunteer.getId());
+		} catch (IOException e) {
+		}
+    }
 
     
     @Override
@@ -47,7 +90,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	
     	logger.debug("Message received of type (" + m.getName() + "): " + ProtocolName.lookup(m.getName()));
     	
-    	switch(state){
+		switch(state){
     	
     	case WAITING:
     		
@@ -77,79 +120,38 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			if(pool.exists(id)){
     				if(!pool.isConnected(id)){
     					
-    					//attach this connection to the request
-    					this.request = pool.attach(id, c);
+    					// attach this connection to the request
+    					request = pool.attach(id, c);
     					
-    					//attach volunteer id to request
+    					// attach volunteer id to request
     					request.setVolunteerId(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
     					
-    					//send request granted message to VIP
+    					// send request granted message to VIP
     					request.getVipConnection().send(new Message(ProtocolName.REQUEST_GRANTED));
     					
-    					//send request acknowledged message to Volunteer
+    					// send request acknowledged message to Volunteer
     					request.getVolunteerConnection().send(new Message(ProtocolName.ACKNOWLEDGE_HELP).add(ProtocolField.REQUEST_ID, request.getId()));
-    					//TODO send cancel_request to other volunteers
+    					
+    					
+    					request.removePendingvolunteer();
+    					
+    					
+    					// send cancel to other volunteers
+    					request.sendCancelToPendingVolunteers();
+    					
     					return ServerState.CALLING;
     				}
     			}
     			return state;
     		case REQUEST_HELP:
     			logger.debug("request_help received");
-    			this.request = pool.setup(c);
     			
-    			//TODO remove this piece of code
-    			synchronized(ConnectionTest.REQUEST_ID){
-    				String old = ConnectionTest.REQUEST_ID;
-    				ConnectionTest.REQUEST_ID = request.getId();
-    				old.notifyAll();
-    			}
+    			// Create a new request
+    			request = pool.setup(c, m.getParamString(ProtocolField.LONGITUDE), m.getParamString(ProtocolField.LATITUDE));
     			
-    			//TODO change this query to a better one
-    			String query = "SELECT v FROM Volunteer v";
+    			// And start
+    			request.start();
     			
-    			final List<Volunteer> potentialVolunteers = Database.getInstance().queryForList(query, Volunteer.class);
-    			
-    			logger.debug("potential volunteers: {}", potentialVolunteers);
-    			
-    			request.addPendingVolunteers(potentialVolunteers);
-    			
-    			
-    			Sender sender = new Sender(Constants.API_KEY);
-    			for(Volunteer volunteer : potentialVolunteers){
-    				com.google.android.gcm.server.Message message = new com.google.android.gcm.server.Message.Builder()
-    				.addData(ProtocolField.REQUEST_ID.getName(), request.getId())
-    				.addData(ProtocolField.LATITUDE.getName(), m.getParamString(ProtocolField.LATITUDE))
-    				.addData(ProtocolField.LONGITUDE.getName(), m.getParamString(ProtocolField.LONGITUDE))
-    				.build();
-    				try {
-						sender.sendNoRetry(message, volunteer.getId());
-					} catch (IOException e) {
-					}
-    			}
-    			
-    			
-    			TimerTask t = new TimerTask(){
-    				@Override
-    				public void run() {
-    					for(Volunteer volunteer : potentialVolunteers){
-    						if(!volunteer.getId().equals(request.getVolunteerId())){
-    							//TODO send reject request messages?
-    						}
-    					}
-    					request.rejectPendingVolunteers();
-    					
-    					//TODO resend to other group of volunteers
-    					/*
-    					if(!request.connected()){
-    						new Timer().schedule(this, Constants.REQUEST_DELAY);
-    					}
-    					*/
-    				}
-    			};
-    			new Timer().schedule(t, Constants.REQUEST_DELAY);
-    			
-    			
-    			//TODO find list of volunteers, send out push messages and schedule a task to look for more volunteers
     			return ServerState.FINDING_VOLUNTEERS;
     		case GET_LOCATIONS:
     			String volunteerId = (String) m.getParam(ProtocolField.VOLUNTEER_ID);
@@ -186,48 +188,13 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			}else{
     				// Remove
     				String locationId = m.getParamString(ProtocolField.LOCATION_ID);
-    				//Location location = new Location();
-    				//location.setVolunteer(volunteer);
-    				//location.setLongitude((float) ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue());
-    				//location.setLatitude( (float) ((Double) m.getParam(ProtocolField.LATITUDE) ).doubleValue());
-    				//location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
-    				//location.setRadius((Integer) m.getParam(ProtocolField.RADIUS));
-    				
-    				String deleteQuery = "delete from Location where id=:locationId";
-    				
-    				
-    				// Afrondingsdingetjes
-    				// "0.0" staat in database als "0"
-    				/*String longitude, latitude;
-    				if(((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue()%1.0 > 0.0){
-    					longitude = ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue() + "%";
-    				}else{
-    					longitude = (int)(((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue()) + "%";
-    				}
-    				if(((Double) m.getParam(ProtocolField.LATITUDE)).doubleValue()%1.0 > 0.0){
-    					latitude = ((Double) m.getParam(ProtocolField.LATITUDE)).doubleValue() + "%";
-    				}else{
-    					latitude = (int)(((Double) m.getParam(ProtocolField.LATITUDE)).doubleValue()) + "%";
-    				} */
-    				
     				// Execute query
     				Session session = Database.getInstance().startSession();
-    				Query q = session.createQuery(deleteQuery);
+    				Query q = session.createQuery(Constants.DELETE_QUERY);
     				q.setString("locationId", locationId);
     				logger.debug("locationId: {}", locationId);
-    				//q.setString("longitude",  longitude);
-    				//q.setString("latitude",   latitude);
-    				/*logger.debug("QueryString: {}", q.getQueryString());
-    				logger.debug("volunteerId: {}", volunteer.getId());
-    				logger.debug("longitude: {}",  longitude);
-    				logger.debug("latitude: {}",   latitude);*/
     				q.executeUpdate();
     				session.close();
-    				/*Database.getInstance().query(deleteQuery, Object.class, 
-    						volunteer.getId(), 
-    						(float) ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue(),
-    						(float) ((Double) m.getParam(ProtocolField.LATITUDE) ).doubleValue()
-    						);*/
     			}
     			return ServerState.DISCONNECTED;
     		default:
@@ -239,8 +206,8 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	case FINDING_VOLUNTEERS:
     			switch(ProtocolName.lookup(m.getName())){
     			case CANCEL_REQUEST:
-    				RequestPool.getInstance().remove("");
-    				//TODO send cancel_request to list of volunteers
+    				request.rejectPendingVolunteers();
+    				request.close();
     				return ServerState.DISCONNECTED;
 				default:
 					break;
@@ -249,7 +216,11 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	case CALLING:
     		switch(ProtocolName.lookup(m.getName())){
     		case UPDATE_LOCATION:
-    		case AUDIO_DATA:
+    			if(request != null){
+    				pool.tunnel(request.getId(), Entity.VIP, m);
+    			}
+    			return state;
+    		/*case AUDIO_DATA:
     			if(request != null){
     				pool.tunnel(request.getId(), Entity.VOLUNTEER, m);
     			}
@@ -258,7 +229,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			if(request != null){
     				pool.tunnel(request.getId(), Entity.VIP, m);
     			}
-    			return state;
+    			return state;*/
     		default:
     			return null;
     		}
