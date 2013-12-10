@@ -101,7 +101,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 
 	@Override
 	public State messageReceived(VolunteerState state, Message m, Connection c) {
-		Log.d(MainActivity.TAG, "Message received: '" + m.getName() + "' State:" + state.toString());
+		logger.debug("Message received: '" + m.getName() + "' State:" + state.toString());
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		
 		if(messageName.equals(ProtocolName.ERROR)){

@@ -161,9 +161,11 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			c.send(msg);
     			return ServerState.DISCONNECTED;
     		case UPDATE_PREFERED_LOCATION:
+    			// Get data
     			String action = m.getParamString(ProtocolField.ACTION);
-    			
     			volunteerId = m.getParamString(ProtocolField.VOLUNTEER_ID);
+    			
+    			// Check if volunteerId is valid
     			Volunteer volunteer = Database.getInstance().query("SELECT v FROM Volunteer v WHERE v.id=?", Volunteer.class, volunteerId);
     			if(volunteer==null){
     				c.send(new Message(ProtocolName.ERROR).add(ProtocolField.ERROR_CODE, ErrorCode.INVALID_VOLUNTEER_ID.getCode()).add(ProtocolField.ERROR_MESSAGE, ""));
@@ -183,6 +185,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				Database.getInstance().insertTransaction(location);
     			}else{
     				// Remove
+    				String locationId = m.getParamString(ProtocolField.LOCATION_ID);
     				//Location location = new Location();
     				//location.setVolunteer(volunteer);
     				//location.setLongitude((float) ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue());
@@ -190,12 +193,12 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				//location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
     				//location.setRadius((Integer) m.getParam(ProtocolField.RADIUS));
     				
-    				String deleteQuery = "delete from Location where volunteer.id=:volunteerId and longitude like :longitude and latitude like :latitude";
+    				String deleteQuery = "delete from Location where id=:locationId";
     				
     				
     				// Afrondingsdingetjes
     				// "0.0" staat in database als "0"
-    				String longitude, latitude;
+    				/*String longitude, latitude;
     				if(((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue()%1.0 > 0.0){
     					longitude = ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue() + "%";
     				}else{
@@ -205,18 +208,19 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     					latitude = ((Double) m.getParam(ProtocolField.LATITUDE)).doubleValue() + "%";
     				}else{
     					latitude = (int)(((Double) m.getParam(ProtocolField.LATITUDE)).doubleValue()) + "%";
-    				} 
+    				} */
     				
     				// Execute query
     				Session session = Database.getInstance().startSession();
     				Query q = session.createQuery(deleteQuery);
-    				q.setString("volunteerId", volunteer.getId());
-    				q.setString("longitude",  longitude);
-    				q.setString("latitude",   latitude);
-    				logger.debug("QueryString: {}", q.getQueryString());
+    				q.setString("locationId", locationId);
+    				logger.debug("locationId: {}", locationId);
+    				//q.setString("longitude",  longitude);
+    				//q.setString("latitude",   latitude);
+    				/*logger.debug("QueryString: {}", q.getQueryString());
     				logger.debug("volunteerId: {}", volunteer.getId());
     				logger.debug("longitude: {}",  longitude);
-    				logger.debug("latitude: {}",   latitude);
+    				logger.debug("latitude: {}",   latitude);*/
     				q.executeUpdate();
     				session.close();
     				/*Database.getInstance().query(deleteQuery, Object.class, 

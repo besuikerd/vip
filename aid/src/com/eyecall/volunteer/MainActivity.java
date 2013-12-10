@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -32,8 +33,6 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 public class MainActivity extends Activity implements EventListener{
 
 	private static final Logger logger = LoggerFactory.getLogger(MainActivity.class);
-	
-	public static final String TAG = "Eyecall Volunteer";
 	
 	private ProgressDialog dialog;
 
@@ -155,6 +154,14 @@ public class MainActivity extends Activity implements EventListener{
 			openLocationActivity(null);
 			break;
 		case REMOVE_LOCATION:
+			new AlertDialog.Builder(this)
+	        .setIcon(android.R.drawable.ic_dialog_alert)
+	        .setTitle(R.string.remove_location)
+	        .setMessage(R.string.remove_location_confirm)
+	        .setPositiveButton(R.string.remove, new InputEventListener(EventTag.REMOVE_LOCATION_CONFIRM, e.getData()))
+	        .setNegativeButton(R.string.cancel, null)
+	        .show();
+		case REMOVE_LOCATION_CONFIRM:
 			Connection c;
 			Location location = (Location) e.getData();
 			if(location.getId()>0){

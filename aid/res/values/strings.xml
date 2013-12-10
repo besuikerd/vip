@@ -20,9 +20,13 @@
     
     <string name="accept">Accept</string>
     <string name="reject">Reject</string>
+    <string name="remove">Remove</string>
+    <string name="cancel">Cancel</string>
     
     <string name="loading_locations">Loading locations</string>
     <string name="loading_locations_timeout">Failed!</string>
+    <string name="remove_location">Remove Location</string>
+    <string name="remove_location_confirm">Are you sure you want to delete this location?</string>
     <string name="registering">Registering</string>
     <string name="wait">Please wait</string>
     <string name="location_removed">Location removed</string>
