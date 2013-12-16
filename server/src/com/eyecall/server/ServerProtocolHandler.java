@@ -43,17 +43,30 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
      * @param volunteer
      */
     public static void sendRequestCancelled(Volunteer volunteer, Request request){
+    	sendRequestCancelled(volunteer.getId(), request);
+    }
+    
+    public static void sendRequestCancelled(String volunteerId, Request request) {
     	com.google.android.gcm.server.Message message = new com.google.android.gcm.server.Message.Builder()
 		.addData(ProtocolField.NAME.getName(), ProtocolName.CANCEL_REQUEST.getName())
 		.addData(ProtocolField.REQUEST_ID.getName(), request.getId())
 		.build();
 		try {
-			getGCMSender().sendNoRetry(message, volunteer.getId());
+			getGCMSender().sendNoRetry(message, volunteerId);
 		} catch (IOException e) {
 		}
-    }
-    
+	}
+
     /**
+     * Send request denied to the vip (nobody is willing/able to help)
+     * @param vipConnection
+     * @param request
+     */
+	public static void sendRequestDenied(Connection vipConnection, Request request) {
+		vipConnection.send(new Message(ProtocolName.REQUEST_DENIED).add(ProtocolField.REQUEST_ID, request.getId()));
+	}
+
+	/**
      * Send A new request via GCM to the volunteer
      * @param volunteer
      * @param longitude
@@ -63,8 +76,8 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	com.google.android.gcm.server.Message message = new com.google.android.gcm.server.Message.Builder()
     	.addData(ProtocolField.NAME.getName(), ProtocolName.NEW_REQUEST.getName())
     	.addData(ProtocolField.REQUEST_ID.getName(), request.getId())
-		.addData(ProtocolField.LATITUDE.getName(), request.getLatitude())
-		.addData(ProtocolField.LONGITUDE.getName(), request.getLongitude())
+		.addData(ProtocolField.LATITUDE.getName(), request.getLatitude().toString())
+		.addData(ProtocolField.LONGITUDE.getName(), request.getLongitude().toString())
 		.build();
 		try {
 			getGCMSender().sendNoRetry(message, volunteer.getId());
@@ -78,6 +91,8 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	switch(ProtocolName.lookup(m.getName())){
     	case REQUEST_GRANTED:
     		return ServerState.CALLING;
+		default:
+			break;
     	}
     	return state;
     }
@@ -114,6 +129,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			//disconnect the connection
     			return ServerState.DISCONNECTED;
     		case REJECT_REQUEST:
+    			request.rejectPendingVolunteer(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
     			break;
     		case ACCEPT_REQUEST:
     			id = m.getParam(ProtocolField.REQUEST_ID).toString();
@@ -126,20 +142,24 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     					// attach volunteer id to request
     					request.setVolunteerId(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
     					
+    					// Remove volunteer from pending volunteers
+    					request.removePendingVolunteer(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
+    					
     					// send request granted message to VIP
     					request.getVipConnection().send(new Message(ProtocolName.REQUEST_GRANTED));
     					
     					// send request acknowledged message to Volunteer
     					request.getVolunteerConnection().send(new Message(ProtocolName.ACKNOWLEDGE_HELP).add(ProtocolField.REQUEST_ID, request.getId()));
     					
-    					
-    					request.removePendingvolunteer();
-    					
-    					
     					// send cancel to other volunteers
     					request.sendCancelToPendingVolunteers();
     					
+    					// Dont clear pending volunteers for redirection
+    					
     					return ServerState.CALLING;
+    				}else{
+    					// Already being helped
+    					sendRequestCancelled(m.getParam(ProtocolField.VOLUNTEER_ID).toString(), request);
     				}
     			}
     			return state;
@@ -206,6 +226,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	case FINDING_VOLUNTEERS:
     			switch(ProtocolName.lookup(m.getName())){
     			case CANCEL_REQUEST:
+    				request.sendCancelToPendingVolunteers();
     				request.rejectPendingVolunteers();
     				request.close();
     				return ServerState.DISCONNECTED;

@@ -12,7 +12,6 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.eyecall.connection.Connection;
-import com.eyecall.event.ClickEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
@@ -183,6 +182,8 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 			
 			// Go back to list
 			this.finish();
+			break;
+		default:
 			break;
 		}
 	}

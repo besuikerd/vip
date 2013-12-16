@@ -45,6 +45,7 @@ public class RequestPool {
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	public void tunnelUdp(String id, Entity e, Message m) throws IOException{
 		if(true) throw new UnsupportedOperationException("not yet implemented");
 		if(connections.containsKey(id)){
@@ -68,9 +69,13 @@ public class RequestPool {
 	public Request setup(Connection c, String longitude, String latitude) {
 		String id = new BigInteger(128, new SecureRandom()).toString(16);
 		logger.debug("setting up new request with id: {}", id);
-		Request r = new Request(id, c, longitude, latitude);
-		connections.put(id, r);
-		return r;
+		try{
+			Request r = new Request(id, c, Double.valueOf(longitude), Double.valueOf(latitude));
+			connections.put(id, r);
+			return r;
+		}catch(NumberFormatException e){
+			return null;
+		}
 	}
 
 	/**

@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.hibernate.Query;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.eyecall.connection.Connection;
 import com.eyecall.database.Database;
 import com.eyecall.database.Volunteer;
-import com.eyecall.protocol.ProtocolField;
 
 
 public class Request {
@@ -23,10 +24,10 @@ public class Request {
 	private String volunteerId;
 	private List<Volunteer> pendingVolunteers;
 	private List<Volunteer> rejectedVolunteers;
-	private String longitude;
-	private String latitude;
+	private Double longitude;
+	private Double latitude;
 	
-	public Request(String id, Connection vipConnection, String longitude, String latitude) {
+	public Request(String id, Connection vipConnection, Double longitude, Double latitude) {
 		this.id = id;
 		this.vipConnection = vipConnection;
 		this.longitude = longitude;
@@ -64,14 +65,45 @@ public class Request {
 	}
 	
 	public void addPendingVolunteers(Collection<Volunteer> volunteers){
+		logger.debug(id + " Adding new pending volunteers. count: {}", volunteers.size());
 		this.pendingVolunteers.addAll(volunteers);
 	}
 	
+	public void removePendingVolunteer(String id) {
+		logger.debug(id + " Removing volunteer from pendingVolunteers {}", id);
+		Volunteer removing = null;
+		for(Volunteer volunteer : pendingVolunteers){
+			if(volunteer.getId().equals(id)){
+				// Don't remove here -> ConcurrentModification
+				removing = volunteer;
+			}
+		}
+		
+		if(removing!=null) pendingVolunteers.remove(removing);
+	}
+
 	public void rejectPendingVolunteers(){
+		logger.debug(id + " Rejecting all pending volunteers...");
 		this.rejectedVolunteers.addAll(this.pendingVolunteers);
 		this.pendingVolunteers.clear();
 	}
 	
+	public void rejectPendingVolunteer(String id) {
+		logger.debug(id + " Rejecting volunteer {}", id);
+		Volunteer removing = null;
+		for(Volunteer volunteer : pendingVolunteers){
+			if(volunteer.getId().equals(id)){
+				// Don't remove here -> ConcurrentModification
+				removing = volunteer;
+			}
+		}
+		
+		if(removing!=null){
+			pendingVolunteers.remove(removing);
+			rejectedVolunteers.add(removing);
+		}
+	}
+
 	public List<Volunteer> getPendingVolunteers() {
 		return pendingVolunteers;
 	}
@@ -105,28 +137,47 @@ public class Request {
 	}
 	
 	public void findNewVolunteers() {
-		List<Volunteer> potentialVolunteers = Database.getInstance().queryForList(Constants.VOLUNTEER_QUERY, Volunteer.class);
-		logger.debug("potential volunteers: {}", potentialVolunteers);
+		Session session = Database.getInstance().startSession();
+		Query query = session.createQuery(Constants.VOLUNTEER_QUERY);
+		query.setDouble("latitude", latitude);
+		query.setDouble("longitude", longitude);
+		List<Volunteer> potentialVolunteers = query.list();
+		session.close();
+		
+		/*List<Volunteer> potentialVolunteers = 
+				
+				
+				
+				Database.getInstance().queryForList(Constants.VOLUNTEER_QUERY, Volunteer.class);
+		*/
+		logger.debug(id + " potential volunteers: {}", potentialVolunteers);
 		this.addPendingVolunteers(potentialVolunteers);
 	}
 
 	public void sendRequestToPendingVolunteers(){
+		logger.debug(id + " Sending request to pending volunteers...");
 		for(Volunteer volunteer : this.getPendingVolunteers()){
 			ServerProtocolHandler.sendNewRequest(volunteer, this);
 		}
 	}
 	
 	public void sendCancelToPendingVolunteers(){
+		logger.debug(id + " Sending cancel request to pending volunteers...");
 		for(Volunteer volunteer : this.getPendingVolunteers()){
 			ServerProtocolHandler.sendRequestCancelled(volunteer, this);
 		}
 	}
 
-	public String getLatitude() {
+	public void sendRequestDenied() {
+		logger.debug(id + " Sending request denied to VIP...");
+		ServerProtocolHandler.sendRequestDenied(vipConnection, this);
+	}
+
+	public Double getLatitude() {
 		return latitude;
 	}
 
-	public String getLongitude() {
+	public Double getLongitude() {
 		return longitude;
 	}
 

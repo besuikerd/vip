@@ -3,14 +3,16 @@ package com.eyecall.server;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.eyecall.database.Volunteer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for sending the request to a new group
  * of volunteers and for sending a cancel to the old group periodically.
  */
 public class RequestTimerTask extends TimerTask {
-	
+	private static final Logger logger = LoggerFactory.getLogger(RequestTimerTask.class);
+    
 	private Request request;
 
 	public RequestTimerTask(Request request){
@@ -19,20 +21,27 @@ public class RequestTimerTask extends TimerTask {
 
 	@Override
 	public void run() {
+		logger.debug("Request timeout... Running RequestTimerTask");
 		if(!request.connected()){
+			logger.debug("Request timeout... Finding new volunteers");
 			// Reject pending
 			request.rejectPendingVolunteers();
 			
 			// Find new group
 			request.findNewVolunteers();
 			
-			// Send to new group
-			request.sendRequestToPendingVolunteers();
-		
-			// Reschedule
-			new Timer().schedule(this, Constants.REQUEST_TIMEOUT);
+			if(request.getPendingVolunteers().size()>0){
+				// Send to new group
+				request.sendRequestToPendingVolunteers();
 			
-			// And done :)
+				// Reschedule
+				new Timer().schedule(this, Constants.REQUEST_TIMEOUT);
+				
+				// And done :)
+			}else{
+				logger.debug("Request timeout... No new volunteers found");
+				request.sendRequestDenied();
+			}
 		}
 	}
 }
