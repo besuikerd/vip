@@ -95,7 +95,7 @@ public class Database {
 			for(Object o : deletions){
 				s.delete(o);
 			}
-			tx.commit();
+			tx.commit();			
 		} catch(HibernateException e){
 			if(tx != null) tx.rollback();
 			e.printStackTrace();
