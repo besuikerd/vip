@@ -121,18 +121,25 @@ public class Connection {
 	 */
 	public void send(Message m){
 		messages.add(m);
+		logger.debug("trying to obtain lock...");
 		synchronized(state){
+			logger.debug("lock obtained!");
 			State newState = handler.messageSent(state, m);
 			if(newState == null){
 				newState = new DefaultProtocolHandler().messageSent(state, m);
 			}
 			state = newState;
 		}
+		
 		if(state.isTerminal()){
+			logger.debug("state is terminal, closing...");
 			try {
 				close();
 			} catch (IOException e) {
+				e.printStackTrace();
 			}
+			
+			logger.debug("closed!");
 		}
 	}
 	
@@ -192,17 +199,17 @@ public class Connection {
 	 * @throws IOException
 	 */
 	public void close() throws IOException{
-		
 		//block until OutQueue is empty
 		synchronized(messages){
 			while(!messages.isEmpty()){
 				try {
-					messages.wait();
+					logger.debug("waiting in close");
+					messages.wait(100);
+					logger.debug("done waiting in close");
 				} catch (InterruptedException e) {
 				}
 			}
 		}
-		
 		s.getOutputStream().flush();
 		
 		//close the Socket
@@ -323,15 +330,6 @@ public class Connection {
 			
 			messages = new OutQueue<Message>(s);
 			
-			latch.countDown();
-			
-			if(s == null){
-				return;
-			}
-			
-			//initiate and configure ObjectMapper
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 			
 			//fire up outputqueue thread
 			CountDownLatch latch = new CountDownLatch(1);
@@ -344,12 +342,24 @@ public class Connection {
 			} catch (InterruptedException e2) {
 			}
 			
+			//thread starting up this connection can resume now
+			this.latch.countDown();
+			
+			if(s == null){
+				return;
+			}
+			
+			//initiate and configure ObjectMapper
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+			
 			//initiate message iterator that iterates over the InputStream
 			Iterator<Message> iterator = null;
 			try {
 				iterator = mapper.readValues(new JsonFactory().createParser(s.getInputStream()), Message.class);
 			} catch (IOException e) {
 				logger.warn("unexpected IOException while reading message: {}", e.toString());
+				messages.clear();
 				//close socket
 				try {
 					s.close();

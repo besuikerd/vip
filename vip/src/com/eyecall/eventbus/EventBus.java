@@ -15,6 +15,10 @@ public class EventBus {
 		listeners.add(listener);
 	}
 	
+	public void unsubscribe(EventListener listener){
+		listeners.remove(listener);
+	}
+	
 	public void post(Event e){
 		for(EventListener listener : listeners){
 			listener.onEvent(e);

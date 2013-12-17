@@ -44,10 +44,6 @@ public class OutQueue<E>{
 		mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 	}
 	
-	public void start(){
-		start(null);
-	}
-	
 	public void start(CountDownLatch latch){
 		Thread t = new Thread(new OutQueueThread(latch));
 		t.setName(Thread.currentThread().getName() + "-OutQueue");
@@ -121,13 +117,13 @@ public class OutQueue<E>{
 							}
 						}
 						
-						//notify other threads waiting on this OutQueue 
-						synchronized(this){
-							notifyAll();
-						}
+						
 					}
-				}
-				synchronized(this){
+					//notify other threads waiting on this OutQueue 
+					synchronized(this){
+						notifyAll();
+					}
+					
 					try {
 						wait(100);
 						if(!queue.isEmpty())
@@ -135,11 +131,18 @@ public class OutQueue<E>{
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					
 				}
 			}
 			//empty the queue for when the socket wasn't closed gracefully
+			clear();
+			
+		}
+	}
+	
+	public void clear(){
+		synchronized(this){
 			queue.clear();
+			notifyAll();
 		}
 	}
 }

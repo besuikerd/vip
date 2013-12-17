@@ -7,5 +7,6 @@
     <string name="error_unknown_host">Onbekende hostname</string>
     <string name="error_connection_failed">Verbinding mislukt</string>
     <string name="button_request">HELP!</string>
+    <string name="button_disconnect">Disconnect</string>
 
 </resources>
