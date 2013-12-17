@@ -51,11 +51,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
     /** Tag for this app used for debugging */
 	public static final String TAG = "Eyecall VIP";
 
-	/** Server address or hostname */
-	private static final String SERVER_ADDRESS = "besuikerd.nl";
-	/** Server port */
-	private static final int SERVER_PORT = 5000;
-	
 	/** LocationClient used for getting last known location */
 	private LocationClient locationClient;
 	

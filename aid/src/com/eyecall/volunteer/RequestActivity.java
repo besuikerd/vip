@@ -67,7 +67,7 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			logger.debug("showing coordinates: ({},{})", latitude, longitude);
 			
 			LatLng pos = new LatLng(latitude, longitude);
-			marker = map.addMarker(new MarkerOptions().title("Bla").position(pos));
+			marker = map.addMarker(new MarkerOptions().title("Vla").position(pos));
 			map.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 18f));
 			
 		}
@@ -121,6 +121,7 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			
 		case REJECT_REQUEST:
 			try {
+				logger.debug("Sending request rejected...");
 				c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
 				
 				Bundle extras = getIntent().getExtras();
@@ -148,17 +149,19 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			i.putExtras(b);
 			startActivity(i);
 			break;
-		case REQUEST_DENIED:
-			//TODO show dialog that request was already fulfilled
+		//case REQUEST_DENIED:
+			//
+			
+			//break;
+		case REQUEST_CANCELLED:
 			new AlertDialog.Builder(this)
-				.setIcon(android.R.drawable.ic_dialog_info)
-				.setTitle(R.string.request_denied_title)
-				.setMessage(R.string.request_denied)
-				.setPositiveButton(R.string.ok, null)
-				.show();
+			.setIcon(android.R.drawable.ic_dialog_info)
+			.setTitle(R.string.request_denied_title)
+			.setMessage(R.string.request_denied)
+			.setPositiveButton(R.string.ok, null)
+			.show();
 			finish();
 			break;
-			
 		default:
 			break;
 		}

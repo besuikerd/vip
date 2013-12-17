@@ -35,10 +35,11 @@ public class RequestTimerTask extends TimerTask {
 				request.sendRequestToPendingVolunteers();
 			
 				// Reschedule
-				new Timer().schedule(this, Constants.REQUEST_TIMEOUT);
+				new Timer().schedule(new RequestTimerTask(request), Constants.REQUEST_TIMEOUT);
 				
 				// And done :)
 			}else{
+				// Nobody found. Deny request
 				logger.debug("Request timeout... No new volunteers found");
 				request.sendRequestDenied();
 			}

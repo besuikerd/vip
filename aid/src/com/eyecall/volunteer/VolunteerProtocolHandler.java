@@ -201,7 +201,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 			switch(messageName){
 			case CANCEL_REQUEST:
 				if(m.hasParam("request_id")){
-					EventBus.getInstance().post(new Event(EventTag.REQUEST_DENIED));
+					EventBus.getInstance().post(new Event(EventTag.REQUEST_CANCELLED));
 					return VolunteerState.IDLE;
 				}
 			case ACKNOWLEDGE_HELP:

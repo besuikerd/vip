@@ -35,4 +35,11 @@ public class Volunteer {
 	public String toString() {
 		return "Volunteer [id=" + id + "]";
 	}
+	
+	public boolean equals(Object other){
+		if(other instanceof Volunteer){
+			return ((Volunteer)other).getId().equals(this.getId());
+		}
+		return false;
+	}
 }

@@ -18,8 +18,9 @@ public enum EventTag implements Named{
 	REMOVE_LOCATION("remove_location"),
 	REMOVE_LOCATION_CONFIRM("remove_location_confirm"), 
 	REQUEST_ACKNOWLEDGED("request_acknowledged"), 
-	REQUEST_DENIED("request_denied"), 
-	SAVE_LOCATION("save_location"),
+	//REQUEST_DENIED("request_denied"), 
+	SAVE_LOCATION("save_location"), 
+	REQUEST_CANCELLED("request_cancelled"),
 	
 	;
 	

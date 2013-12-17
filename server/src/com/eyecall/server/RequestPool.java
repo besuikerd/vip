@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
+import com.eyecall.database.Volunteer;
 
 public class RequestPool {
 	private static final Logger logger = LoggerFactory.getLogger(RequestPool.class);
@@ -118,5 +119,20 @@ public class RequestPool {
 	 */
 	public void remove(String id){
 		connections.remove(id);
+	}
+
+	/**
+	 * Checks if the given volunteer is currently helping a VIP or is in the 
+	 * pendingVolunteers list of a request. 
+	 * @param volunteer
+	 * @return false if volunteer is currently helping or is in the pendingVolunteers list, true otherwise.
+	 */
+	public boolean isFree(Volunteer volunteer) {
+		for(Request request : connections.values()){
+			if(request.getPendingVolunteers().contains(volunteer) || (request.getVolunteerId()!=null && request.getVolunteerId().equals(volunteer.getId()))){
+				return false;
+			}
+		}
+		return true;
 	}
 }
