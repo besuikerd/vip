@@ -1,5 +1,6 @@
 package com.eyecall.vip;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -79,12 +80,17 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	}
 
 	@Override
-	protected void onStop() {
-	    // Disconnecting the client invalidates it.
-	    //if(locationClient!=null) locationClient.disconnect();
-	    super.onStop();
+	protected void onPause() {
+		super.onPause();
+		Connection c = null;
+		if((c = ConnectionInstance.getExistingInstance()) != null && c.getState().equals(VIPState.WAITING)){
+			c.send(new Message(ProtocolName.CANCEL_REQUEST));
+		}
+		//enable button again to allow new help requests
+		if(locationClient != null){
+			((Button) findViewById(R.id.button_request)).setEnabled(true);
+		}
 	}
-	
 	
 
 	/**
@@ -113,7 +119,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
         locationClient.requestLocationUpdates(LocationRequest.create(), new LocationListener() {
 			
 			@Override
-			public void onLocationChanged(Location arg0) {
+			public void onLocationChanged(final Location location) {
 				logger.debug("location changed: ({},{})", location.getLatitude(), location.getLongitude());
 				runOnUiThread(new Runnable() {
 					
@@ -124,9 +130,13 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 				});
 				
 				
-				Connection c = ConnectionInstance.getInstance();
-				if(c != null && c.getState().equals(VIPState.BEING_HELPED)){
-					c.send(new Message(ProtocolName.UPDATE_LOCATION).add(ProtocolField.LATITUDE, location.getLatitude()).add(ProtocolField.LONGITUDE, location.getLongitude()));
+				Connection c = null;
+				try {
+					if((c = ConnectionInstance.getInstance()) != null && c.getState().equals(VIPState.BEING_HELPED)){
+						c.send(new Message(ProtocolName.UPDATE_LOCATION).add(ProtocolField.LATITUDE, location.getLatitude()).add(ProtocolField.LONGITUDE, location.getLongitude()));
+					}
+				} catch(UnknownHostException e){
+					
 				}
 			}
 		});
@@ -137,14 +147,13 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 				
 				final Location loc = locationClient.getLastLocation();
 				if(loc != null){
-					runOnUiThread(new Runnable(){
-						@Override
-						public void run() {
-							Toast.makeText(getApplicationContext(), String.format("location: (%s,%s)", loc.getLatitude(), loc.getLongitude()), Toast.LENGTH_SHORT).show();
-						}
-					});
+					
+					//post location update if state is BEING_HELPED
 					try {
-						ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT).send(new Message(ProtocolName.UPDATE_LOCATION).add(ProtocolField.LATITUDE, loc.getLatitude()).add(ProtocolField.LONGITUDE, loc.getLongitude()));
+						Connection c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
+						if(c.getState().equals(VIPState.BEING_HELPED)){
+							c.send(new Message(ProtocolName.UPDATE_LOCATION).add(ProtocolField.LATITUDE, loc.getLatitude()).add(ProtocolField.LONGITUDE, loc.getLongitude()));
+						}
 					} catch (UnknownHostException e) {
 					}
 				}
@@ -240,9 +249,11 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 				}
 				Location l = locationClient.getLastLocation();
 				try {
-					Connection c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
+					logger.debug("recreating conn...");
+					Connection c = ConnectionInstance.recreateConnection();
+					logger.debug("conn recreated!");
 					c.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LATITUDE, l.getLatitude()).add(ProtocolField.LONGITUDE, l.getLongitude()));
-				} catch (UnknownHostException e1) {
+				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
 				

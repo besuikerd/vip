@@ -32,13 +32,13 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 			switch(messageName){
 			case DISCONNECT:
 				return VIPState.DISCONNECTED;
+			case CANCEL_REQUEST:
+				return VIPState.DISCONNECTED;
 			default:
 				return null;
 			}
 		case BEING_HELPED:
 			switch(messageName){
-			case MEDIA_DATA:
-				return VIPState.BEING_HELPED;
 			case UPDATE_LOCATION:
 				return VIPState.BEING_HELPED;
 			case DISCONNECT:

@@ -1,8 +1,10 @@
 package com.eyecall.android;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 
 import com.eyecall.connection.Connection;
+import com.eyecall.vip.Constants;
 import com.eyecall.vip.VIPProtocolHandler;
 import com.eyecall.vip.VIPState;
 
@@ -17,8 +19,24 @@ public class ConnectionInstance {
 		return instance;
 	}
 	
-	public static synchronized Connection getInstance(){
+	public static synchronized Connection getInstance() throws UnknownHostException{
+		return getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
+	}
+	
+	public static synchronized Connection getExistingInstance(){
 		return instance;
+	}
+	
+	public static synchronized boolean hasInstance(){
+		return instance != null;
+	}
+	
+	public static Connection recreateConnection() throws IOException{
+		if(instance != null){
+			instance.close();
+			instance = null;
+		}
+		return getInstance();
 	}
 	
 	public static synchronized void clear(){

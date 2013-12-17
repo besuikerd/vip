@@ -174,6 +174,9 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			request.start();
     			
     			return ServerState.FINDING_VOLUNTEERS;
+    		case CANCEL_REQUEST:
+    			//TODO cancel pending requests and such
+    			return ServerState.DISCONNECTED;
     		case GET_LOCATIONS:
     			String volunteerId = (String) m.getParam(ProtocolField.VOLUNTEER_ID);
     			List<Location> locations = Database.getInstance().queryForList("FROM Location WHERE volunteer.id=?", Location.class, volunteerId);
@@ -238,20 +241,14 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	case CALLING:
     		switch(ProtocolName.lookup(m.getName())){
     		case UPDATE_LOCATION:
+
     			if(request != null){
     				pool.tunnel(request.getId(), Entity.VIP, m);
     			}
     			return state;
-    		/*case AUDIO_DATA:
-    			if(request != null){
-    				pool.tunnel(request.getId(), Entity.VOLUNTEER, m);
-    			}
-    			return state;
-    		case MEDIA_DATA:
-    			if(request != null){
-    				pool.tunnel(request.getId(), Entity.VIP, m);
-    			}
-    			return state;*/
+    		case DISCONNECT:
+    			pool.tunnel(request.getId(), c.equals(request.getVolunteerConnection()) ? Entity.VIP : Entity.VOLUNTEER, new Message(ProtocolName.OTHER_DISCONNECTED));
+    			return ServerState.DISCONNECTED;
     		default:
     			return null;
     		}

@@ -16,7 +16,7 @@ public class EventBus {
 	}
 	
 	public void unsubscribe(EventListener listener){
-		this.listeners.remove(listener);
+		listeners.remove(listener);
 	}
 	
 	public void post(Event e){

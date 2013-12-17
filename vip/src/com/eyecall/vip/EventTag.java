@@ -6,7 +6,9 @@ public enum EventTag implements Named{
 	REQUEST_BUTTON_PRESSED("request_button"),
 	VIDEO_FRAME("video_frame"), 
 	REQUEST_GRANTED("request_granted"), 
-	SURFACE_CREATED("surface_created");
+	SURFACE_CREATED("surface_created"),
+	DISCONNECT("disconnect"),
+	;
 	
 	private String tag;
 	
@@ -22,5 +24,14 @@ public enum EventTag implements Named{
 	@Override
 	public String getName(){
 		return this.tag;
+	}
+	
+	public static EventTag lookup(String tag){
+		for(EventTag t : values()){
+			if(t.getName().equals(tag)){
+				return t;
+			}
+		}
+		return null;
 	}
 }
