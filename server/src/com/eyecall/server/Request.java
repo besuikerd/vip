@@ -138,18 +138,25 @@ public class Request {
 	
 	public void findNewVolunteers() {
 		Session session = Database.getInstance().startSession();
-		Query query = session.createQuery(Constants.VOLUNTEER_QUERY);
+		Query query = session.createSQLQuery(Constants.VOLUNTEER_QUERY);
 		query.setDouble("latitude", latitude);
 		query.setDouble("longitude", longitude);
-		List<Volunteer> potentialVolunteers = query.list();
+		List<?> result = query.list();
+		List<Volunteer> potentialVolunteers = new ArrayList<Volunteer>();
+		int count = 0;
+		for(Object id : result){
+			if(count<Constants.REQUEST_GROUP_SIZE){
+				Volunteer volunteer = new Volunteer();
+				volunteer.setId(id.toString());
+				if(!rejectedVolunteers.contains(volunteer) && RequestPool.getInstance().isFree(volunteer)){
+					potentialVolunteers.add(volunteer);
+					count++;
+				}				
+			}
+		}
 		session.close();
 		
-		/*List<Volunteer> potentialVolunteers = 
-				
-				
-				
-				Database.getInstance().queryForList(Constants.VOLUNTEER_QUERY, Volunteer.class);
-		*/
+		// List<Volunteer> potentialVolunteers = Database.getInstance().queryForList(Constants.VOLUNTEER_QUERY, Volunteer.class);
 		logger.debug(id + " potential volunteers: {}", potentialVolunteers);
 		this.addPendingVolunteers(potentialVolunteers);
 	}
