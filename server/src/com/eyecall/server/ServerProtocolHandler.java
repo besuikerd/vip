@@ -129,7 +129,8 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			//disconnect the connection
     			return ServerState.DISCONNECTED;
     		case REJECT_REQUEST:
-    			request.rejectPendingVolunteer(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
+    			request = RequestPool.getInstance().getPendingRequest(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
+    			if(request!=null) request.rejectPendingVolunteer(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
     			break;
     		case ACCEPT_REQUEST:
     			id = m.getParam(ProtocolField.REQUEST_ID).toString();

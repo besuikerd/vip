@@ -135,4 +135,12 @@ public class RequestPool {
 		}
 		return true;
 	}
+
+	public Request getPendingRequest(String volunteerId) {
+		Volunteer volunteer = new Volunteer(volunteerId);
+		for(Request request : connections.values()){
+			if(request.getPendingVolunteers().contains(volunteer)) return request;
+		}
+		return null;
+	}
 }
