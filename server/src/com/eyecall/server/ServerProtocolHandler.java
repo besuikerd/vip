@@ -147,10 +147,10 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     					request.removePendingVolunteer(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
     					
     					// send request granted message to VIP
-    					request.getVipConnection().send(new Message(ProtocolName.REQUEST_GRANTED));
+    					request.getVipConnection().send(new Message(ProtocolName.REQUEST_GRANTED).add(ProtocolField.ADDRESS, request.getVolunteerConnection().getSocket().getInetAddress().getHostAddress()));
     					
     					// send request acknowledged message to Volunteer
-    					request.getVolunteerConnection().send(new Message(ProtocolName.ACKNOWLEDGE_HELP).add(ProtocolField.REQUEST_ID, request.getId()));
+    					request.getVolunteerConnection().send(new Message(ProtocolName.ACKNOWLEDGE_HELP).add(ProtocolField.REQUEST_ID, request.getId()).add(ProtocolField.ADDRESS, request.getVipConnection().getSocket().getInetAddress().getHostAddress()));
     					
     					// send cancel to other volunteers
     					request.sendCancelToPendingVolunteers();

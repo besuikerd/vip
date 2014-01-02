@@ -412,4 +412,8 @@ public class Connection {
 	public State getState() {
 		return state;
 	}
+	
+	public Socket getSocket() {
+		return s;
+	}
 }

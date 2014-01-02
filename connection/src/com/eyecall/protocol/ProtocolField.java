@@ -24,7 +24,7 @@ public enum ProtocolField implements Named{
 	LOCATION_ID("location_id"), 
 	// For the name of the message used in GCM messages
 	NAME("name"), 
-	
+	ADDRESS("address")
 	;
 	
 	private String name;

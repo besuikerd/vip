@@ -27,6 +27,7 @@ public enum ProtocolName implements Named{
 	/**
 	 * Een acceptatie van hulpverzoek door de vrijwilliger wordt toegekend door de server.<br>
 	 * request_id [integer]: de identifier van het hulpverzoek dat is toegekend
+	 * address [String]: adres van de VBP waarover RTSP stream verzonden wordt
 	 */
 	ACKNOWLEDGE_HELP("acknowledge_help"),
 	/**
@@ -51,7 +52,7 @@ public enum ProtocolName implements Named{
 	// Received by VIP
 	/**
 	 * Het hulpverzoek wat verstuurd is door de VBP is door een vrijwilliger geaccepteerd. <br>
-	 * Geen parameters
+	 * address [String] adres van de vrijwilliger waarover RTSP stream verzonden wordt
 	 */
 	REQUEST_GRANTED("request_granted"),
 	/**
