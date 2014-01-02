@@ -26,6 +26,7 @@ public class Request {
 	private List<Volunteer> rejectedVolunteers;
 	private Double longitude;
 	private Double latitude;
+	private Timer timer;
 	
 	public Request(String id, Connection vipConnection, Double longitude, Double latitude) {
 		this.id = id;
@@ -89,7 +90,7 @@ public class Request {
 	}
 	
 	public void rejectPendingVolunteer(String id) {
-		logger.debug(id + " Rejecting volunteer {}", id);
+		logger.debug(this.id + " Rejecting volunteer {}", id);
 		Volunteer removing = null;
 		for(Volunteer volunteer : pendingVolunteers){
 			if(volunteer.getId().equals(id)){
@@ -101,6 +102,13 @@ public class Request {
 		if(removing!=null){
 			pendingVolunteers.remove(removing);
 			rejectedVolunteers.add(removing);
+		}
+		
+		if(pendingVolunteers.size()==0){
+			logger.debug(this.id + " Pending volunteers is now 0. Stopping timer and findind new volunteers");
+			timer.cancel();
+			// Find new ones, send request etc bla bla bla.
+			start();
 		}
 	}
 
@@ -131,9 +139,8 @@ public class Request {
 		sendRequestToPendingVolunteers();
 		
 		// Step 3 : Loop untill no volunteers available or request accepted
-		TimerTask t = new RequestTimerTask(this);
-		new Timer().schedule(t, Constants.REQUEST_TIMEOUT);
-		
+		timer = new Timer();
+		new RequestTimerTask(this, timer);
 	}
 	
 	public void findNewVolunteers() {

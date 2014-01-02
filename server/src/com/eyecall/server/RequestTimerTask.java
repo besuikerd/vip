@@ -15,8 +15,13 @@ public class RequestTimerTask extends TimerTask {
     
 	private Request request;
 
-	public RequestTimerTask(Request request){
+	private Timer timer;
+
+	public RequestTimerTask(Request request, Timer timer){
 		this.request = request;
+		this.timer = timer;
+		logger.debug("Starting RequestTimerTask... (timeout={})", Constants.REQUEST_TIMEOUT);
+		timer.schedule(this, Constants.REQUEST_TIMEOUT);
 	}
 
 	@Override
@@ -35,7 +40,7 @@ public class RequestTimerTask extends TimerTask {
 				request.sendRequestToPendingVolunteers();
 			
 				// Reschedule
-				new Timer().schedule(new RequestTimerTask(request), Constants.REQUEST_TIMEOUT);
+				timer.schedule(new RequestTimerTask(request, timer), Constants.REQUEST_TIMEOUT);
 				
 				// And done :)
 			}else{

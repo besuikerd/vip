@@ -131,7 +131,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     		case REJECT_REQUEST:
     			request = RequestPool.getInstance().getPendingRequest(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
     			if(request!=null) request.rejectPendingVolunteer(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
-    			break;
+    			return ServerState.WAITING;
     		case ACCEPT_REQUEST:
     			id = m.getParam(ProtocolField.REQUEST_ID).toString();
     			if(pool.exists(id)){
