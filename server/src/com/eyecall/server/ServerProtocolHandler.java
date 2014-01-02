@@ -206,7 +206,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				location.setLongitude((float) ((Double) m.getParam(ProtocolField.LONGITUDE)).doubleValue());
     				location.setLatitude( (float) ((Double) m.getParam(ProtocolField.LATITUDE) ).doubleValue());
     				location.setPreferred(m.getParam(ProtocolField.TYPE).equals(ProtocolField.TYPE_PREFERRED.getName()));
-    				//location.setRadius((Integer) m.getParam(ProtocolField.RADIUS));
+    				location.setRadius((Double) m.getParam(ProtocolField.RADIUS));
     				
     				Database.getInstance().insertTransaction(location);
     			}else{

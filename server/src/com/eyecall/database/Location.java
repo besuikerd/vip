@@ -11,8 +11,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.ForeignKey;
-
 @Entity
 @Table(name = "location")
 public class Location {
@@ -80,7 +78,7 @@ public class Location {
 		return radius;
 	}
 
-	public void setRadius(int radius) {
+	public void setRadius(Double radius) {
 		this.radius = radius;
 	}
 	

@@ -57,6 +57,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 		.add(ProtocolField.ACTION, ProtocolField.ACTION_ADD.getName())
 		.add(ProtocolField.LATITUDE, location.getLatitude())
 		.add(ProtocolField.LONGITUDE, location.getLongitude())
+		.add(ProtocolField.RADIUS, location.getRadius())
 		.add(ProtocolField.TYPE, location.isPreferred() ? ProtocolField.TYPE_PREFERRED.getName() : ProtocolField.TYPE_NON_PREFERRED.getName())
 				);
 	}
