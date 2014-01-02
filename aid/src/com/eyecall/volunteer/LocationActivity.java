@@ -84,6 +84,7 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     	
     	// Draw radius
     	if(location!=null && !location.isPreferred()){
+    		radiusBar.setProgress((int) (location.getRadius()*100));
     		drawCircle();
     	}
     }
