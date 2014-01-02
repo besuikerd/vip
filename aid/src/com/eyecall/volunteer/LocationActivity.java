@@ -76,6 +76,16 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     		radiusRow.setVisibility(View.INVISIBLE);
     	}
     	
+    	// Set selection
+    	if(location!=null){
+    		radiusBar.setProgress((int) (location.getRadius()*100));
+    		if(location.isPreferred()){
+    			((RadioGroup)findViewById(R.id.location_radiogroup_preferred)).check(R.id.location_radio_preferred);
+    		}else{
+    			((RadioGroup)findViewById(R.id.location_radiogroup_preferred)).check(R.id.location_radio_not_preferred);
+    		}
+    	}
+    	
     	// Register listeners and events
     	registerEvents();
     	
@@ -84,7 +94,6 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     	
     	// Draw radius
     	if(location!=null && !location.isPreferred()){
-    		radiusBar.setProgress((int) (location.getRadius()*100));
     		drawCircle();
     	}
     }
