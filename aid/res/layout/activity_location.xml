@@ -12,39 +12,67 @@
         android:layout_height="wrap_content"
         android:layout_weight="2" />
 
-    <LinearLayout
+    <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_weight="0" >
 
-        <TextView
-            android:id="@+id/location_header_preferred"
+        <TableRow
+            android:id="@+id/tableRow_preferred"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="11dp"
-            android:text="@string/location_header_preferred" />
+            android:layout_height="wrap_content" >
 
-        <RadioGroup
-            android:id="@+id/location_radiogroup_preferred"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal" >
-
-            <RadioButton
-                android:id="@+id/location_radio_preferred"
+            <TextView
+                android:id="@+id/location_header_preferred"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@string/location_radio_preferred" />
+                android:layout_marginTop="11dp"
+                android:text="@string/location_header_preferred" />
 
-            <RadioButton
-                android:id="@+id/location_radio_not_preferred"
+            <RadioGroup
+                android:id="@+id/location_radiogroup_preferred"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/location_radio_not_preferred" />
-        </RadioGroup>
-    </LinearLayout>
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="horizontal" >
+
+                <RadioButton
+                    android:id="@+id/location_radio_preferred"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/location_radio_preferred" />
+
+                <RadioButton
+                    android:id="@+id/location_radio_not_preferred"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/location_radio_not_preferred" />
+            </RadioGroup>
+
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow_radius"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/location_header_radius"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="11dp"
+                android:text="@string/location_header_radius" />
+
+            <SeekBar
+                android:id="@+id/location_radius"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="2" />
+
+        </TableRow>
+    </TableLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

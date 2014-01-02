@@ -57,6 +57,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 		.add(ProtocolField.ACTION, ProtocolField.ACTION_ADD.getName())
 		.add(ProtocolField.LATITUDE, location.getLatitude())
 		.add(ProtocolField.LONGITUDE, location.getLongitude())
+		.add(ProtocolField.RADIUS, location.getRadius())
 		.add(ProtocolField.TYPE, location.isPreferred() ? ProtocolField.TYPE_PREFERRED.getName() : ProtocolField.TYPE_NON_PREFERRED.getName())
 				);
 	}
@@ -152,7 +153,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 					location.setLatitude( (float) ((Double)itemMap.get("latitude") ).doubleValue());
 					location.setLongitude((float) ((Double)itemMap.get("longitude")).doubleValue());
 					location.setPreferred(((Boolean)itemMap.get("preferred")).booleanValue());
-					location.setRadius(((Integer)itemMap.get("radius")).intValue());
+					location.setRadius((Double)itemMap.get("radius"));
 					logger.debug("Location parsed: {}", location.toString());
 					locations.add(location);
 				}

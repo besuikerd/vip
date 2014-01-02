@@ -35,7 +35,7 @@
             android:text="Nee, help niet vaker met deze locatie" />
 
         <SeekBar
-            android:id="@+id/seekBar1"
+            android:id="@+id/location_radius"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"

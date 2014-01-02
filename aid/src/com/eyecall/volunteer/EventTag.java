@@ -20,7 +20,9 @@ public enum EventTag implements Named{
 	REQUEST_ACKNOWLEDGED("request_acknowledged"), 
 	//REQUEST_DENIED("request_denied"), 
 	SAVE_LOCATION("save_location"), 
-	REQUEST_CANCELLED("request_cancelled"),
+	REQUEST_CANCELLED("request_cancelled"), 
+	LOCATION_PREFERRED_CHANGED("loc_pref_change"), 
+	LOCATION_RADIUS_CHANGED("loc_rad_change"),
 	
 	;
 	

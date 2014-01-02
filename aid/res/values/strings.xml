@@ -34,10 +34,13 @@
     <string name="wait">Please wait</string>
     <string name="location_removed">Location removed</string>
     <string name="location_refresh_first">Refresh your locations first</string>
-    
+    <string name="no_internet">No internet connection!</string>
     <string name="request_incoming">Incoming request</string>
     
     
     <string name="error_register_unable">Unable to register. Please try again later.</string>
+    
+    
+    <string name="location_header_radius">Radius:</string>
 
 </resources>
