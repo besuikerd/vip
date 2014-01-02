@@ -36,7 +36,7 @@ public class Location {
 	private boolean preferred;
 	
 	@Column(name="radius")
-	private int radius;
+	private double radius;
 	
 	private Date created;
 
@@ -76,7 +76,7 @@ public class Location {
 		this.preferred = preferred;
 	}
 
-	public int getRadius() {
+	public double getRadius() {
 		return radius;
 	}
 

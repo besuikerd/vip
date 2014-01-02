@@ -14,7 +14,7 @@ public class Location implements Parcelable {
 		this.latitude = in.readDouble();
 		this.longitude = in.readDouble();
 		this.preferred = in.readInt()==1;
-		this.radius = in.readInt();
+		this.radius = in.readDouble();
 	}
 
 	//private int id;
@@ -25,7 +25,7 @@ public class Location implements Parcelable {
 
 	private boolean preferred;
 
-	private int radius;
+	private double radius;
 
 	private int id;
 
@@ -61,12 +61,12 @@ public class Location implements Parcelable {
 		this.preferred = preferred;
 	}
 
-	public int getRadius() {
+	public double getRadius() {
 		return radius;
 	}
 
-	public void setRadius(int radius) {
-		this.radius = radius;
+	public void setRadius(double d) {
+		this.radius = d;
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class Location implements Parcelable {
 		out.writeDouble(latitude);
 		out.writeDouble(longitude);
 		out.writeInt(preferred ? 1 : 0);
-		out.writeInt(radius);
+		out.writeDouble(radius);
 	}
 
 	public static final Parcelable.Creator<Location> CREATOR = new Parcelable.Creator<Location>() {

@@ -12,6 +12,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -47,6 +49,13 @@ public class MainActivity extends Activity implements EventListener{
 		} catch(Exception e){
 			throw new RuntimeException("failed to load class: " + e.getMessage());
 		}
+		
+		if(!checkInternet()){
+			Toast.makeText(this, R.string.no_internet, Toast.LENGTH_LONG).show();
+			this.finish();
+			return;
+		}
+		
 		// Check Google Play Services
 		checkPlayServices();
 
@@ -85,6 +94,21 @@ public class MainActivity extends Activity implements EventListener{
 		//new AlertDialog.Builder(this).setTitle("Wilt u vaker oproepen in de buurt van deze locatie ontvangen?").setView(getLayoutInflater().inflate(R.layout.dialog_preferred,null));
 	}
 	
+	private boolean checkInternet() {
+		ConnectivityManager connectivityManager =  (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+		
+		
+		logger.debug("WIFI status: {}", connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI  ).getState());
+		logger.debug("Mobile status: {}", connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState());
+		
+		if( 	connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI  ).getState().equals(NetworkInfo.State.CONNECTED) ||
+				connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState().equals(NetworkInfo.State.CONNECTED) ){
+			return true;
+		}
+		
+		return false;
+	}
+
 	@Override
 	protected void onResume() {
 		super.onResume();
