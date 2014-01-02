@@ -91,6 +91,7 @@ public class LocationActivity extends FragmentActivity implements EventListener,
     @Override
     public void onMapLongClick(LatLng point) {
     	marker.setPosition(point);
+    	drawCircle();
     }
     
     private void initMap(){
