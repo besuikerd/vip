@@ -96,46 +96,48 @@ public class OutQueue<E>{
 			if(latch != null){
 				latch.countDown();
 			}
+			if(s != null){
 			
-			while(!s.isClosed()){
-				//empty the queue and send the messages through the socket
-				synchronized(this){
-					while(!queue.isEmpty()){
-					
-						E message = queue.remove();
+				while(!s.isClosed()){
+					//empty the queue and send the messages through the socket
+					synchronized(this){
+						while(!queue.isEmpty()){
 						
-						try {
-							logger.debug("sending: {}", mapper.writeValueAsString(message));
-							mapper.writeValue(s.getOutputStream(), message);
-						} catch (IOException e) {
-							logger.warn("IOException while writing a message from the queue (other side closed connection?): {}", e.toString());
+							E message = queue.remove();
 							
-							//close the socket
 							try {
-								s.close();
-							} catch (IOException e2) {
+								logger.debug("sending: {}", mapper.writeValueAsString(message));
+								mapper.writeValue(s.getOutputStream(), message);
+							} catch (IOException e) {
+								logger.warn("IOException while writing a message from the queue (other side closed connection?): {}", e.toString());
+								
+								//close the socket
+								try {
+									s.close();
+								} catch (IOException e2) {
+								}
 							}
+							
+							
+						}
+						//notify other threads waiting on this OutQueue 
+						synchronized(this){
+							notifyAll();
 						}
 						
-						
-					}
-					//notify other threads waiting on this OutQueue 
-					synchronized(this){
-						notifyAll();
-					}
-					
-					try {
-						wait(100);
-						if(!queue.isEmpty())
-							logger.debug("queue: {}", queue);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
+						try {
+							wait(100);
+							if(!queue.isEmpty())
+								logger.debug("queue: {}", queue);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
 				}
+			
 			}
 			//empty the queue for when the socket wasn't closed gracefully
 			clear();
-			
 		}
 	}
 	

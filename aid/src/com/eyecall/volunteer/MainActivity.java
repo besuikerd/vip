@@ -98,15 +98,14 @@ public class MainActivity extends Activity implements EventListener{
 		ConnectivityManager connectivityManager =  (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 		
 		
-		logger.debug("WIFI status: {}", connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI  ).getState());
-		logger.debug("Mobile status: {}", connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState());
+//		logger.debug("WIFI status: {}", connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI  ).getState());
+//		logger.debug("Mobile status: {}", connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState());
 		
-		if( 	connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI  ).getState().equals(NetworkInfo.State.CONNECTED) ||
-				connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState().equals(NetworkInfo.State.CONNECTED) ){
-			return true;
-		}
+		NetworkInfo wifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		NetworkInfo mobile = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 		
-		return false;
+		return wifi != null && wifi.getState().equals(NetworkInfo.State.CONNECTED) || mobile != null && mobile.getState().equals(NetworkInfo.State.CONNECTED);
+		
 	}
 
 	@Override

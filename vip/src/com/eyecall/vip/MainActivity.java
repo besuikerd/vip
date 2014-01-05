@@ -21,8 +21,6 @@ import android.widget.Toast;
 import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
-import com.eyecall.event.ClickEvent;
-import com.eyecall.event.RequestGrantedEvent;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
@@ -131,12 +129,8 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 				
 				
 				Connection c = null;
-				try {
-					if((c = ConnectionInstance.getInstance()) != null && c.getState().equals(VIPState.BEING_HELPED)){
-						c.send(new Message(ProtocolName.UPDATE_LOCATION).add(ProtocolField.LATITUDE, location.getLatitude()).add(ProtocolField.LONGITUDE, location.getLongitude()));
-					}
-				} catch(UnknownHostException e){
-					
+				if((c = ConnectionInstance.getExistingInstance()) != null && c.getState().equals(VIPState.BEING_HELPED)){
+					c.send(new Message(ProtocolName.UPDATE_LOCATION).add(ProtocolField.LATITUDE, location.getLatitude()).add(ProtocolField.LONGITUDE, location.getLongitude()));
 				}
 			}
 		});
@@ -149,12 +143,9 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 				if(loc != null){
 					
 					//post location update if state is BEING_HELPED
-					try {
-						Connection c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
-						if(c.getState().equals(VIPState.BEING_HELPED)){
-							c.send(new Message(ProtocolName.UPDATE_LOCATION).add(ProtocolField.LATITUDE, loc.getLatitude()).add(ProtocolField.LONGITUDE, loc.getLongitude()));
-						}
-					} catch (UnknownHostException e) {
+					Connection c = null;
+					if((c = ConnectionInstance.getExistingInstance()) != null && c.getState().equals(VIPState.BEING_HELPED)) {
+						c.send(new Message(ProtocolName.UPDATE_LOCATION).add(ProtocolField.LATITUDE, loc.getLatitude()).add(ProtocolField.LONGITUDE, loc.getLongitude()));
 					}
 				}
 			}
@@ -240,29 +231,41 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 
 	@Override
 	public void onEvent(Event e) {
-		if(e instanceof ClickEvent){
-			// Send a new request ("HELP" button pressed)
-			if(e.getTag().equals(EventTag.REQUEST_BUTTON_PRESSED.getName())){
-				disableRequestButton();
-				if(locationClient==null || !locationClient.isConnected()){
-					connectToGoogleSevices();
-				}
-				Location l = locationClient.getLastLocation();
-				try {
-					logger.debug("recreating conn...");
-					Connection c = ConnectionInstance.recreateConnection();
-					logger.debug("conn recreated!");
-					c.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LATITUDE, l.getLatitude()).add(ProtocolField.LONGITUDE, l.getLongitude()));
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+		switch(EventTag.lookup(e.getTag())){
+		case REQUEST_BUTTON_PRESSED:
+			disableRequestButton();
+			if(locationClient==null || !locationClient.isConnected()){
+				connectToGoogleSevices();
+			}
+			Location l = locationClient.getLastLocation();
+			try {
+				logger.debug("recreating conn...");
+				Connection c = ConnectionInstance.recreateConnection();
+				logger.debug("conn recreated!: {}", ConnectionInstance.getExistingInstance());
+				c.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LATITUDE, l.getLatitude()).add(ProtocolField.LONGITUDE, l.getLongitude()));
+				logger.debug("conninstance: {}", ConnectionInstance.getExistingInstance());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			break;
+		case REQUEST_GRANTED:
+			ConnectionInstance.getExistingInstance().setState(VIPState.BEING_HELPED);
+			openHelpActivity();
+			break;
+		case REQUEST_DENIED:
+			logger.debug("request denied!! {}", locationClient);
+			if(locationClient != null){
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						((Button) findViewById(R.id.button_request)).setEnabled(true);
+					}
+				});
 				
 			}
-		
-		}else if(e instanceof RequestGrantedEvent){
-			// Somebody is willing to help
-			// Open HelpActivity
-			openHelpActivity();
+			break;
+		default:
+			break;
 		}
 	}	
 }

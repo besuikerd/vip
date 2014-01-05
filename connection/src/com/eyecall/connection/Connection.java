@@ -199,7 +199,7 @@ public class Connection {
 	 * @throws IOException
 	 */
 	public void close() throws IOException{
-		//block until OutQueue is empty
+//		block until OutQueue is empty
 		synchronized(messages){
 			while(!messages.isEmpty()){
 				try {
@@ -359,6 +359,8 @@ public class Connection {
 				iterator = mapper.readValues(new JsonFactory().createParser(s.getInputStream()), Message.class);
 			} catch (IOException e) {
 				logger.warn("unexpected IOException while reading message: {}", e.toString());
+				e.printStackTrace();
+				logger.warn("after stacktrace");
 				messages.clear();
 				//close socket
 				try {
@@ -411,6 +413,10 @@ public class Connection {
 	
 	public State getState() {
 		return state;
+	}
+	
+	public void setState(State state) {
+		this.state = state;
 	}
 	
 	public Socket getSocket() {

@@ -169,9 +169,8 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 		case HELPING:
 			switch(messageName){
 			case OTHER_DISCONNECTED:
-				//TODO pop-up in scherm weergeven
-				
-				return VolunteerState.IDLE;
+				EventBus.getInstance().post(new Event(EventTag.DISCONNECTED));
+				return VolunteerState.DISCONNECTED;
 			case UPDATE_LOCATION:
 //				if(m.hasParams("longitude", "latitude")){
 					double lng = m.getParam(ProtocolField.LONGITUDE, Double.class);
@@ -179,11 +178,9 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 					EventBus.getInstance().post(new Event(EventTag.LOCATION_UPDATE, new LatLng(lat, lng)));
 					return VolunteerState.HELPING;
 				//}
-			case MEDIA_DATA:
-				if(m.hasParam("data")){
-				//TODO data op scherm tonen	
-				return VolunteerState.HELPING;
-				}
+			case MEDIA_READY:
+				EventBus.getInstance().post(new Event(EventTag.MEDIA_READY, m.getParam(ProtocolField.IP)));
+				return state;
 			default:
 				return null;	
 			}

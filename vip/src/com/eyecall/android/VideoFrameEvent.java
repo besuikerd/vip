@@ -1,4 +1,4 @@
-package com.eyecall.event;
+package com.eyecall.android;
 
 import com.eyecall.eventbus.Event;
 

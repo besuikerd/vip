@@ -2,8 +2,8 @@ package com.eyecall.event;
 
 import android.widget.RadioGroup;
 
+import com.eyecall.connection.Named;
 import com.eyecall.eventbus.Event;
-import com.fasterxml.jackson.databind.util.Named;
 
 public class CheckedChangedEvent extends Event {
 

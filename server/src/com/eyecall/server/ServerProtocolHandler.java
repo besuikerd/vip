@@ -243,11 +243,20 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     		case UPDATE_LOCATION:
 
     			if(request != null){
-    				pool.tunnel(request.getId(), Entity.VIP, m);
+    				pool.tunnel(request.getId(), Entity.VOLUNTEER, m);
     			}
     			return state;
+    			
+    		case MEDIA_READY:
+    			if(request != null){
+    				pool.tunnel(request.getId(), c.equals(request.getVolunteerConnection()) ? Entity.VIP : Entity.VOLUNTEER, m);
+    			}
+    			return state;
+    			
     		case DISCONNECT:
-    			pool.tunnel(request.getId(), c.equals(request.getVolunteerConnection()) ? Entity.VIP : Entity.VOLUNTEER, new Message(ProtocolName.OTHER_DISCONNECTED));
+    			if(request != null){
+    				pool.tunnel(request.getId(), c.equals(request.getVolunteerConnection()) ? Entity.VIP : Entity.VOLUNTEER, new Message(ProtocolName.OTHER_DISCONNECTED));
+    			}
     			return ServerState.DISCONNECTED;
     		default:
     			return null;

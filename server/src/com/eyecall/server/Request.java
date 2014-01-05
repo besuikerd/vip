@@ -28,6 +28,11 @@ public class Request {
 	private Double latitude;
 	private Timer timer;
 	
+	/**
+	 * check if this request if still valid
+	 */
+	private boolean valid;
+	
 	public Request(String id, Connection vipConnection, Double longitude, Double latitude) {
 		this.id = id;
 		this.vipConnection = vipConnection;
@@ -35,10 +40,15 @@ public class Request {
 		this.latitude = latitude;
 		this.pendingVolunteers = new ArrayList<Volunteer>();
 		this.rejectedVolunteers = new ArrayList<Volunteer>();
+		this.valid = true;
 	}
 	
 	public void attach(Connection c){
 		this.volunteerConnection = c;
+	}
+	
+	public void invalidate(){
+		valid = false;
 	}
 	
 	public void setVolunteerConnection(Connection volunteerConnection) {
@@ -193,6 +203,10 @@ public class Request {
 
 	public Double getLongitude() {
 		return longitude;
+	}
+	
+	public boolean isValid() {
+		return valid;
 	}
 
 	public void close() {

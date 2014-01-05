@@ -32,14 +32,17 @@ public class ConnectionInstance {
 	}
 	
 	public static Connection recreateConnection() throws IOException{
-		if(instance != null){
-			instance.close();
-			instance = null;
-		}
+		clear();
 		return getInstance();
 	}
 	
 	public static synchronized void clear(){
-		instance = null;	
+		if(instance != null){
+			try {
+				instance.close();
+			} catch (IOException e) {
+			}
+			instance = null;
+		}
 	}
 }

@@ -17,13 +17,16 @@ public enum EventTag implements Named{
 	REJECT_REQUEST("reject_request"), 
 	REMOVE_LOCATION("remove_location"),
 	REMOVE_LOCATION_CONFIRM("remove_location_confirm"), 
-	REQUEST_ACKNOWLEDGED("request_acknowledged"), 
+	REQUEST_ACKNOWLEDGED("request_acknowledged"),
+	BUTTON_DISCONNECT("button_disconnect"),
+	
 	//REQUEST_DENIED("request_denied"), 
 	SAVE_LOCATION("save_location"), 
 	REQUEST_CANCELLED("request_cancelled"), 
 	LOCATION_PREFERRED_CHANGED("loc_pref_change"), 
 	LOCATION_RADIUS_CHANGED("loc_rad_change"),
-	
+	DISCONNECTED("disconnected"),
+	MEDIA_READY("media_ready"),
 	;
 	
 	

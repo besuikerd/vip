@@ -10,7 +10,7 @@ public class Constants {
 	 * Time after which volunteers will automatically reject and a new group will be 
 	 * requested (in milliseconds)
 	 */
-	public static final int REQUEST_TIMEOUT = 30000;
+	public static final int REQUEST_TIMEOUT = 15000;
 	
 	/**
 	 * The maximum amount of volunteers who will receive a new request in one timer cycle

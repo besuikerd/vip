@@ -2,31 +2,56 @@ package com.eyecall.volunteer;
 
 
 
+import java.io.IOException;
+
+import net.majorkernelpanic.streaming.Session;
+import net.majorkernelpanic.streaming.SessionBuilder;
+import net.majorkernelpanic.streaming.rtsp.RtspServer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import android.content.Intent;
+import android.content.SharedPreferences.Editor;
+import android.graphics.SurfaceTexture;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnPreparedListener;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.text.format.Formatter;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.TextureView;
+import android.view.TextureView.SurfaceTextureListener;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TabHost;
-import android.widget.Toast;
 import android.widget.TabHost.OnTabChangeListener;
+import android.widget.Toast;
 
+import com.eyecall.android.ConnectionInstance;
+import com.eyecall.connection.Connection;
+import com.eyecall.connection.Message;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
+import com.eyecall.eventbus.InputEventListener;
 import com.eyecall.protocol.ProtocolField;
+import com.eyecall.protocol.ProtocolName;
+import com.eyecall.stream.StreamPreparator;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -48,6 +73,12 @@ public class SupportActivity extends FragmentActivity implements EventListener, 
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
 		setContentView(R.layout.activity_support);
+		
+		Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+		editor.putString(RtspServer.KEY_PORT, String.valueOf(8086));
+		editor.commit();
+		
+		
 		this.pager = (ViewPager) findViewById(R.id.pager); 
 		pager.setAdapter(new SupportPagerAdapter(getSupportFragmentManager()));
 		pager.setOnPageChangeListener(this);
@@ -63,14 +94,118 @@ public class SupportActivity extends FragmentActivity implements EventListener, 
 		logger.debug("tab count: {}", tabHost.getTabWidget().getTabCount());
 		tabHost.setOnTabChangedListener(this);
 		
+		//initialize disconnect button
+		((Button) findViewById(R.id.button_disconnect)).setOnClickListener(new InputEventListener(EventTag.BUTTON_DISCONNECT, null));
+		
 		EventBus.getInstance().subscribe(this);
 	}
 	
-	public static class VideoFragment extends Fragment{
+	public static class VideoFragment extends Fragment implements SurfaceHolder.Callback, OnPreparedListener, SurfaceTextureListener{
+		protected SurfaceView surfaceView;
+		protected TextureView textureView;
+		protected MediaPlayer player;
+		
+		protected StreamPreparator preparator;
+		
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			return inflater.inflate(R.layout.fragment_video, container, false);
+			View v = inflater.inflate(R.layout.fragment_video, container, false);
+			surfaceView = (SurfaceView) v.findViewById(R.id.surface);
+			surfaceView.getHolder().addCallback(this);
+			
+			textureView = (TextureView) v.findViewById(R.id.textureView);
+			textureView.setSurfaceTextureListener(this);
+			
+			player = new MediaPlayer();
+			player.reset();
+			player.setOnPreparedListener(this);
+			
+			preparator = new StreamPreparator(player);
+			preparator.start();
+			return v;
+		}
+
+		@Override
+		public void onSurfaceTextureAvailable(SurfaceTexture surface,
+				int width, int height) {
+			player.setSurface(new Surface(surface));
+			preparator.surfaceReady();
+		}
+
+		@Override
+		public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+			return false;
+		}
+
+		@Override
+		public void onSurfaceTextureSizeChanged(SurfaceTexture surface,
+				int width, int height) {
+		}
+
+		@Override
+		public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+		}
+
+		@Override
+		public void onPrepared(MediaPlayer mp) {
+			mp.start();
+		}
+
+		@Override
+		public void surfaceChanged(SurfaceHolder holder, int format, int width,
+				int height) {
+		}
+
+		@Override
+		public void surfaceCreated(SurfaceHolder holder) {
+			logger.debug("surface created!!");
+			new Thread(){
+				public void run() {
+					try {
+						Session s = SessionBuilder.getInstance()
+								.setSurfaceHolder(((SurfaceView) getView().findViewById(R.id.surface)).getHolder())
+								.setContext(getActivity())
+								.setAudioEncoder(SessionBuilder.AUDIO_AAC)
+								.setVideoEncoder(SessionBuilder.VIDEO_NONE)
+								.build();
+								getActivity().startService(new Intent(getActivity(), RtspServer.class));
+								
+								Connection c;
+								if((c = ConnectionInstance.getExistingInstance()) != null){
+									WifiManager wm = (WifiManager) getActivity().getSystemService(WIFI_SERVICE);
+									String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+									c.send(new Message(ProtocolName.MEDIA_READY).add(ProtocolField.IP, ip));
+								} else{
+									logger.warn("hmm no existing instance for connection?");
+								}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				};
+			}.start();
+		}
+		
+		@Override
+		public void onDestroy() {
+			super.onDestroy();
+			getActivity().stopService(new Intent(getActivity(), RtspServer.class));
+			
+			//stop the media player
+			if(player != null && player.isPlaying()){
+				player.stop();
+				player.release();
+			}
+			
+		}
+		
+		private void startStreaming(String source){
+			preparator.streamerReady(source);
+		}
+
+		@Override
+		public void surfaceDestroyed(SurfaceHolder holder) {
+			getActivity().stopService(new Intent(getActivity(), RtspServer.class));
 		}
 	}
 	
@@ -179,6 +314,20 @@ public class SupportActivity extends FragmentActivity implements EventListener, 
 					mapFragment.updateLocation(coords.latitude, coords.longitude);
 				}
 			});
+			break;
+		case BUTTON_DISCONNECT:
+			Connection c = null;
+			if((c = ConnectionInstance.getExistingInstance()) != null){
+				c.send(new Message(ProtocolName.DISCONNECT));
+			}
+			EventBus.getInstance().post(new Event(EventTag.DISCONNECTED));
+		case DISCONNECTED:
+			finish();
+			break;
+		case MEDIA_READY:
+			videoFragment.startStreaming(String.format("rtsp://%s:8086", e.getData().toString()));
 		}
+		
+			
 	}
 }

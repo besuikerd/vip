@@ -37,10 +37,10 @@ public enum ProtocolName implements Named{
 	 */
 	UPDATE_LOCATION("update_location"),
 	/**
-	 * Video- en geluidsdata wordt ontvangen van de VBP (via de server)<br>
-	 * data [byte[]]: De video- en geluidsdata.
+	 * media is klaar voor gebruik<br>
+	 * ip [String] ip adres waarmee media mee verbonden kan worden
 	 */
-	MEDIA_DATA("media_data"),
+	MEDIA_READY("media_ready"),
 	
 	// Received by VIP and Volunteer
 	/**

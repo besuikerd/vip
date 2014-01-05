@@ -6,8 +6,10 @@ public enum EventTag implements Named{
 	REQUEST_BUTTON_PRESSED("request_button"),
 	VIDEO_FRAME("video_frame"), 
 	REQUEST_GRANTED("request_granted"), 
+	REQUEST_DENIED("request_denied"),
 	SURFACE_CREATED("surface_created"),
 	DISCONNECT("disconnect"),
+	MEDIA_READY("media_ready")
 	;
 	
 	private String tag;

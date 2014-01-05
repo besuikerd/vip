@@ -32,16 +32,20 @@ public class RequestPool {
 	}
 	
 	public void tunnel(String id, Entity e, Message m){
-		logger.debug("tunneling message from {}: {}", e, m);
+		logger.debug("tunneling message to {}: {}", e, m);
 		if(connections.containsKey(id)){
 			Request r = connections.get(id);
 			Connection c = null;
 			switch(e){
 			case VIP:
 				c = r.getVipConnection();
+				break;
 			case VOLUNTEER:
 				c = r.getVolunteerConnection();
+				break;
 			}
+			
+			
 			c.send(m);
 		}
 	}
@@ -91,7 +95,10 @@ public class RequestPool {
 			logger.debug("request exists: {}", id);
 			r = connections.get(id);
 			if(!r.connected()){
+				logger.debug("successfully attached volunteer!");
 				r.setVolunteerConnection(c);
+			} else{
+				logger.debug("failed to attach volunteer");
 			}
 		} else{
 			logger.warn("no request exists with id {}", id);

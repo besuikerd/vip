@@ -24,13 +24,19 @@ public class ConnectionInstance {
 		return getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
 	}
 	
+	public static synchronized Connection getExistingInstance(){
+		return instance;
+	}
+	
 	public static synchronized boolean hasInstance(){
 		return instance != null;
 	}
 	
 	public static synchronized Connection recreateConnection(){
 		try {
-			instance.close();
+			if(instance != null){
+				instance.close();
+			}
 			instance = null;
 			return getInstance();
 		} catch (IOException e) {

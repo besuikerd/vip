@@ -27,7 +27,7 @@ public class RequestTimerTask extends TimerTask {
 	@Override
 	public void run() {
 		logger.debug("Request timeout... Running RequestTimerTask");
-		if(!request.connected()){
+		if(!request.connected() && request.isValid()){
 			logger.debug("Request timeout... Finding new volunteers");
 			// Reject pending
 			request.rejectPendingVolunteers();
@@ -47,6 +47,7 @@ public class RequestTimerTask extends TimerTask {
 				// Nobody found. Deny request
 				logger.debug("Request timeout... No new volunteers found");
 				request.sendRequestDenied();
+				request.invalidate();
 			}
 		}
 	}

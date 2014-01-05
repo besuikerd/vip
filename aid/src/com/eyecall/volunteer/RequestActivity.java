@@ -49,13 +49,12 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
 	            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
 	            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-		
-		
-		EventBus.getInstance().subscribe(this);
 		((Button) findViewById(R.id.button_accept)).setOnClickListener(new InputEventListener(EventTag.ACCEPT_REQUEST, null));
 		((Button) findViewById(R.id.button_reject)).setOnClickListener(new InputEventListener(EventTag.REJECT_REQUEST, null));
 		setupMap();
 	}
+	
+	
 	
 	private void setupMap(){
 		map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_map)).getMap();
@@ -79,13 +78,13 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 		if(vibrator != null){
 			vibrator.cancel();
 		}
+		EventBus.getInstance().unsubscribe(this);
 	}
 	
 	@Override
 	protected void onResume() {
 		super.onResume();
-		//TODO enable vibration
-		//vibrator.vibrate(new long[]{2000, 250}, 0);
+		EventBus.getInstance().subscribe(this);
 	}
 	
 	@Override
@@ -99,24 +98,23 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 	@Override
 	public void onEvent(Event e) {
 		Connection c;
+		Bundle extras;
+		String requestId;
+		String volunteerId;
 		switch(EventTag.lookup(e.getTag())){
 		case ACCEPT_REQUEST:
-			try {
-				c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
-				
-				Bundle extras = getIntent().getExtras();
-				String requestId = extras.getString(ProtocolField.REQUEST_ID.getName());
-				String volunteerId = PreferenceManager.getDefaultSharedPreferences(this).getString(ProtocolField.VOLUNTEER_ID.getName(), null);
-				
-				if(requestId != null && volunteerId != null){
-					c.send(new Message(ProtocolName.ACCEPT_REQUEST)
-					.add(ProtocolField.REQUEST_ID, requestId)
-					.add(ProtocolField.VOLUNTEER_ID, volunteerId));
-				}
-			} catch (UnknownHostException e1) {
-			}
+			logger.debug("accepting request...");
+			c = ConnectionInstance.recreateConnection();
 			
-			finish();
+			extras = getIntent().getExtras();
+			requestId = extras.getString(ProtocolField.REQUEST_ID.getName());
+			volunteerId = PreferenceManager.getDefaultSharedPreferences(this).getString(ProtocolField.VOLUNTEER_ID.getName(), null);
+			
+			if(requestId != null && volunteerId != null){
+				c.send(new Message(ProtocolName.ACCEPT_REQUEST)
+				.add(ProtocolField.REQUEST_ID, requestId)
+				.add(ProtocolField.VOLUNTEER_ID, volunteerId));
+			}
 			break;
 			
 		case REJECT_REQUEST:
@@ -124,9 +122,9 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 				logger.debug("Sending request rejected...");
 				c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
 				
-				Bundle extras = getIntent().getExtras();
-				String requestId = extras.getString(ProtocolField.REQUEST_ID.getName());
-				String volunteerId = PreferenceManager.getDefaultSharedPreferences(this).getString(ProtocolField.VOLUNTEER_ID.getName(), null);
+				extras = getIntent().getExtras();
+				requestId = extras.getString(ProtocolField.REQUEST_ID.getName());
+				volunteerId = PreferenceManager.getDefaultSharedPreferences(this).getString(ProtocolField.VOLUNTEER_ID.getName(), null);
 				
 				if(requestId != null && volunteerId != null){
 					c.send(new Message(ProtocolName.REJECT_REQUEST)
@@ -148,6 +146,7 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			b.putDouble(ProtocolField.LONGITUDE.getName(), longitude);
 			i.putExtras(b);
 			startActivity(i);
+			finish();
 			break;
 		//case REQUEST_DENIED:
 			//
