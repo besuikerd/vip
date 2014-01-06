@@ -102,8 +102,10 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     	logger.debug("Server received message: {}", m);
     	
     	RequestPool pool = RequestPool.getInstance();
-    	
+    	Database db = Database.getInstance();
     	logger.debug("Message received of type (" + m.getName() + "): " + ProtocolName.lookup(m.getName()));
+    	
+    	
     	
 		switch(state){
     	
@@ -115,19 +117,36 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			
     			String id = m.getParamString(ProtocolField.VOLUNTEER_ID);
     			
-    			//create new volunteer with generated id
-    			Volunteer v = new Volunteer(id);
     			
-    			//save volunteer in the database
-    			if(Database.getInstance().insertTransaction(v)){
-    				//acknowledge key
-        			
-    				c.send(new Message(ProtocolName.ACKNOWLEDGE_KEY).add(ProtocolField.KEY, id));
+    			
+    			//create new volunteer with generated id
+    			Volunteer v = db.query("FROM Volunteer where id=?", Volunteer.class, id);
+    			
+    			if(v == null){
+    				//save volunteer in the database
+    				v = new Volunteer(id);
+        			if(Database.getInstance().insertTransaction(v)){
+        				//acknowledge key
+        				c.send(new Message(ProtocolName.ACKNOWLEDGE_KEY).add(ProtocolField.KEY, id));
+        			} else{
+        				c.send(new Message(ProtocolName.REJECT_KEY).add(ProtocolField.KEY, id));
+        			}
     			} else{
-    				c.send(new Message(ProtocolName.REJECT_KEY).add(ProtocolField.KEY, id));
+    				c.send(new Message(ProtocolName.ACKNOWLEDGE_KEY).add(ProtocolField.KEY, id));
     			}
+    			
+    			
     			//disconnect the connection
     			return ServerState.DISCONNECTED;
+    			
+    		case VERIFY:
+    			
+    			id = m.getParamString(ProtocolField.VOLUNTEER_ID);
+    			v = Database.getInstance().query("FROM Volunteer where id=?", Volunteer.class, id);
+    			c.send(new Message(v == null ? ProtocolName.KEY_UNKNOWN : ProtocolName.KEY_EXISTS).add(ProtocolField.VOLUNTEER_ID, id));
+    			
+    			return ServerState.DISCONNECTED;
+    			
     		case REJECT_REQUEST:
     			request = RequestPool.getInstance().getPendingRequest(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
     			if(request!=null) request.rejectPendingVolunteer(m.getParam(ProtocolField.VOLUNTEER_ID).toString());

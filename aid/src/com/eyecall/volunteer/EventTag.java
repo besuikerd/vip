@@ -20,6 +20,9 @@ public enum EventTag implements Named{
 	REQUEST_ACKNOWLEDGED("request_acknowledged"),
 	BUTTON_DISCONNECT("button_disconnect"),
 	
+	KEY_VERIFIED("key_verified"),
+	KEY_UNKNOWN("key_unknown"),
+	
 	//REQUEST_DENIED("request_denied"), 
 	SAVE_LOCATION("save_location"), 
 	REQUEST_CANCELLED("request_cancelled"), 

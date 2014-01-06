@@ -70,6 +70,11 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 	}
 	
 	public static void sendKeyToServer(String key){
+		try{
+			throw new RuntimeException("testing");
+		} catch(Exception e){
+			e.printStackTrace();
+		}
 		// send registry key to server
 		Connection c;
 		try {
@@ -210,7 +215,19 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 			default:
 				return null;
 				}
+			
+			
+		case WAITING_FOR_VERIFICATION:
+			switch(messageName){
+			case KEY_EXISTS:
+				EventBus.getInstance().post(new Event(EventTag.KEY_VERIFIED));
+				return VolunteerState.DISCONNECTED;
+			case KEY_UNKNOWN:
+				EventBus.getInstance().post(new Event(EventTag.KEY_UNKNOWN));
+				return VolunteerState.DISCONNECTED;
 			}
+			}
+		
 		return null;
 	}
 

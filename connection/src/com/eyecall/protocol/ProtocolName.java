@@ -87,6 +87,19 @@ public enum ProtocolName implements Named{
 	 * Geen parameters
 	 */
 	REGISTER("register"),
+	
+	
+	/**
+	 * verifieren dat de vrijwilliger bestaat
+	 * volunteer_id [string] id verkregen van Google Cloud Messaging voor push berichten.
+	 */
+	VERIFY("verify"),
+	
+	
+	KEY_EXISTS("key_exists"),
+	
+	KEY_UNKNOWN("key_unknown"),
+	
 	/**
 	 * accepteren van een verzoek<br>
 	 * request_id [integer]: de identifier van de request die geaccepteerd wordt.<br>

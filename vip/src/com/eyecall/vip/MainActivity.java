@@ -239,7 +239,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 			}
 			Location l = locationClient.getLastLocation();
 			try {
-				logger.debug("recreating conn...");
+				logger.debug("recreating conn..., location: {}", l);
 				Connection c = ConnectionInstance.recreateConnection();
 				logger.debug("conn recreated!: {}", ConnectionInstance.getExistingInstance());
 				c.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LATITUDE, l.getLatitude()).add(ProtocolField.LONGITUDE, l.getLongitude()));

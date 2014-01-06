@@ -54,7 +54,7 @@ public class PushRegistration {
 						key = gcm.register(SENDER_KEY);
 						logger.debug("GCM key obtained: {}", key);
 						if(key!=null && key.length()>0){
-							VolunteerProtocolHandler.sendKeyToServer(key);
+//							VolunteerProtocolHandler.sendKeyToServer(key);
 						}else{
 							logger.error("Key is not valid, not sending to server");
 						}

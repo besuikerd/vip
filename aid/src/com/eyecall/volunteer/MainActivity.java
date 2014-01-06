@@ -22,12 +22,15 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
+import com.eyecall.connection.Message;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
 import com.eyecall.protocol.ProtocolField;
+import com.eyecall.protocol.ProtocolName;
 import com.eyecall.push.PushRegistration;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -44,11 +47,6 @@ public class MainActivity extends Activity implements EventListener{
 	protected void onCreate(Bundle savedInstanceState) {
 		
 		super.onCreate(savedInstanceState);
-		try{
-			Class.forName("com.eyecall.protocol.ProtocolField");
-		} catch(Exception e){
-			throw new RuntimeException("failed to load class: " + e.getMessage());
-		}
 		
 		if(!checkInternet()){
 			Toast.makeText(this, R.string.no_internet, Toast.LENGTH_LONG).show();
@@ -76,17 +74,9 @@ public class MainActivity extends Activity implements EventListener{
 		locationAdapter = new LocationAdapter(this);
 		locationList.setAdapter(locationAdapter);
 		
-		//check if application has yet been registered
-		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		if (!preferences.contains(ProtocolField.VOLUNTEER_ID.getName())) {
-			// No id saved -> Get id
-			new PushRegistration(this).register();
-			// Locations in the list are loaded when registration is complete (id is needed)
-		}else{
-			// Id found -> Set id and continue
-			Constants.VOLUNTEER_ID = preferences.getString(ProtocolField.VOLUNTEER_ID.getName(), "");
-			this.loadLocationList();
-		}
+		//register / verify registration key
+		new PushRegistration(this).register();
+		
 
 		/* DIALOGS */
 		// TODO verplaatsen naar dialoggedeelte
