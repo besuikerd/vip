@@ -70,11 +70,6 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 	}
 	
 	public static void sendKeyToServer(String key){
-		try{
-			throw new RuntimeException("testing");
-		} catch(Exception e){
-			e.printStackTrace();
-		}
 		// send registry key to server
 		Connection c;
 		try {

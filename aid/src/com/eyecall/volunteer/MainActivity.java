@@ -2,6 +2,8 @@ package com.eyecall.volunteer;
 
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,26 +13,21 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
-import com.eyecall.connection.Message;
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
 import com.eyecall.protocol.ProtocolField;
-import com.eyecall.protocol.ProtocolName;
 import com.eyecall.push.PushRegistration;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -110,26 +107,34 @@ public class MainActivity extends Activity implements EventListener{
 	 * This can only be used if the volunteer id is known!
 	 */
 	private void loadLocationList() {
-		this.dialog = new ProgressDialog(this);
-		dialog.setTitle(R.string.loading_locations);
-		dialog.setCancelable(false);
-		dialog.setMessage(getString(R.string.wait));
-		dialog.show();
-		
-		Handler timerHandler = new Handler();
-	    Runnable timerRunnable = new Runnable() {	
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				dialog = new ProgressDialog(getActivity());
+				dialog.setTitle(R.string.loading_locations);
+				dialog.setCancelable(false);
+				dialog.setMessage(getString(R.string.wait));
+				dialog.show();
+			}
+		});
+	    TimerTask timerRunnable = new TimerTask() {	
 	        @Override
 	        public void run() {
-	        	if(dialog!=null){
-	        		Context context = dialog.getContext();
-	        		dialog.dismiss();
-	        		dialog=null;
-	        		Toast.makeText(context, R.string.loading_locations_timeout, Toast.LENGTH_LONG).show();
-	        	}
+	        	runOnUiThread(new Runnable(){
+	        		@Override
+	        		public void run() {
+	        			if(dialog!=null){
+			        		dialog.dismiss();
+			        		dialog=null;
+//			        		Toast.makeText(context, R.string.loading_locations_timeout, Toast.LENGTH_LONG).show();
+			        	}
+	        		}
+	        		
+	        	});
 	        }
 	    };
 	    
-	    timerHandler.postDelayed(timerRunnable, 5000);
+	    new Timer().schedule(timerRunnable, 5000);
 		
 		Connection c;
 		try {
@@ -210,6 +215,9 @@ public class MainActivity extends Activity implements EventListener{
 		case LOCATIONS_RECEIVED:
 			if(dialog!=null) dialog.dismiss();
 			dialog = null;
+			
+			logger.debug("setting up locations in ui..");
+			
 			final List<Location> locations = (List<Location>) e.getData();
 			runOnUiThread(new Runnable() {
 				@Override
@@ -276,6 +284,8 @@ public class MainActivity extends Activity implements EventListener{
 	}
 
 
-	
+	public Activity getActivity(){
+		return this;
+	}
 
 }
