@@ -6,6 +6,8 @@ import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.eyecall.database.Volunteer;
+
 /**
  * This class is responsible for sending the request to a new group
  * of volunteers and for sending a cancel to the old group periodically.
@@ -29,6 +31,9 @@ public class RequestTimerTask extends TimerTask {
 		logger.debug("Request timeout... Running RequestTimerTask");
 		if(!request.connected() && request.isValid()){
 			logger.debug("Request timeout... Finding new volunteers");
+			for(Volunteer v : request.getPendingVolunteers()){
+				ServerProtocolHandler.sendRequestCancelled(v, request);
+			}
 			// Reject pending
 			request.rejectPendingVolunteers();
 			
