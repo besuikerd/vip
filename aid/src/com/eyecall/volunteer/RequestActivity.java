@@ -119,12 +119,14 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			
 		case REJECT_REQUEST:
 			try {
-				logger.debug("Sending request rejected...");
+				
 				c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
 				
 				extras = getIntent().getExtras();
 				requestId = extras.getString(ProtocolField.REQUEST_ID.getName());
 				volunteerId = PreferenceManager.getDefaultSharedPreferences(this).getString(ProtocolField.VOLUNTEER_ID.getName(), null);
+				
+				logger.debug("Sending request rejected requestid={}, volunteerid={}", requestId, volunteerId);
 				
 				if(requestId != null && volunteerId != null){
 					c.send(new Message(ProtocolName.REJECT_REQUEST)
