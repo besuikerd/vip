@@ -55,6 +55,9 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	
 	/** Known location of VBP, could be null */
 	private Location location = null;
+
+
+	private Speech speech;
 	
 	/* *****************************************************
 	 *                     CALLBACKS
@@ -66,6 +69,9 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	    // Register for events
 	    EventBus.getInstance().subscribe(this);
 	    
+	    // Enable speech
+	    speech = Speech.getInstance(this);
+	    
 	    // Add listener to button
 	    ((Button) findViewById(R.id.button_request)).setOnClickListener(new InputEventListener(EventTag.REQUEST_BUTTON_PRESSED.getName(), null));
 	    
@@ -75,6 +81,12 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	    connectToGoogleSevices();
 	    // After connected to Google, app will continue
 	    // Because in order to continue the location needs to be known
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		speech.close();
 	}
 
 	@Override
@@ -247,6 +259,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
+			speech.requestingHelp();
 			break;
 		case REQUEST_GRANTED:
 			ConnectionInstance.getExistingInstance().setState(VIPState.BEING_HELPED);
