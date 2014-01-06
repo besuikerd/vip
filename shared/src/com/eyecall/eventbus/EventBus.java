@@ -1,26 +1,26 @@
 package com.eyecall.eventbus;
 
-import java.util.Collection;
-import java.util.Stack;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EventBus {
 	private static EventBus instance;
-	private Collection<EventListener> listeners;
+	private Map<Class<?>, EventListener> listeners;
 	
 	private EventBus(){
-		this.listeners = new Stack<EventListener>();
+		this.listeners = new HashMap<Class<?>, EventListener>();
 	}
 	
 	public void subscribe(EventListener listener){
-		listeners.add(listener);
+		listeners.put(listener.getClass(), listener);
 	}
 	
 	public void unsubscribe(EventListener listener){
-		listeners.remove(listener);
+		listeners.remove(listener.getClass());
 	}
 	
 	public void post(Event e){
-		for(EventListener listener : listeners){
+		for(EventListener listener : listeners.values()){
 			listener.onEvent(e);
 		}
 	}
