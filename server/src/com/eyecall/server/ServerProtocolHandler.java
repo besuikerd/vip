@@ -72,15 +72,16 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
      * @param longitude
      * @param latitude
      */
-    public static void sendNewRequest(Volunteer volunteer, Request request){
+    public static void sendNewRequest(String volunteerId, Request request){
     	com.google.android.gcm.server.Message message = new com.google.android.gcm.server.Message.Builder()
     	.addData(ProtocolField.NAME.getName(), ProtocolName.NEW_REQUEST.getName())
     	.addData(ProtocolField.REQUEST_ID.getName(), request.getId())
 		.addData(ProtocolField.LATITUDE.getName(), request.getLatitude().toString())
 		.addData(ProtocolField.LONGITUDE.getName(), request.getLongitude().toString())
+		.timeToLive(Constants.REQUEST_TIMEOUT)
 		.build();
 		try {
-			getGCMSender().sendNoRetry(message, volunteer.getId());
+			getGCMSender().sendNoRetry(message, volunteerId);
 		} catch (IOException e) {
 		}
     }

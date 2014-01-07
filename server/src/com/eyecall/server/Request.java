@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -181,7 +180,7 @@ public class Request {
 	public void sendRequestToPendingVolunteers(){
 		logger.debug(id + " Sending request to pending volunteers...");
 		for(Volunteer volunteer : this.getPendingVolunteers()){
-			ServerProtocolHandler.sendNewRequest(volunteer, this);
+			ServerProtocolHandler.sendNewRequest(volunteer.getId(), this);
 		}
 	}
 	
