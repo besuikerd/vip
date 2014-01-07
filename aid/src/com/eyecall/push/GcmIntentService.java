@@ -6,17 +6,12 @@ import org.slf4j.LoggerFactory;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
-import android.view.WindowManager;
-import android.widget.Toast;
 
 import com.eyecall.eventbus.Event;
 import com.eyecall.eventbus.EventBus;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
 import com.eyecall.volunteer.EventTag;
-import com.eyecall.volunteer.MainActivity;
 import com.eyecall.volunteer.RequestActivity;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
@@ -32,7 +27,7 @@ public class GcmIntentService extends IntentService{
 	protected void onHandleIntent(Intent intent) {
 
 		logger.debug("Gcm intentservice started");
-		Bundle extras = intent.getExtras();
+		intent.getExtras();
 		GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
 		String messageType = gcm.getMessageType(intent);
 		
@@ -60,7 +55,7 @@ public class GcmIntentService extends IntentService{
 				break;
 			}
 			
-			String lng  = b.getString(ProtocolField.LONGITUDE.getName());
+			b.getString(ProtocolField.LONGITUDE.getName());
 			
 			//wake up screen
 //			WakeLock lock = ((PowerManager) getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "");

@@ -5,10 +5,6 @@ import java.util.List;
 
 import nl.besuikerd.imageloader.DefaultImageLoaderManager;
 import nl.besuikerd.imageloader.ImageViewImageLoadingHandler;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,8 +18,8 @@ import com.eyecall.eventbus.InputEventListener;
 
 class LocationAdapter extends BaseAdapter {
 	
-	private static final Logger logger = LoggerFactory
-			.getLogger(LocationAdapter.class);
+	//private static final Logger logger = LoggerFactory
+	//		.getLogger(LocationAdapter.class);
 	
 	private List<Location> locations;
 

@@ -218,6 +218,7 @@ public class MainActivity extends Activity implements EventListener{
 			
 			logger.debug("setting up locations in ui..");
 			
+			@SuppressWarnings("unchecked")
 			final List<Location> locations = (List<Location>) e.getData();
 			runOnUiThread(new Runnable() {
 				@Override

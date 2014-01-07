@@ -10,7 +10,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.eyecall.volunteer.R;
-import com.eyecall.volunteer.VolunteerProtocolHandler;
 import com.google.android.gcm.GCMRegistrar;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;

@@ -8,15 +8,15 @@
     <string name="row_header_location">Location:</string>
     <string name="row_header_preferred">Type:</string>
     <string name="row_text_preferred">Preferred/Known</string>
-    <string name="row_text_not_preferred">Not prefereed/Unknown</string>
+    <string name="row_text_not_preferred">Not preferred/Unknown</string>
     <string name="location_button_save">Save</string>
     <string name="location_button_cancel">Cancel</string>
     <string name="location_header_preferred">Type:</string>
     <string name="location_radio_preferred">Preferred</string>
     <string name="location_radio_not_preferred">Not preferred</string>
     
-    <string name="title_video">Beeld</string>
-    <string name="title_map">Kaart</string>
+    <string name="title_video">Video</string>
+    <string name="title_map">Map</string>
     
     <string name="ok">OK</string>
     <string name="accept">Accept</string>
