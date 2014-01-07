@@ -4,7 +4,6 @@ package com.eyecall.volunteer;
 
 import java.io.IOException;
 
-import net.majorkernelpanic.streaming.Session;
 import net.majorkernelpanic.streaming.SessionBuilder;
 import net.majorkernelpanic.streaming.rtsp.RtspServer;
 
@@ -163,7 +162,7 @@ public class SupportActivity extends FragmentActivity implements EventListener, 
 			new Thread(){
 				public void run() {
 					try {
-						Session s = SessionBuilder.getInstance()
+						SessionBuilder.getInstance()
 								.setSurfaceHolder(((SurfaceView) getView().findViewById(R.id.surface)).getHolder())
 								.setContext(getActivity())
 								.setAudioEncoder(SessionBuilder.AUDIO_AAC)
@@ -174,6 +173,7 @@ public class SupportActivity extends FragmentActivity implements EventListener, 
 								Connection c;
 								if((c = ConnectionInstance.getExistingInstance()) != null){
 									WifiManager wm = (WifiManager) getActivity().getSystemService(WIFI_SERVICE);
+									@SuppressWarnings("deprecation")
 									String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
 									c.send(new Message(ProtocolName.MEDIA_READY).add(ProtocolField.IP, ip));
 								} else{
@@ -326,6 +326,8 @@ public class SupportActivity extends FragmentActivity implements EventListener, 
 			break;
 		case MEDIA_READY:
 			videoFragment.startStreaming(String.format("rtsp://%s:8086", e.getData().toString()));
+		default:
+			break;
 		}
 		
 			

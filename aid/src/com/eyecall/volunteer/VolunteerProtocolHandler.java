@@ -98,6 +98,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public State messageReceived(VolunteerState state, Message m, Connection c) {
 		logger.debug("Message received: '" + m.getName() + "' State:" + state.toString());
@@ -124,6 +125,8 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				break;
 			case REJECT_KEY:
 				EventBus.getInstance().post(new Event(EventTag.ID_REJECTED, m.getParam(ProtocolField.KEY)));
+				break;
+			default:
 				break;
 			}
 			break;
@@ -220,7 +223,11 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 			case KEY_UNKNOWN:
 				EventBus.getInstance().post(new Event(EventTag.KEY_UNKNOWN));
 				return VolunteerState.DISCONNECTED;
+			default:
+				break;
 			}
+		default:
+			break;
 			}
 		
 		return null;

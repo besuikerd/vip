@@ -1,7 +1,6 @@
 package com.eyecall.vip;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -180,7 +179,8 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
      * Called by Location Services if the attempt to
      * Location Services fails.
      */
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
     	Log.d(MainActivity.TAG, "Google services connection failed (location)");
         /*
@@ -271,7 +271,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						((Button) findViewById(R.id.button_request)).setEnabled(true);
+						enableRequestButton();
 					}
 				});
 				

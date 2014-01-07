@@ -146,7 +146,7 @@ public class HelpActivity extends Activity implements EventListener, SurfaceHold
 		new Thread(){
 			public void run() {
 				try {
-					Session s = SessionBuilder.getInstance()
+					SessionBuilder.getInstance()
 							.setSurfaceHolder(((SurfaceView) findViewById(R.id.surface)).getHolder())
 							.setContext(getApplicationContext())
 							.setAudioEncoder(SessionBuilder.AUDIO_AAC)
@@ -157,6 +157,7 @@ public class HelpActivity extends Activity implements EventListener, SurfaceHold
 							Connection c;
 							if((c = ConnectionInstance.getExistingInstance()) != null){
 								WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+								@SuppressWarnings("deprecation")
 								String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
 								c.send(new Message(ProtocolName.MEDIA_READY).add(ProtocolField.IP, ip));
 							} else{
