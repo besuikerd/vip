@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -27,7 +28,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class RequestActivity extends FragmentActivity implements EventListener{
@@ -35,7 +35,7 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 	
 	private Vibrator vibrator;
 	private GoogleMap map;
-	private Marker marker;
+	//private Marker marker;
 	private double latitude;
 	private double longitude;
 	
@@ -43,8 +43,8 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_request);
-		//vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-		//vibrator.vibrate(new long[]{200, 600}, 0);
+		
+		enableNotification();
 		
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
 	            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
@@ -54,8 +54,17 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 		setupMap();
 	}
 	
-	
-	
+	private void enableNotification() {
+		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+		vibrator.vibrate(new long[]{200, 600}, 0);
+	}
+
+	private void disableNotification() {
+		if(vibrator != null){
+			vibrator.cancel();
+		}
+	}
+
 	private void setupMap(){
 		map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_map)).getMap();
 		if(map != null){
@@ -66,7 +75,7 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			logger.debug("showing coordinates: ({},{})", latitude, longitude);
 			
 			LatLng pos = new LatLng(latitude, longitude);
-			marker = map.addMarker(new MarkerOptions().title("Vla").position(pos));
+			map.addMarker(new MarkerOptions().title("Vla").position(pos));
 			map.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 18f));
 			
 		}
@@ -90,9 +99,7 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		if(vibrator != null){
-			vibrator.cancel();
-		}
+		disableNotification();
 	}
 
 	@Override
