@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
@@ -26,6 +27,7 @@ import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
+import com.eyecall.sound.Sound;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
@@ -55,7 +57,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	/** Known location of VBP, could be null */
 	private Location location = null;
 
-
 	private Speech speech;
 	
 	/* *****************************************************
@@ -70,6 +71,8 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	    
 	    // Enable speech
 	    speech = Speech.getInstance(this);
+	    
+	    Sound.getInstance(this);
 	    
 	    // Add listener to button
 	    ((Button) findViewById(R.id.button_request)).setOnClickListener(new InputEventListener(EventTag.REQUEST_BUTTON_PRESSED.getName(), null));
@@ -263,6 +266,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 			break;
 		case REQUEST_GRANTED:
 			ConnectionInstance.getExistingInstance().setState(VIPState.BEING_HELPED);
+			Sound.CONNECTED.play(getApplicationContext());
 			openHelpActivity();
 			break;
 		case REQUEST_DENIED:
@@ -276,7 +280,13 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 				});
 				
 			}
+			
 			break;
+			
+		case SOUND_DISCONNECTED:
+			Sound.DISCONNECTED.play(getApplicationContext());
+			break;
+			
 		default:
 			break;
 		}

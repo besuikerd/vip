@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -32,6 +34,7 @@ import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
+import com.eyecall.sound.Sound;
 
 public class HelpActivity extends Activity implements EventListener, SurfaceHolder.Callback, OnPreparedListener, SurfaceTextureListener{
 	private static final Logger logger = LoggerFactory.getLogger(HelpActivity.class);
@@ -57,7 +60,7 @@ public class HelpActivity extends Activity implements EventListener, SurfaceHold
 		surfaceView.getHolder().addCallback(this);
 		
 		
-		((Button) findViewById(R.id.button_disconnect)).setOnClickListener(new InputEventListener(EventTag.DISCONNECT, null));
+		((Button) findViewById(R.id.button_disconnect)).setOnClickListener(new InputEventListener(EventTag.BUTTON_DISCONNECT, null));
 	}
 	
 	@Override
@@ -73,7 +76,13 @@ public class HelpActivity extends Activity implements EventListener, SurfaceHold
 			if(ConnectionInstance.hasInstance()){
 				ConnectionInstance.getExistingInstance().send(new Message(ProtocolName.DISCONNECT));
 			}
+			
 			finish();
+			break;
+			
+		case BUTTON_DISCONNECT:
+			Sound.DISCONNECTED.play(this);
+			EventBus.getInstance().post(new Event(EventTag.DISCONNECT));
 			break;
 		case MEDIA_READY:
 			String ip = e.getData().toString();
@@ -85,6 +94,15 @@ public class HelpActivity extends Activity implements EventListener, SurfaceHold
 				logger.debug("failed to prepare audio: {}", ex.getMessage());
 				ex.printStackTrace();
 			}
+			break;
+		case SOUND_CONNECTION_LOST:
+			Sound.CONNECTION_LOST.play(this);
+			break;
+		case SOUND_DISCONNECTED:
+			Sound.DISCONNECTED.play(this);
+			
+		
+			
 		default:
 			break;
 		}

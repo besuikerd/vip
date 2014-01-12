@@ -8,8 +8,15 @@ public enum EventTag implements Named{
 	REQUEST_GRANTED("request_granted"), 
 	REQUEST_DENIED("request_denied"),
 	SURFACE_CREATED("surface_created"),
+	
 	DISCONNECT("disconnect"),
-	MEDIA_READY("media_ready")
+	MEDIA_READY("media_ready"),
+	
+	BUTTON_DISCONNECT("button_disconnect"),
+	
+	SOUND_CONNECTION_LOST("sound_connection_lost"),
+	SOUND_CONNECTED("sound_connected"),
+	SOUND_DISCONNECTED("sound_disconnected"),
 	;
 	
 	private String tag;

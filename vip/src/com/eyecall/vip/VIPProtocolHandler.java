@@ -84,6 +84,7 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 				// TODO melding geven over het forwarden
 				return VIPState.WAITING;
 			case OTHER_DISCONNECTED:
+				EventBus.getInstance().post(new Event(EventTag.SOUND_CONNECTION_LOST));
 				EventBus.getInstance().post(new Event(EventTag.DISCONNECT));
 				return VIPState.DISCONNECTED;
 			case MEDIA_READY:
