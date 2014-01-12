@@ -256,6 +256,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			switch(ProtocolName.lookup(m.getName())){
     			case CANCEL_REQUEST:
     				request.sendCancelToPendingVolunteers();
+    				request.invalidate();
     				request.rejectPendingVolunteers();
     				request.close();
     				return ServerState.DISCONNECTED;
