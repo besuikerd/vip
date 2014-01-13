@@ -73,8 +73,6 @@ public class Connection {
 	 */
 	private OutQueue<Message> messages;
 	
-	private Message latestMessage;
-	
 	private int port;
 	private String host;
 	
@@ -144,40 +142,7 @@ public class Connection {
 	}
 	
 	
-	/**
-	 * sends a message over this connection and wait for a result. Note that 
-	 * this method is blocking. Only allowed when the connection is a stateless
-	 * connection (No implementation of ProtocolHandler given). Timeout to wait
-	 * for is set in {@link #RESULT_TIMEOUT}.
-	 * @return
-	 */
-	@Deprecated //not working
-	public Message sendForResult(Message m) throws IOException{
-		if(handler instanceof StatelessProtocolHandler){
-			send(m);
-			Message result = null;
-			logger.debug("message {} sent. waiting for result...", m);
-			synchronized(this){
-				try {
-					wait(RESULT_TIMEOUT);
-				} catch (InterruptedException e) {
-				}
-				logger.debug("out of lock, did we receive a message? {}", latestMessage != null);
-				result = latestMessage;
-				latestMessage = null;
-				if(result == null){
-					throw new IOException("Message not received after timeout");
-				}
-			}
-			return result;
-		} else{
-			throw new IllegalStateException("Not allowed wait for results in a stateful connection");
-		}
-	}
 	
-	protected void setLatestMessage(Message latestMessage) {
-		this.latestMessage = latestMessage;
-	}
 	
 	/**
 	 * send a message with UDP instead of TCP

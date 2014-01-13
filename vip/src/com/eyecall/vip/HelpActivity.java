@@ -25,7 +25,6 @@ import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
 import android.widget.Button;
 
-import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.eventbus.Event;

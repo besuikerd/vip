@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import android.util.Log;
 
-import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.connection.ProtocolHandler;

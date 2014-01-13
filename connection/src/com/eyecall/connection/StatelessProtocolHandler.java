@@ -10,9 +10,6 @@ public class StatelessProtocolHandler implements ProtocolHandler{
 	@Override
 	public State messageReceived(State state, Message m, Connection c) {
 		synchronized(c){
-			c.setLatestMessage(m);
-			c.notifyAll();
-			
 		}
 		return state;
 	}

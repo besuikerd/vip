@@ -1,12 +1,9 @@
-package com.eyecall.android;
+package com.eyecall.vip;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 
 import com.eyecall.connection.Connection;
-import com.eyecall.vip.Constants;
-import com.eyecall.vip.VIPProtocolHandler;
-import com.eyecall.vip.VIPState;
 
 public class ConnectionInstance {
 	private static Connection instance;

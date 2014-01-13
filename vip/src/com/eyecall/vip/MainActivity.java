@@ -18,7 +18,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.eventbus.Event;
@@ -57,7 +56,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	/** Known location of VBP, could be null */
 	private Location location = null;
 
-	private Speech speech;
 	
 	/* *****************************************************
 	 *                     CALLBACKS
@@ -68,9 +66,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	    setContentView(R.layout.activity_main);
 	    // Register for events
 	    EventBus.getInstance().subscribe(this);
-	    
-	    // Enable speech
-	    speech = Speech.getInstance(this);
 	    
 	    Sound.getInstance(this);
 	    
@@ -88,7 +83,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		speech.close();
 	}
 
 	@Override
@@ -262,7 +256,6 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-			speech.requestingHelp();
 			break;
 		case REQUEST_GRANTED:
 			ConnectionInstance.getExistingInstance().setState(VIPState.BEING_HELPED);
