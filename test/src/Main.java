@@ -57,13 +57,15 @@ public class Main {
 		
 		// Register volunteer
 		VolunteerProtocolHandler.sendKeyToServer(volunteerConnection, "1234");
-		Assert.assertNotNull("Volunteer", Database.getInstance().query("Volunteer where id=?", Volunteer.class, "1234"));
+		System.out.println("Waiting for server to register...");
+		Thread.sleep(5000);
+		Assert.assertNotNull("Volunteer", Database.getInstance().query("from Volunteer where id=?", Volunteer.class, "1234"));
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		vipConnection.close();
-		volunteerConnection.close();
+		if(!vipConnection.isClosed()) vipConnection.close();
+		if(!volunteerConnection.isClosed()) volunteerConnection.close();
 		server.getServerSocket().close();
 		// Wait for server to close
 		while(server.getServerSocket()!=null && !server.getServerSocket().isClosed()){
