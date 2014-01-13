@@ -8,7 +8,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.connection.ProtocolHandler;
