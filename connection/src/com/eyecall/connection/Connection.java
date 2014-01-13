@@ -3,9 +3,7 @@ package com.eyecall.connection;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
@@ -324,6 +322,7 @@ public class Connection {
 				iterator = mapper.readValues(new JsonFactory().createParser(s.getInputStream()), Message.class);
 			} catch (IOException e) {
 				logger.warn("unexpected IOException while reading message: {}", e.toString());
+				
 				e.printStackTrace();
 				logger.warn("after stacktrace");
 				messages.clear();
@@ -359,7 +358,7 @@ public class Connection {
 			//eww nasty solution by Jackson ObjectMapper. Throws a RuntimeException when the socket is closed...
 			} catch(RuntimeException e){
 				logger.debug("message iterator seems to be done. Is the socket closed?: {}", e.toString());
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 			//close the socket
 			try {

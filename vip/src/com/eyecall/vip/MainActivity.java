@@ -251,7 +251,7 @@ GooglePlayServicesClient.OnConnectionFailedListener, EventListener{
 				logger.debug("recreating conn..., location: {}", l);
 				Connection c = ConnectionInstance.recreateConnection();
 				logger.debug("conn recreated!: {}", ConnectionInstance.getExistingInstance());
-				c.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LATITUDE, l.getLatitude()).add(ProtocolField.LONGITUDE, l.getLongitude()));
+				VIPProtocolHandler.sendNewRequest(c, l.getLatitude(), l.getLongitude());
 				logger.debug("conninstance: {}", ConnectionInstance.getExistingInstance());
 			} catch (IOException e1) {
 				e1.printStackTrace();

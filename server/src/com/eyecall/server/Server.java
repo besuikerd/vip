@@ -12,6 +12,12 @@ import com.eyecall.connection.Connection;
 public class Server {
 	private static final Logger logger = LoggerFactory.getLogger(Server.class);
 	
+	/** Connection instance for test purpose */
+	private ServerSocket serverSocket;
+	public ServerSocket getServerSocket(){
+		return serverSocket;
+	}
+	
 	
 	private int port;
 	
@@ -21,23 +27,22 @@ public class Server {
 	
 	
 	public void start() throws BindException{
-		ServerSocket s = null;
 		try{
-			s = new ServerSocket(port);
+			serverSocket = new ServerSocket(port);
 			logger.debug("Server started listening to port {}", port);
 		} catch(BindException e){
 			throw e;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if(s != null){
+		if(serverSocket != null){
 			while(true){
 				try{
-					new Connection(s.accept(), new ServerProtocolHandler(), ServerState.WAITING).init(true);
+					new Connection(serverSocket.accept(), new ServerProtocolHandler(), ServerState.WAITING).init(true);
 				} catch(IOException e){
 					e.printStackTrace();
 					try {
-						s.close();
+						serverSocket.close();
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}

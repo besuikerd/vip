@@ -69,22 +69,12 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				);
 	}
 	
-	public static void sendKeyToServer(String key){
-		// send registry key to server
-		Connection c;
-		try {
-			logger.debug("Sending key to server...: {}", key);
-			c = new Connection(Constants.SERVER_URL,
-					Constants.SERVER_PORT,
-					new VolunteerProtocolHandler(),
-					VolunteerState.INITIALISATION);
-			c.init(false);
-			c.send(new Message(ProtocolName.REGISTER).add(
-					ProtocolField.VOLUNTEER_ID, key));
-			logger.debug("Succes!");
-		} catch (UnknownHostException e) {
-			logger.error("Unable to connect to server: {}}", e);
-		}
+	public static void sendKeyToServer(Connection c, String key){
+		logger.debug("Sending key to server...: {}", key);
+		
+		c.send(new Message(ProtocolName.REGISTER).add(
+				ProtocolField.VOLUNTEER_ID, key));
+		logger.debug("Succes!");
 	}
 	
 	public State messageSent(VolunteerState state, Message m) {
