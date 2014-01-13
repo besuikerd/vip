@@ -17,6 +17,11 @@ import com.eyecall.protocol.ProtocolName;
 public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 	private static final Logger logger = LoggerFactory.getLogger(VIPProtocolHandler.class);
 
+	public static void sendNewRequest(Connection c, double latitude,
+			double longitude) {
+		c.send(new Message(ProtocolName.REQUEST_HELP).add(ProtocolField.LATITUDE, latitude).add(ProtocolField.LONGITUDE, longitude));
+	}
+
 	@Override
 	public State messageSent(VIPState state, Message m) {
 		Log.d(MainActivity.TAG, "Message sent: '" + m.getName() + "' State:" + state.toString());

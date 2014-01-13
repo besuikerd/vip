@@ -1,12 +1,17 @@
 package com.eyecall.push;
 
+import java.net.UnknownHostException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import android.content.Context;
 import android.content.Intent;
 
+import com.eyecall.connection.Connection;
+import com.eyecall.volunteer.Constants;
 import com.eyecall.volunteer.VolunteerProtocolHandler;
+import com.eyecall.volunteer.VolunteerState;
 import com.google.android.gcm.GCMBaseIntentService;
 
 public class GcmRegistrationIntentService extends GCMBaseIntentService{
@@ -31,7 +36,19 @@ private static final Logger logger = LoggerFactory.getLogger(GcmIntentService.cl
 	protected void onRegistered(Context context, String key) {
 		logger.debug("GCM key obtained: {}", key);
 		// Send key to server
-		VolunteerProtocolHandler.sendKeyToServer(key);
+		Connection c;
+		try {
+			c = new Connection(Constants.SERVER_URL,
+					Constants.SERVER_PORT,
+					new VolunteerProtocolHandler(),
+					VolunteerState.INITIALISATION);
+			c.init(false);
+			VolunteerProtocolHandler.sendKeyToServer(c, key);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	@Override

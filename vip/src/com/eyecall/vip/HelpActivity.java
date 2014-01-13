@@ -2,7 +2,6 @@ package com.eyecall.vip;
 
 import java.io.IOException;
 
-import net.majorkernelpanic.streaming.Session;
 import net.majorkernelpanic.streaming.SessionBuilder;
 import net.majorkernelpanic.streaming.rtsp.RtspServer;
 
@@ -12,9 +11,7 @@ import org.slf4j.LoggerFactory;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.SoundPool;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
