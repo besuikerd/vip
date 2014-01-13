@@ -15,7 +15,6 @@ import android.support.v4.app.FragmentActivity;
 import android.view.WindowManager;
 import android.widget.Button;
 
-import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.eventbus.Event;

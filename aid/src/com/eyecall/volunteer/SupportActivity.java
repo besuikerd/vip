@@ -39,7 +39,6 @@ import android.widget.TabHost;
 import android.widget.TabHost.OnTabChangeListener;
 import android.widget.Toast;
 
-import com.eyecall.android.ConnectionInstance;
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.Message;
 import com.eyecall.eventbus.Event;

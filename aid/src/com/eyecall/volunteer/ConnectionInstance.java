@@ -1,12 +1,9 @@
-package com.eyecall.android;
+package com.eyecall.volunteer;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 
 import com.eyecall.connection.Connection;
-import com.eyecall.volunteer.Constants;
-import com.eyecall.volunteer.VolunteerProtocolHandler;
-import com.eyecall.volunteer.VolunteerState;
 
 
 public class ConnectionInstance {
