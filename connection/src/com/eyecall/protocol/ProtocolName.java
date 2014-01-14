@@ -3,7 +3,6 @@ package com.eyecall.protocol;
 import com.eyecall.connection.Named;
 
 public enum ProtocolName implements Named{
-	KEY_NAME("name"),
 	
 	// Received by Volunteer
 	/**
@@ -65,11 +64,7 @@ public enum ProtocolName implements Named{
 	 * Geen parameters
 	 */
 	REQUEST_FORWARDED("request_forwarded"),
-	/**
-	 * De geluidsdata verstuurd door de vrijwilliger (via de server) wordt ontvangen.<br>
-	 * data [byte[]]: De geluidsdata
-	 */
-	AUDIO_DATA("audio_data"),
+	
 	
 	// Received by Volunteer and Server
 	/**
@@ -94,11 +89,6 @@ public enum ProtocolName implements Named{
 	 * volunteer_id [string] id verkregen van Google Cloud Messaging voor push berichten.
 	 */
 	VERIFY("verify"),
-	
-	
-	KEY_EXISTS("key_exists"),
-	
-	KEY_UNKNOWN("key_unknown"),
 	
 	/**
 	 * accepteren van een verzoek<br>
