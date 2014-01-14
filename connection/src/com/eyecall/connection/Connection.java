@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
@@ -323,8 +324,13 @@ public class Connection {
 			} catch (IOException e) {
 				logger.warn("unexpected IOException while reading message: {}", e.toString());
 				
-				e.printStackTrace();
-				logger.warn("after stacktrace");
+				if(e instanceof SocketException){
+					logger.info("Message iterator stopped, it seems socket is closed: {}", e.getMessage());
+				}else{
+					e.printStackTrace();
+					logger.warn("after stacktrace");
+				}
+				
 				messages.clear();
 				//close socket
 				try {

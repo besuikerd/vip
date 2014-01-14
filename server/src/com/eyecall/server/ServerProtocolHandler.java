@@ -118,6 +118,11 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			
     			String id = m.getParamString(ProtocolField.VOLUNTEER_ID);
     			
+    			if(id.trim().equals("")){
+    				// Invalid id
+    				c.send(new Message(ProtocolName.REJECT_KEY).add(ProtocolField.KEY, id));
+    				return ServerState.WAITING;
+    			}
     			
     			
     			//create new volunteer with generated id

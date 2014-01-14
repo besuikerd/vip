@@ -40,11 +40,13 @@ public class Server {
 				try{
 					new Connection(serverSocket.accept(), new ServerProtocolHandler(), ServerState.WAITING).init(true);
 				} catch(IOException e){
-					e.printStackTrace();
+					logger.info("Server closed? serverSocket.accept Exception: {}", e.getMessage());
+					//e.printStackTrace();
 					try {
 						serverSocket.close();
 					} catch (IOException e1) {
-						e1.printStackTrace();
+						logger.info("Unable to close serverSocket: {}", e1.getMessage());
+						//e1.printStackTrace();
 					}
 				}
 			}
