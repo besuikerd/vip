@@ -111,10 +111,10 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 			switch(messageName){
 			case ACKNOWLEDGE_KEY:
 				EventBus.getInstance().post(new Event(EventTag.ID_ACCEPTED, m.getParam(ProtocolField.KEY)));
-				break;
+				return VolunteerState.DISCONNECTED;
 			case REJECT_KEY:
 				EventBus.getInstance().post(new Event(EventTag.ID_REJECTED, m.getParam(ProtocolField.KEY)));
-				break;
+				return VolunteerState.DISCONNECTED;
 			default:
 				break;
 			}
@@ -122,11 +122,6 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 		
 		case IDLE:
 			switch(messageName){
-			case NEW_REQUEST:
-				//if(m.hasParams("request_id","longitude", "latitude")){
-					//TODO pop-up keuze menu
-				return VolunteerState.SHOWING_NOTIFICATION;
-				//}	
 			case LOCATIONS:
 				String raw = m.getParam(ProtocolField.LOCATIONS).toString();
 				logger.debug("Locations received! raw json: {}", raw);
@@ -152,7 +147,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				
 				EventBus.getInstance().post(new Event(EventTag.LOCATIONS_RECEIVED, locations));
 				
-				return VolunteerState.IDLE;
+				return VolunteerState.DISCONNECTED;
 			default:
 				return null;
 			}
@@ -164,27 +159,15 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				EventBus.getInstance().post(new Event(EventTag.DISCONNECTED));
 				return VolunteerState.DISCONNECTED;
 			case UPDATE_LOCATION:
-//				if(m.hasParams("longitude", "latitude")){
-					double lng = m.getParam(ProtocolField.LONGITUDE, Double.class);
-					double lat = m.getParam(ProtocolField.LATITUDE, Double.class);
-					EventBus.getInstance().post(new Event(EventTag.LOCATION_UPDATE, new LatLng(lat, lng)));
-					return VolunteerState.HELPING;
-				//}
+				double lng = m.getParam(ProtocolField.LONGITUDE, Double.class);
+				double lat = m.getParam(ProtocolField.LATITUDE, Double.class);
+				EventBus.getInstance().post(new Event(EventTag.LOCATION_UPDATE, new LatLng(lat, lng)));
+				return state;
 			case MEDIA_READY:
 				EventBus.getInstance().post(new Event(EventTag.MEDIA_READY, m.getParam(ProtocolField.IP)));
 				return state;
 			default:
 				return null;	
-			}
-		case SHOWING_NOTIFICATION:
-			switch(messageName){
-			case CANCEL_REQUEST:
-				if(m.hasParam("request_id")){
-					//TODO gui verdwijnt
-					return VolunteerState.IDLE;
-				}
-			default:
-				return null;
 			}
 			
 		case WAITING_FOR_ACKNOWLEDGEMENT:
@@ -201,24 +184,11 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 				}
 			default:
 				return null;
-				}
-			
-			
-		case WAITING_FOR_VERIFICATION:
-			switch(messageName){
-			case KEY_EXISTS:
-				EventBus.getInstance().post(new Event(EventTag.KEY_VERIFIED));
-				return VolunteerState.DISCONNECTED;
-			case KEY_UNKNOWN:
-				EventBus.getInstance().post(new Event(EventTag.KEY_UNKNOWN));
-				return VolunteerState.DISCONNECTED;
-			default:
-				break;
 			}
+			
 		default:
 			break;
 			}
-		
 		return null;
 	}
 
