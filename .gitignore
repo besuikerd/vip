@@ -32,3 +32,4 @@ project.properties
 
 # Logging files
 server/log/
+test/log/
