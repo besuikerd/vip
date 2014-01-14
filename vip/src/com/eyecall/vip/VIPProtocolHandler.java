@@ -24,7 +24,8 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 
 	@Override
 	public State messageSent(VIPState state, Message m) {
-		Log.d(MainActivity.TAG, "Message sent: '" + m.getName() + "' State:" + state.toString());
+		logger.info("VIP sent message: {}", m);
+		
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		switch (state){
 		case IDLE:
@@ -59,7 +60,8 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 
 	@Override
 	public State messageReceived(VIPState state, Message m, Connection c) {
-		Log.d(MainActivity.TAG, "Message received: '" + m.getName() + "' State:" + state.toString());
+		logger.info("VIP received message: {}", m);
+		
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		switch (state) {
 		case IDLE:
@@ -104,6 +106,7 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 
 	@Override
 	public void onDisconnect(VIPState state) {
+		logger.info("VIP disconnected");
 		ConnectionInstance.clear();
 	}
 }

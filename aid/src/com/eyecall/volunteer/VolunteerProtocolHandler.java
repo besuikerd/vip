@@ -77,6 +77,8 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 	}
 	
 	public State messageSent(VolunteerState state, Message m) {
+		logger.info("Volunteer sent message: {}", m);
+		
 		switch(ProtocolName.lookup(m.getName())){
 		case ACCEPT_REQUEST:
 			return VolunteerState.WAITING_FOR_ACKNOWLEDGEMENT; 
@@ -90,7 +92,8 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 	@SuppressWarnings("unchecked")
 	@Override
 	public State messageReceived(VolunteerState state, Message m, Connection c) {
-		logger.debug("Message received: '" + m.getName() + "' State:" + state.toString());
+		logger.info("Volunteer received message: {}", m);
+		
 		ProtocolName messageName = ProtocolName.lookup(m.getName());
 		
 		if(messageName.equals(ProtocolName.ERROR)){
@@ -194,6 +197,7 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 
 	@Override
 	public void onDisconnect(VolunteerState state) {
+		logger.info("Volunteer disconnected");
 		ConnectionInstance.clear();
 	}
  }

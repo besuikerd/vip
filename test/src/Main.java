@@ -1,17 +1,22 @@
 import java.net.BindException;
 import java.net.UnknownHostException;
 
+import org.apache.log4j.Level;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.eyecall.connection.Connection;
 import com.eyecall.connection.ProtocolHandler;
 import com.eyecall.connection.State;
 import com.eyecall.database.Database;
 import com.eyecall.database.Volunteer;
+import com.eyecall.eventbus.EventBus;
 import com.eyecall.server.Server;
+import com.eyecall.vip.MainActivity;
 import com.eyecall.vip.VIPProtocolHandler;
 import com.eyecall.vip.VIPState;
 import com.eyecall.volunteer.VolunteerProtocolHandler;
@@ -19,6 +24,8 @@ import com.eyecall.volunteer.VolunteerState;
 
 
 public class Main {
+	private static final Logger logger = LoggerFactory.getLogger(Main.class);
+	
 	private static final int PORT = 5555;
 	
 	private Thread serverThread;
@@ -39,6 +46,8 @@ public class Main {
 	
 	@Before
 	public void setUp() throws Exception {
+		org.apache.log4j.Logger.getLogger("org.hibernate").setLevel(Level.INFO);
+		
 		// Start server
 		server = new Server(PORT);
 		serverThread = new Thread(){
@@ -77,15 +86,16 @@ public class Main {
 		volunteerConnection2.init(false);
 		volunteerConnection3.init(false);
 		
-		if(!registered ) testRegistration();
+		if(!registered) testRegistration();
 	}
 	
-	private void checkConnection(Connection connection, ProtocolHandler handler) throws UnknownHostException{
-		checkConnection(connection, handler, null);
+	private Connection checkConnection(Connection connection, ProtocolHandler handler) throws UnknownHostException{
+		return checkConnection(connection, handler, null);
 	}
 	
-	private void checkConnection(Connection connection, ProtocolHandler handler, State state) throws UnknownHostException{
+	private Connection checkConnection(Connection connection, ProtocolHandler handler, State state) throws UnknownHostException{
 		if(connection==null || connection.isClosed()){
+			logger.info("Resetting connection");
 			if(state==null){
 				if(handler instanceof VolunteerProtocolHandler){
 					state = VolunteerState.IDLE;
@@ -94,7 +104,10 @@ public class Main {
 				}
 			}
 			connection = new Connection("localhost", PORT, handler, state);
+			connection.init(false);
+			
 		}
+		return connection;
 	}
 
 	@After
@@ -124,8 +137,12 @@ public class Main {
 		Assert.assertNull("Volunteer empty Id", Database.getInstance().query("from Volunteer where id=?", Volunteer.class, emptyId));
 		Assert.assertNull("Volunteer too long Id", Database.getInstance().query("from Volunteer where id=?", Volunteer.class, tooLongId));
 	
-		checkConnection(volunteerConnection1, volunteerHandler1);
-		checkConnection(volunteerConnection2, volunteerHandler2);
+		volunteerConnection1 = checkConnection(volunteerConnection1, volunteerHandler1);
+		volunteerConnection2 = checkConnection(volunteerConnection2, volunteerHandler2);
+		
+		Assert.assertNotNull(volunteerConnection1);
+		Assert.assertFalse(volunteerConnection1.isClosed());
+		
 		VolunteerProtocolHandler.sendKeyToServer(volunteerConnection1, "1a1a1a1a1a1a");
 		VolunteerProtocolHandler.sendKeyToServer(volunteerConnection2, "2b2b2b2b2b2b");
 		System.out.println("Waiting for server to register...");
@@ -139,7 +156,12 @@ public class Main {
 	
 	@Test
 	public void simulateRequest() throws Exception {
-		//VIPProtocolHandler.sendNewRequest(vipConnection, 0, 0);
+		VIPProtocolHandler.sendNewRequest(vipConnection1, 0, 0);
+		
+		Thread.sleep(1000);
+		
+		EventBus.getInstance().
+		
 		return;
 	}
 

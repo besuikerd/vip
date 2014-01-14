@@ -321,9 +321,7 @@ public class Connection {
 			Iterator<Message> iterator = null;
 			try {
 				iterator = mapper.readValues(new JsonFactory().createParser(s.getInputStream()), Message.class);
-			} catch (IOException e) {
-				logger.warn("unexpected IOException while reading message: {}", e.toString());
-				
+			} catch (IOException e) {				
 				if(e instanceof SocketException){
 					logger.info("Message iterator stopped, it seems socket is closed: {}", e.getMessage());
 				}else{
