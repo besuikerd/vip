@@ -118,9 +118,7 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			volunteerId = PreferenceManager.getDefaultSharedPreferences(this).getString(ProtocolField.VOLUNTEER_ID.getName(), null);
 			
 			if(requestId != null && volunteerId != null){
-				c.send(new Message(ProtocolName.ACCEPT_REQUEST)
-				.add(ProtocolField.REQUEST_ID, requestId)
-				.add(ProtocolField.VOLUNTEER_ID, volunteerId));
+				VolunteerProtocolHandler.sendAcceptRequest(c, volunteerId, requestId);
 			}
 			break;
 			
@@ -139,9 +137,7 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 				logger.debug("Sending request rejected requestid={}, volunteerid={}", requestId, volunteerId);
 				
 				if(requestId != null && volunteerId != null){
-					c.send(new Message(ProtocolName.REJECT_REQUEST)
-					.add(ProtocolField.REQUEST_ID, requestId)
-					.add(ProtocolField.VOLUNTEER_ID, volunteerId));
+					VolunteerProtocolHandler.sendRejectRequest(c, volunteerId, requestId);
 				}
 			} catch (UnknownHostException e1) {
 			}

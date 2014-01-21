@@ -76,6 +76,18 @@ public class VolunteerProtocolHandler implements ProtocolHandler<VolunteerState>
 		logger.debug("Succes!");
 	}
 	
+	public static void sendRejectRequest(Connection c, String id, String requestId){
+		c.send(new Message(ProtocolName.REJECT_REQUEST)
+		.add(ProtocolField.REQUEST_ID, requestId)
+		.add(ProtocolField.VOLUNTEER_ID, id));
+	}
+	
+	public static void sendAcceptRequest(Connection c, String id, String requestId){
+		c.send(new Message(ProtocolName.ACCEPT_REQUEST)
+		.add(ProtocolField.REQUEST_ID, requestId)
+		.add(ProtocolField.VOLUNTEER_ID, id));
+	}
+	
 	public State messageSent(VolunteerState state, Message m) {
 		logger.info("Volunteer sent message: {}", m);
 		
