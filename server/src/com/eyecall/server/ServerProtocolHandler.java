@@ -140,7 +140,6 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				c.send(new Message(ProtocolName.ACKNOWLEDGE_KEY).add(ProtocolField.KEY, id));
     			}
     			
-    			
     			//disconnect the connection
     			return ServerState.DISCONNECTED;
     		case REJECT_REQUEST:
@@ -149,7 +148,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				logger.debug("found request to reject. rejecting...");
     				request.rejectPendingVolunteer(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
     			} else{
-    				logger.debug("cannot find request to reject");
+    				logger.warn("cannot find request to reject");
     			}
     			return ServerState.WAITING;
     		case ACCEPT_REQUEST:

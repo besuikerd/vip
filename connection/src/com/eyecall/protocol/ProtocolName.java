@@ -35,11 +35,7 @@ public enum ProtocolName implements Named{
 	 * latitude [double] De hoogtegraad van de VBP�s locatie
 	 */
 	UPDATE_LOCATION("update_location"),
-	/**
-	 * media is klaar voor gebruik<br>
-	 * ip [String] ip adres waarmee media mee verbonden kan worden
-	 */
-	MEDIA_READY("media_ready"),
+	
 	
 	// Received by VIP and Volunteer
 	/**
@@ -47,6 +43,12 @@ public enum ProtocolName implements Named{
 	 * Geen parameters
 	 */
 	OTHER_DISCONNECTED("other_disconnected"),
+	
+	/**
+	 * media is klaar voor gebruik<br>
+	 * ip [String] ip adres waarmee media mee verbonden kan worden
+	 */
+	MEDIA_READY("media_ready"),
 	
 	// Received by VIP
 	/**
@@ -59,7 +61,9 @@ public enum ProtocolName implements Named{
 	 * Geen parameters
 	 */
 	REQUEST_DENIED("request_denied"),
+
 	/**
+	 * TODO not implemented
 	 * De vrijwilliger kan niet langer helpen en heeft de hulpverzoek doorverwezen<br>
 	 * Geen parameters
 	 */
@@ -118,6 +122,7 @@ public enum ProtocolName implements Named{
 	 */
 	FORWARD_REQUEST("forward_request"),
 	/**
+	 * TODO not implemented
 	 * Er worden twee vragen gesteld nadat een hulpverzoek is afgerond. De eerste: was het hulpverzoek succesvol? En de tweede: Wil de vrijwilliger vaker hulpoproepen ontvangen vanuit deze omgeving? <br>
 	 * latitude [double]: lengtegraad van de locatie<br>
 	 * longitude [double]: breedtegraad van de locatie<br>
@@ -153,6 +158,12 @@ public enum ProtocolName implements Named{
 	 */
 	LOCATIONS("locations"),
 	
+	
+	//Alle endpoints
+	/**
+	 * Er is een onverwachte fout opgetreden tussen de communicatie van twee endpoints.
+	 * code [int]: foutcode
+	 */
 	ERROR("error"), 
 	
 	

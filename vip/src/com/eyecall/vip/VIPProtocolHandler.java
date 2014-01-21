@@ -84,11 +84,10 @@ public class VIPProtocolHandler implements ProtocolHandler<VIPState> {
 			}
 
 		case BEING_HELPED:
-			// logger.debug("message received while being helped: {}", m);
 			switch (messageName) {
 			case REQUEST_FORWARDED:
-				// TODO melding geven over het forwarden
-				return VIPState.WAITING;
+				// TODO implement this
+				return state;
 			case OTHER_DISCONNECTED:
 				EventBus.getInstance().post(new Event(EventTag.SOUND_CONNECTION_LOST));
 				EventBus.getInstance().post(new Event(EventTag.DISCONNECT));
