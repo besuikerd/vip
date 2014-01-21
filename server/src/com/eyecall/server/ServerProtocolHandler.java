@@ -162,9 +162,6 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     					// attach volunteer id to request
     					request.setVolunteerId(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
     					
-    					// Remove volunteer from pending volunteers
-    					request.removePendingVolunteer(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
-    					
     					// send request granted message to VIP
     					request.getVipConnection().send(new Message(ProtocolName.REQUEST_GRANTED).add(ProtocolField.ADDRESS, request.getVolunteerConnection().getSocket().getInetAddress().getHostAddress()));
     					
@@ -174,7 +171,10 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     					// send cancel to other volunteers
     					request.sendCancelToPendingVolunteers();
     					
-    					// Dont clear pending volunteers for redirection
+    					// Clear pending volunteers
+    					request.getPendingVolunteers().clear();
+    					
+    					// Dont clear rejected volunteers for redirection
     					
     					return ServerState.CALLING;
     				}else{

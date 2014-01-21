@@ -15,7 +15,9 @@ public class Constants {
 	/**
 	 * The maximum amount of volunteers who will receive a new request in one timer cycle
 	 */
-	public static final int REQUEST_GROUP_SIZE = 5;
+	// TODO change back
+	//public static final int REQUEST_GROUP_SIZE = 5;
+	public static final int REQUEST_GROUP_SIZE = 2;
 	
 	/**
 	 * maximum amount of times to fetch a new request group

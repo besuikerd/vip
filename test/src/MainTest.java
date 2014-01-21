@@ -316,5 +316,29 @@ public class MainTest {
 		Assert.assertNotNull(volunteer2);
 		Assert.assertNotNull(volunteer3);
 	}
+	
+	@Test
+	public void testAcceptRequest() throws Exception{
+		// Group size needs to be 2 for this test
+		Assert.assertEquals(Constants.REQUEST_GROUP_SIZE, 2);
+		
+		Request request = RequestPool.getInstance().setup(vipConnection1, 0.0, 0.0);
+		request.findNewVolunteers();
+		logger.debug("Waiting to find volunteers...");
+		Thread.sleep(2000); // Wait for database
+		
+		// Accept request
+		VolunteerProtocolHandler.sendAcceptRequest(volunteerConnection1, TestConstants.VOLUNTEER_ID_1, request.getId());
+		logger.debug("Waiting for accepting...");
+		Thread.sleep(1000);
+		
+		Volunteer volunteer1 = null;
+		Volunteer volunteer2 = null;
+		Volunteer volunteer3 = null;
+		Assert.assertEquals(request.getVolunteerId(), TestConstants.VOLUNTEER_ID_1);
+		System.out.println(request.getPendingVolunteers());
+		Assert.assertEquals(0, request.getPendingVolunteers().size());
+		
+	}
 
 }
