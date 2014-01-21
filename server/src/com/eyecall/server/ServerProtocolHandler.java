@@ -136,17 +136,9 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				c.send(new Message(ProtocolName.ACKNOWLEDGE_KEY).add(ProtocolField.KEY, id));
     			}
     			
-    			
     			//disconnect the connection
     			return ServerState.DISCONNECTED;
-    			
-    		case VERIFY:
-    			
-    			id = m.getParamString(ProtocolField.VOLUNTEER_ID);
-    			v = Database.getInstance().query("FROM Volunteer where id=?", Volunteer.class, id);
-    			c.send(new Message(v == null ? ProtocolName.KEY_UNKNOWN : ProtocolName.KEY_EXISTS).add(ProtocolField.VOLUNTEER_ID, id));
-    			
-    			return ServerState.DISCONNECTED;
+
     			
     		case REJECT_REQUEST:
     			request = RequestPool.getInstance().getPendingRequest(m.getParam(ProtocolField.REQUEST_ID).toString());
@@ -154,7 +146,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     				logger.debug("found request to reject. rejecting...");
     				request.rejectPendingVolunteer(m.getParam(ProtocolField.VOLUNTEER_ID).toString());
     			} else{
-    				logger.debug("cannot find request to reject");
+    				logger.warn("cannot find request to reject");
     			}
     			return ServerState.WAITING;
     		case ACCEPT_REQUEST:
