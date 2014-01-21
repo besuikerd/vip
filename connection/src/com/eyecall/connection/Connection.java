@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
@@ -320,11 +321,14 @@ public class Connection {
 			Iterator<Message> iterator = null;
 			try {
 				iterator = mapper.readValues(new JsonFactory().createParser(s.getInputStream()), Message.class);
-			} catch (IOException e) {
-				logger.warn("unexpected IOException while reading message: {}", e.toString());
+			} catch (IOException e) {				
+				if(e instanceof SocketException){
+					logger.info("Message iterator stopped, it seems socket is closed: {}", e.getMessage());
+				}else{
+					e.printStackTrace();
+					logger.warn("after stacktrace");
+				}
 				
-				e.printStackTrace();
-				logger.warn("after stacktrace");
 				messages.clear();
 				//close socket
 				try {

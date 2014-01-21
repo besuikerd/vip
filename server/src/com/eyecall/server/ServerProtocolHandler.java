@@ -89,6 +89,8 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     
     @Override
     public State messageSent(ServerState state, Message m) {
+    	logger.info("Server send message: {}", m);
+    	
     	switch(ProtocolName.lookup(m.getName())){
     	case REQUEST_GRANTED:
     		return ServerState.CALLING;
@@ -100,13 +102,10 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     
     @Override
     public State messageReceived(ServerState state, Message m, Connection c) {
-    	logger.debug("Server received message: {}", m);
+    	logger.info("Server received message: {}", m);
     	
     	RequestPool pool = RequestPool.getInstance();
     	Database db = Database.getInstance();
-    	logger.debug("Message received of type (" + m.getName() + "): " + ProtocolName.lookup(m.getName()));
-    	
-    	
     	
 		switch(state){
     	
@@ -118,6 +117,11 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			
     			String id = m.getParamString(ProtocolField.VOLUNTEER_ID);
     			
+    			if(id.trim().equals("")){
+    				// Invalid id
+    				c.send(new Message(ProtocolName.REJECT_KEY).add(ProtocolField.KEY, id));
+    				return ServerState.WAITING;
+    			}
     			
     			
     			//create new volunteer with generated id
@@ -138,8 +142,6 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     			
     			//disconnect the connection
     			return ServerState.DISCONNECTED;
-
-    			
     		case REJECT_REQUEST:
     			request = RequestPool.getInstance().getPendingRequest(m.getParam(ProtocolField.REQUEST_ID).toString());
     			if(request!=null) {
@@ -287,6 +289,7 @@ public class ServerProtocolHandler implements ProtocolHandler<ServerState> {
     
     @Override
     public void onDisconnect(ServerState state) {
+    	logger.info("Server disconnected");
     	if(request != null){
     		RequestPool.getInstance().remove(request.getId());
     	}
