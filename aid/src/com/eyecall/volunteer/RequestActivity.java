@@ -23,6 +23,7 @@ import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
+import com.eyecall.sound.Sound;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -124,6 +125,9 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			break;
 			
 		case REJECT_REQUEST:
+			
+			Sound.DISCONNECTED.play(this);
+			
 			try {
 				
 				c = ConnectionInstance.getInstance(Constants.SERVER_URL, Constants.SERVER_PORT);
@@ -147,6 +151,9 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			
 		case REQUEST_ACKNOWLEDGED:
 			//TODO start new call activity
+			
+			Sound.CONNECTED.play(this);
+			
 			logger.debug("request acknowledged!");
 			Intent i = new Intent(this, SupportActivity.class);
 			Bundle b = new Bundle();
@@ -161,6 +168,9 @@ public class RequestActivity extends FragmentActivity implements EventListener{
 			
 			//break;
 		case REQUEST_CANCELLED:
+			
+			Sound.CONNECTION_LOST.play(this);
+			
 			new AlertDialog.Builder(this)
 			.setIcon(android.R.drawable.ic_dialog_info)
 			.setTitle(R.string.request_denied_title)

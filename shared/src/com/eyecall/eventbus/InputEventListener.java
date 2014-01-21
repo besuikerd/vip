@@ -1,6 +1,8 @@
 package com.eyecall.eventbus;
 
 import android.content.DialogInterface;
+import android.view.MenuItem;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.RadioGroup;
@@ -12,9 +14,10 @@ import com.eyecall.connection.Named;
 import com.eyecall.event.CheckedChangedEvent;
 import com.eyecall.event.ClickEvent;
 import com.eyecall.event.DialogClickEvent;
+import com.eyecall.event.MenuItemClickEvent;
 import com.eyecall.event.ProgressChangedEvent;
 
-public class InputEventListener implements OnClickListener, android.content.DialogInterface.OnClickListener, OnCheckedChangeListener, OnSeekBarChangeListener{
+public class InputEventListener implements OnClickListener, android.content.DialogInterface.OnClickListener, OnCheckedChangeListener, OnSeekBarChangeListener, OnMenuItemClickListener{
 	
 	private String tag;
 	private Object data;
@@ -26,6 +29,14 @@ public class InputEventListener implements OnClickListener, android.content.Dial
 
 	public InputEventListener(Named n, Object data) {
 		this(n.getName(), data);
+	}
+	
+	public InputEventListener(String tag) {
+		this(tag, null);
+	}
+	
+	public InputEventListener(Named tag) {
+		this(tag.getName());
 	}
 
 	@Override
@@ -58,6 +69,12 @@ public class InputEventListener implements OnClickListener, android.content.Dial
 	public void onStopTrackingTouch(SeekBar arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public boolean onMenuItemClick(MenuItem item) {
+		EventBus.getInstance().post(new MenuItemClickEvent(item, tag, data));
+		return false;
 	}
 
 }
