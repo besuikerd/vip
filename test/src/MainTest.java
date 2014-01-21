@@ -264,5 +264,57 @@ public class MainTest {
 		request2.invalidate();
 		request2.close();
 	}
+	
+	@Test
+	public void testFindVolunteersNotPreferred() throws Exception {
+		// Group size needs to be 2 for this test
+		Assert.assertEquals(Constants.REQUEST_GROUP_SIZE, 2);
+		
+		Request request = RequestPool.getInstance().setup(vipConnection1, 0.0, 20.0);
+		request.findNewVolunteers();
+		logger.debug("Waiting to find volunteers...");
+		Thread.sleep(2000); // Wait for database
+		Volunteer volunteer1 = null;
+		Volunteer volunteer2 = null;
+		Volunteer volunteer3 = null;
+		for(Volunteer v : request.getPendingVolunteers()){
+			if(v.getId().equals(TestConstants.VOLUNTEER_ID_1)) volunteer1 = v;
+			if(v.getId().equals(TestConstants.VOLUNTEER_ID_2)) volunteer2 = v;
+			if(v.getId().equals(TestConstants.VOLUNTEER_ID_3)) volunteer3 = v;
+		}
+		// Volunteer 2 and 3 should be pending
+		Assert.assertTrue(request.isValid());
+		Assert.assertEquals(request.getPendingVolunteers().size(), 2);
+		Assert.assertEquals(request.getRejectedVolunteers().size(), 0);
+		Assert.assertNull(volunteer1);
+		Assert.assertNotNull(volunteer2);
+		Assert.assertNotNull(volunteer3);
+		
+		// Now reject both volunteers
+		request.rejectPendingVolunteer(TestConstants.VOLUNTEER_ID_2);
+		request.rejectPendingVolunteer(TestConstants.VOLUNTEER_ID_3);
+		
+		// The request should now automaticly start searching for new volunteers,
+		// as there are no pending volunteers left.
+		logger.debug("Waiting to find volunteers...");
+		Thread.sleep(2000); // Wait for database
+		// Volunteer 3 and 2 should be rejected, but 1 should not be pending as it 
+		// has an non-preferred locations
+		Assert.assertFalse(request.isValid());
+		Assert.assertEquals(request.getPendingVolunteers().size(), 0);
+		Assert.assertEquals(request.getRejectedVolunteers().size(), 2);
+		
+		// Check rejected
+		volunteer1 = null;
+		volunteer2 = null;
+		volunteer3 = null;
+		for(Volunteer v : request.getRejectedVolunteers()){
+			if(v.getId().equals(TestConstants.VOLUNTEER_ID_1)) volunteer1 = v;
+			if(v.getId().equals(TestConstants.VOLUNTEER_ID_2)) volunteer2 = v;
+			if(v.getId().equals(TestConstants.VOLUNTEER_ID_3)) volunteer3 = v;
+		}
+		Assert.assertNotNull(volunteer2);
+		Assert.assertNotNull(volunteer3);
+	}
 
 }

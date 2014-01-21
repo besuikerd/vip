@@ -137,16 +137,22 @@ public class InitTest {
 		Location location1 = new Location();
 		Location location2 = new Location();
 		Location location3 = new Location();
+		Location location4 = new Location();
 		location1.setPreferred(true);
 		location2.setPreferred(true);
 		location3.setPreferred(true);
 		location2.setLatitude(10.0);
 		location3.setLatitude(20.0);
+		location4.setLatitude(20.5);
+		location4.setRadius(1.0);
 		
 		// Add locations
 		VolunteerProtocolHandler.addLocation(volunteerConnection1, TestConstants.VOLUNTEER_ID_1, location1);
 		VolunteerProtocolHandler.addLocation(volunteerConnection2, TestConstants.VOLUNTEER_ID_2, location2);
 		VolunteerProtocolHandler.addLocation(volunteerConnection3, TestConstants.VOLUNTEER_ID_3, location3);
+		volunteerConnection1.close();
+		volunteerConnection1 = Utils.checkConnection(volunteerConnection1, volunteerHandler1);
+		VolunteerProtocolHandler.addLocation(volunteerConnection1, TestConstants.VOLUNTEER_ID_1, location4);
 		System.out.println("Waiting for database to add locations...");
 		Thread.sleep(2000);
 		
@@ -158,6 +164,11 @@ public class InitTest {
 		location = null;
 		for(com.eyecall.database.Location l : locations){
 			if(l.getLatitude()==0.0 && l.getLongitude()==0.0) location = l;
+		}
+		Assert.assertNotNull(location);
+		location = null;
+		for(com.eyecall.database.Location l : locations){
+			if(l.getLatitude()==20.5 && l.getLongitude()==0.0  && l.getRadius()==1.0 && !l.isPreferred()) location = l;
 		}
 		Assert.assertNotNull(location);
 		
