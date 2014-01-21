@@ -48,12 +48,8 @@ public class RequestTimerTask extends TimerTask {
 				timer.schedule(new RequestTimerTask(request, timer), Constants.REQUEST_TIMEOUT);
 				
 				// And done :)
-			}else{
-				// Nobody found. Deny request
-				logger.debug("Request timeout... No new volunteers found");
-				request.sendRequestDenied();
-				request.invalidate();
 			}
+			// If size==0, request is already invalidated and closed by findNewVolunteers()
 		}
 	}
 }

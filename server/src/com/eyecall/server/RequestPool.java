@@ -72,15 +72,24 @@ public class RequestPool {
 	 * @return
 	 */	
 	public Request setup(Connection c, String longitude, String latitude) {
-		String id = new BigInteger(128, new SecureRandom()).toString(16);
-		logger.debug("setting up new request with id: {}", id);
 		try{
-			Request r = new Request(id, c, Double.valueOf(longitude), Double.valueOf(latitude));
-			connections.put(id, r);
-			return r;
+			return setup(c, Double.valueOf(longitude), Double.valueOf(latitude));
 		}catch(NumberFormatException e){
 			return null;
 		}
+	}
+
+	/**
+	 * setup a request
+	 * @param c Connection to VIP
+	 * @return
+	 */	
+	public Request setup(Connection c, double longitude, double latitude) {
+		String id = new BigInteger(128, new SecureRandom()).toString(16);
+		logger.debug("setting up new request with id: {}", id);
+		Request r = new Request(id, c, longitude, latitude);
+		connections.put(id, r);
+		return r;
 	}
 
 	/**

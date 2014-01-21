@@ -114,8 +114,8 @@ public class Request {
 		}
 		
 		if(pendingVolunteers.size()==0){
-			logger.debug(this.id + " Pending volunteers is now 0. Stopping timer and findind new volunteers");
-			timer.cancel();
+			logger.debug(this.id + " Pending volunteers is now 0. Stopping timer and finding new volunteers");
+			if(timer!=null) timer.cancel();
 			// Find new ones, send request etc bla bla bla.
 			start();
 		}
@@ -159,18 +159,26 @@ public class Request {
 		query.setDouble("longitude", longitude);
 		List<?> result = query.list();
 		List<Volunteer> potentialVolunteers = new ArrayList<Volunteer>();
-		int count = 0;
 		for(Object id : result){
-			if(count<Constants.REQUEST_GROUP_SIZE){
+			if(potentialVolunteers.size()<Constants.REQUEST_GROUP_SIZE){
 				Volunteer volunteer = new Volunteer();
 				volunteer.setId(id.toString());
 				if(!rejectedVolunteers.contains(volunteer) && RequestPool.getInstance().isFree(volunteer)){
 					potentialVolunteers.add(volunteer);
-					count++;
 				}				
 			}
 		}
 		session.close();
+		
+		if(potentialVolunteers.size()==0){
+			logger.debug("No new volunteers found");
+			this.sendCancelToPendingVolunteers();
+			this.sendRequestDenied();
+			this.invalidate();
+			this.close();
+			
+			return;
+		}
 		
 		// List<Volunteer> potentialVolunteers = Database.getInstance().queryForList(Constants.VOLUNTEER_QUERY, Volunteer.class);
 		logger.debug(id + " potential volunteers: {}", potentialVolunteers);
