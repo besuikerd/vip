@@ -20,6 +20,8 @@ public enum EventTag implements Named{
 	REQUEST_ACKNOWLEDGED("request_acknowledged"),
 	BUTTON_DISCONNECT("button_disconnect"),
 	
+	LOCATION_HELP("location_help"),
+	
 	//REQUEST_DENIED("request_denied"), 
 	SAVE_LOCATION("save_location"), 
 	REQUEST_CANCELLED("request_cancelled"), 
@@ -27,6 +29,8 @@ public enum EventTag implements Named{
 	LOCATION_RADIUS_CHANGED("loc_rad_change"),
 	DISCONNECTED("disconnected"),
 	MEDIA_READY("media_ready"),
+	
+	NOTHING("")
 	;
 	
 	
@@ -36,7 +40,7 @@ public enum EventTag implements Named{
 				return t;
 			}
 		}
-		return null;
+		return NOTHING;
 	}
 	
 	private String tag;

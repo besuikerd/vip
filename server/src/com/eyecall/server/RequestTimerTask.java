@@ -18,6 +18,8 @@ public class RequestTimerTask extends TimerTask {
 	private Request request;
 
 	private Timer timer;
+	
+	private int counter = Constants.REQUEST_COUNT;
 
 	public RequestTimerTask(Request request, Timer timer){
 		this.request = request;
@@ -44,8 +46,12 @@ public class RequestTimerTask extends TimerTask {
 				// Send to new group
 				request.sendRequestToPendingVolunteers();
 			
+				RequestTimerTask task = new RequestTimerTask(request, timer);
+				task.counter--;
 				// Reschedule
-				timer.schedule(new RequestTimerTask(request, timer), Constants.REQUEST_TIMEOUT);
+				if(task.counter > 0){
+					timer.schedule(task, Constants.REQUEST_TIMEOUT);
+				}
 				
 				// And done :)
 			}

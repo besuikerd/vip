@@ -47,7 +47,9 @@ import com.eyecall.eventbus.EventListener;
 import com.eyecall.eventbus.InputEventListener;
 import com.eyecall.protocol.ProtocolField;
 import com.eyecall.protocol.ProtocolName;
+import com.eyecall.sound.Sound;
 import com.eyecall.stream.StreamPreparator;
+import com.google.android.gms.internal.di;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -301,6 +303,8 @@ public class SupportActivity extends FragmentActivity implements EventListener, 
 	public void onPageScrolled(int arg0, float arg1, int arg2) {
 	}
 
+	boolean disconnected_sound = false;
+	
 	@Override
 	public void onEvent(Event e) {
 		switch(EventTag.lookup(e.getTag())){
@@ -315,12 +319,17 @@ public class SupportActivity extends FragmentActivity implements EventListener, 
 			});
 			break;
 		case BUTTON_DISCONNECT:
+			
 			Connection c = null;
 			if((c = ConnectionInstance.getExistingInstance()) != null){
 				c.send(new Message(ProtocolName.DISCONNECT));
 			}
 			EventBus.getInstance().post(new Event(EventTag.DISCONNECTED));
 		case DISCONNECTED:
+			if(!disconnected_sound){
+				Sound.DISCONNECTED.play(this);
+				disconnected_sound = true;
+			}
 			finish();
 			break;
 		case MEDIA_READY:

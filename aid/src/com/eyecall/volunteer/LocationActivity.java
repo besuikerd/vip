@@ -1,13 +1,20 @@
 package com.eyecall.volunteer;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.provider.MediaStore.Files;
 import android.support.v4.app.FragmentActivity;
+import android.view.Menu;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
@@ -51,6 +58,13 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 
 	private Connection connection;
     
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.locationsmenu, menu);
+		menu.findItem(R.id.help).setOnMenuItemClickListener(new InputEventListener(EventTag.LOCATION_HELP));
+		return super.onCreateOptionsMenu(menu);
+	}
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
@@ -278,6 +292,22 @@ public class LocationActivity extends FragmentActivity implements EventListener,
 			// Go back to list
 			this.finish();
 			break;
+			
+		case LOCATION_HELP:
+			String s = "help";
+			try{
+				s = new Scanner(getAssets().open(Constants.PATH_LOCATIONS_HELP)).useDelimiter(Pattern.compile("\\Z")).next();
+			} catch(IOException ex){
+				ex.printStackTrace();
+			}
+			new AlertDialog.Builder(this)
+			.setTitle(R.string.help)
+			.setMessage(s)
+			.setNeutralButton(getString(R.string.ok), new InputEventListener("ignore"))
+			.create()
+			.show();
+			break;
+			
 		default:
 			break;
 		}
