@@ -18,7 +18,11 @@ import com.eyecall.vip.VIPProtocolHandler;
 import com.eyecall.volunteer.VolunteerProtocolHandler;
 
 /**
- * For this test, InitTest should have completely runned
+ * This class tests the methods involving requests, finding volunteers and
+ * accepting/rejecting these requests
+ * 
+ * It is assumed that InitTest has run before successfully, so all volunteers
+ * are already registered and locations have been added.
  */
 public class MainTest {
 	private static final Logger logger = LoggerFactory.getLogger(MainTest.class);
@@ -91,6 +95,10 @@ public class MainTest {
 	}
 	
 	@Test
+	/**
+	 * Test the find volunteers method
+	 * @throws Exception
+	 */
 	public void testFindVolunteers() throws Exception {
 		// Group size needs to be 2 for this test
 		Assert.assertEquals(Constants.REQUEST_GROUP_SIZE, 2);
@@ -186,6 +194,11 @@ public class MainTest {
 	}
 	
 	@Test
+	/**
+	 * Test if the finding process still works if there are multiple
+	 * request simultaniously
+	 * @throws Exception
+	 */
 	public void testMultipleRequests() throws Exception {
 		// Group size needs to be 2 for this test
 		Assert.assertEquals(Constants.REQUEST_GROUP_SIZE, 2);
@@ -266,6 +279,11 @@ public class MainTest {
 	}
 	
 	@Test
+	/**
+	 * Test if the finding process also works if there is an non-preferred location
+	 * within radius
+	 * @throws Exception
+	 */
 	public void testFindVolunteersNotPreferred() throws Exception {
 		// Group size needs to be 2 for this test
 		Assert.assertEquals(Constants.REQUEST_GROUP_SIZE, 2);
@@ -318,6 +336,10 @@ public class MainTest {
 	}
 	
 	@Test
+	/**
+	 * Test the acceptation of an request
+	 * @throws Exception
+	 */
 	public void testAcceptRequest() throws Exception{
 		// Group size needs to be 2 for this test
 		Assert.assertEquals(Constants.REQUEST_GROUP_SIZE, 2);
